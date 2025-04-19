@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Viewport } from "next";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import React from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,7 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "ChatterSphere | Connect Through Meaningful Conversations",
   description: "ChatterSphere helps you build meaningful connections through real-time chat, thriving communities, and global interactions in a secure environment.",
   keywords: ["chat platform", "communities", "messaging", "social network"],
@@ -71,7 +72,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <title>{metadata.title}</title>
+        <title>ChatterSphere | Connect Through Meaningful Conversations</title>
         <link rel="icon" type="image/png" href="/icon1.png" sizes="96x96" />
         <link rel="icon" type="image/svg+xml" href="/icon0.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
