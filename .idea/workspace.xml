@@ -7,30 +7,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor layout and add manifest for PWA support">
-      <change afterPath="$PROJECT_DIR$/src/components/community-card.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/feature-card.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/header.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/step-card.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/testimonial-card.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/button.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/input.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/utils.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/middleware.ts" afterDir="false" />
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Update ClerkProvider to use publishable key from environment variables">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/About.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/FeaturesSection.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Footer.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/HeroSection.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Navbar.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Newsletter.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Testimonials.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ThemeProvider.tsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -130,7 +108,7 @@
       <option name="presentableId" value="Default" />
       <updated>1745012727869</updated>
       <workItem from="1745012730147" duration="12983000" />
-      <workItem from="1745062326619" duration="10466000" />
+      <workItem from="1745062326619" duration="11237000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial project structure with components, theming, and layout">
       <option name="closed" value="true" />
@@ -148,7 +126,23 @@
       <option name="project" value="LOCAL" />
       <updated>1745053935494</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Add utility functions, components, and middleware for enhanced UI and authentication">
+      <option name="closed" value="true" />
+      <created>1745085396992</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1745085396993</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Update ClerkProvider to use publishable key from environment variables">
+      <option name="closed" value="true" />
+      <created>1745085840632</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1745085840632</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -157,6 +151,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Add initial project structure with components, theming, and layout" />
     <MESSAGE value="Refactor layout and add manifest for PWA support" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor layout and add manifest for PWA support" />
+    <MESSAGE value="Add utility functions, components, and middleware for enhanced UI and authentication" />
+    <MESSAGE value="Update ClerkProvider to use publishable key from environment variables" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update ClerkProvider to use publishable key from environment variables" />
   </component>
 </project>
