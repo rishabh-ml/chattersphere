@@ -152,7 +152,7 @@ export default function Newsletter() {
                                     <Check size={18} className="text-green-500" />
                                 </div>
                                 <span className="font-medium">
-                  Thanks for subscribing! We'll be in touch soon.
+                  Thanks for subscribing! We&apos;ll be in touch soon.
                 </span>
                             </motion.div>
                         )}
