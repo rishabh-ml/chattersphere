@@ -7,7 +7,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Add utility functions, components, and middleware for enhanced UI and authentication" />
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Update ClerkProvider to use publishable key from environment variables">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -70,7 +72,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "#3 on frontend",
+    "git-widget-placeholder": "frontend",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
     "node.js.detected.package.tslint": "true",
@@ -106,7 +108,7 @@
       <option name="presentableId" value="Default" />
       <updated>1745012727869</updated>
       <workItem from="1745012730147" duration="12983000" />
-      <workItem from="1745062326619" duration="10847000" />
+      <workItem from="1745062326619" duration="11237000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial project structure with components, theming, and layout">
       <option name="closed" value="true" />
@@ -132,7 +134,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745085396993</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Update ClerkProvider to use publishable key from environment variables">
+      <option name="closed" value="true" />
+      <created>1745085840632</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1745085840632</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -142,6 +152,7 @@
     <MESSAGE value="Add initial project structure with components, theming, and layout" />
     <MESSAGE value="Refactor layout and add manifest for PWA support" />
     <MESSAGE value="Add utility functions, components, and middleware for enhanced UI and authentication" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add utility functions, components, and middleware for enhanced UI and authentication" />
+    <MESSAGE value="Update ClerkProvider to use publishable key from environment variables" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update ClerkProvider to use publishable key from environment variables" />
   </component>
 </project>
