@@ -7,7 +7,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor StepCard and TestimonialCard for improved performance and interactivity">
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Add database connection and feed components for improved data handling and user experience">
+      <change afterPath="$PROJECT_DIR$/src/app/api/newsletter/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/home/Feed.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/home/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/EmptyFeed.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/FeedSkeleton.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/Newsletter.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/PostCard.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib/dbConnect.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/models/Newsletter.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/utils/fetchFeedData.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+    </list>
+    <list id="c5eea045-d135-4827-b36b-ae86da822b84" name="No push" comment="">
       <change afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/next.config.js" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/next.config.mjs" afterDir="false" />
@@ -20,6 +36,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="TypeScript File" />
         <option value="TypeScript JSX File" />
       </list>
     </option>
@@ -90,6 +107,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\datam\Desktop\chattersphere\src" />
       <recent name="C:\Users\datam\Desktop\chattersphere\public" />
       <recent name="C:\Users\datam\Desktop\chattersphere\public\avatars" />
     </key>
@@ -152,7 +170,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745189201896</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Refactor layout for improved structure and remove unused theme script">
+      <option name="closed" value="true" />
+      <created>1745189890256</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1745189890256</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -164,6 +190,8 @@
     <MESSAGE value="Add utility functions, components, and middleware for enhanced UI and authentication" />
     <MESSAGE value="Update ClerkProvider to use publishable key from environment variables" />
     <MESSAGE value="Refactor StepCard and TestimonialCard for improved performance and interactivity" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor StepCard and TestimonialCard for improved performance and interactivity" />
+    <MESSAGE value="Refactor layout for improved structure and remove unused theme script" />
+    <MESSAGE value="Add database connection and feed components for improved data handling and user experience" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add database connection and feed components for improved data handling and user experience" />
   </component>
 </project>

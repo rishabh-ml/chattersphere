@@ -2,7 +2,6 @@
 
 import { ArrowRight, Play, Users, MessageSquare, Globe,  } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { motion } from "framer-motion"
 import Header from "../components/header"
 import FeatureCard from "../components/feature-card"
@@ -11,6 +10,7 @@ import CommunityCard from "../components/community-card"
 import TestimonialCard from "../components/testimonial-card"
 import {SignUpButton, useAuth} from "@clerk/nextjs";
 import Image from "next/image";
+import NewsletterSection from "@/components/Newsletter";
 
 export default function Home() {
     useAuth()
@@ -234,25 +234,7 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Newsletter Section */}
-            <section className="bg-[#111827] text-white py-16">
-                <div className="container mx-auto px-4">
-                    <div className="max-w-2xl mx-auto text-center">
-                        <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
-                        <p className="text-gray-300 mb-8">
-                            Subscribe to our newsletter to receive the latest updates, features, and community highlights.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                            <Input
-                                type="email"
-                                placeholder="Enter your email"
-                                className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                            />
-                            <Button className="bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-white">Subscribe</Button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <NewsletterSection />
 
             {/* Footer */}
             <footer className="bg-[#0F172A] text-white py-12">
