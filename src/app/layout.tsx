@@ -1,12 +1,9 @@
-// layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Viewport } from "next";
 import React from "react";
-import {
-  ClerkProvider,
-} from '@clerk/nextjs'
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,23 +54,20 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#38BDF8" },
-    { media: "(prefers-color-scheme: dark)", color: "#111827" },
-  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  themeColor: "#38BDF8", // Stay light only
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+                                     children,
+                                   }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
-      <html lang="en" className="scroll-smooth">
+      <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+        <html lang="en" className="scroll-smooth">
         <head>
           <title>ChatterSphere | Connect Through Meaningful Conversations</title>
           <link rel="icon" type="image/png" href="/icon1.png" sizes="96x96" />
@@ -82,24 +76,13 @@ export default function RootLayout({
           <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
           <meta name="apple-mobile-web-app-title" content="ChatterSphere" />
           <link rel="manifest" href="/manifest" />
-          {/* Added script to prevent flash of wrong theme */}
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  const theme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-                  if (theme === "dark") document.documentElement.classList.add("dark");
-                } catch (e) {}
-              })();
-            `
-          }} />
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}
+            className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans bg-white text-gray-900`}
         >
-          {children}
+        {children}
         </body>
-      </html>
-    </ClerkProvider>
+        </html>
+      </ClerkProvider>
   );
 }
