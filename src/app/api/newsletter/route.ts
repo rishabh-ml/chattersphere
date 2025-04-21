@@ -2,16 +2,20 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import { Newsletter } from "@/models/Newsletter";
 
+interface NewsletterRequestBody {
+    email: string;
+}
+
 export async function POST(req: Request) {
     try {
         await dbConnect();
 
         const body = await req.text();
-        let data;
+        let data: NewsletterRequestBody;
 
         try {
             data = JSON.parse(body);
-        } catch (jsonError) {
+        } catch {
             return NextResponse.json(
                 { error: "Invalid JSON format." },
                 { status: 400 }
@@ -33,16 +37,22 @@ export async function POST(req: Request) {
                 { message: "Subscribed successfully!", subscription },
                 { status: 201 }
             );
-        } catch (dbError: any) {
-            console.error("Database Error:", dbError);
+        } catch (error) {
+            console.error("Database Error:", error);
+            const errorMessage =
+                (error instanceof Error && error.message.includes("duplicate")) ||
+                (typeof (error as { code?: number }).code === "number" &&
+                (error as { code: number }).code === 11000)
+                    ? "Email already subscribed."
+                    : "Database error.";
+
             return NextResponse.json(
-                { error: dbError.message.includes("duplicate") ? "Already subscribed." : "Database error." },
+                { error: errorMessage },
                 { status: 400 }
             );
         }
-
-    } catch (serverError: any) {
-        console.error("Server Error:", serverError);
+    } catch (error) {
+        console.error("Server Error:", error);
         return NextResponse.json(
             { error: "Unexpected server error occurred." },
             { status: 500 }
