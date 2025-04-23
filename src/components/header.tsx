@@ -6,13 +6,14 @@ import { Menu, X } from "lucide-react"
 import { motion } from "framer-motion"
 import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const { isSignedIn } = useAuth()
     const router = useRouter()
 
-    const navLinks = ["Features", "How It Works", "Community", "Testimonials", "Join Now"]
+    const navLinks = ["Features", "How It Works", "Community", "Testimonials", "About Devs"]
 
     const handleSignIn = () => {
         if (isSignedIn) {
@@ -39,15 +40,19 @@ export default function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
                         {navLinks.map((link, index) => (
-                            <a
+                            <Link
                                 key={index}
-                                href="#"
+                                href={link === "Features" ? "/#features" :
+                                     link === "How It Works" ? "/#how-it-works" :
+                                     link === "Community" ? "/#community" :
+                                     link === "Testimonials" ? "/#testimonials" :
+                                     link === "About Devs" ? "/about-developers" : "/#"}
                                 className={`text-gray-600 hover:text-[#38BDF8] transition-colors ${
-                                    link === "Join Now" ? "text-[#EC4899] font-medium" : ""
+                                    link === "About Devs" ? "text-[#EC4899] font-medium" : ""
                                 }`}
                             >
                                 {link}
-                            </a>
+                            </Link>
                         ))}
                     </nav>
 
@@ -105,16 +110,20 @@ export default function Header() {
                     <div className="container mx-auto px-4 py-4">
                         <nav className="flex flex-col space-y-4">
                             {navLinks.map((link, index) => (
-                                <a
+                                <Link
                                     key={index}
-                                    href="#"
+                                    href={link === "Features" ? "/#features" :
+                                         link === "How It Works" ? "/#how-it-works" :
+                                         link === "Community" ? "/#community" :
+                                         link === "Testimonials" ? "/#testimonials" :
+                                         link === "About Devs" ? "/about-developers" : "/#"}
                                     className={`text-gray-600 hover:text-[#38BDF8] transition-colors py-2 ${
-                                        link === "Join Now" ? "text-[#EC4899] font-medium" : ""
+                                        link === "About Devs" ? "text-[#EC4899] font-medium" : ""
                                     }`}
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     {link}
-                                </a>
+                                </Link>
                             ))}
                         </nav>
                         {/* Mobile Menu Auth Buttons */}
