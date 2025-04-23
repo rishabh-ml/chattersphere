@@ -4,12 +4,23 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { motion } from "framer-motion"
-import {SignInButton, SignUpButton} from "@clerk/nextjs";
+import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const { isSignedIn } = useAuth()
+    const router = useRouter()
 
     const navLinks = ["Features", "How It Works", "Community", "Testimonials", "Join Now"]
+
+    const handleSignIn = () => {
+        if (isSignedIn) {
+            // If user is already signed in, redirect to home page
+            router.push('/home')
+            return
+        }
+    }
 
     return (
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
@@ -18,10 +29,10 @@ export default function Header() {
                     {/* Logo */}
                     <div className="flex items-center">
                         <a href="#" className="flex items-center">
-              <span className="text-2xl font-bold text-[#111827]">
-                <span className="text-[#38BDF8]">Chatter</span>
-                <span className="text-[#EC4899]">Sphere</span>
-              </span>
+                            <span className="text-2xl font-bold text-[#111827]">
+                                <span className="text-[#38BDF8]">Chatter</span>
+                                <span className="text-[#EC4899]">Sphere</span>
+                            </span>
                         </a>
                     </div>
 
@@ -42,14 +53,35 @@ export default function Header() {
 
                     {/* Desktop Auth Buttons */}
                     <div className="hidden md:flex items-center space-x-4">
-                        <SignInButton>
-                            <Button variant="outline" className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10">
-                                Log In
+                        {isSignedIn ? (
+                            <Button
+                                variant="outline"
+                                className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10"
+                                onClick={() => router.push('/home')}
+                            >
+                                Go to Home
                             </Button>
-                        </SignInButton>
-                        <SignUpButton>
-                            <Button className="bg-[#EC4899] hover:bg-[#EC4899]/90 text-white">Sign Up</Button>
-                        </SignUpButton>
+                        ) : (
+                            <SignInButton mode="modal">
+                                <Button
+                                    variant="outline"
+                                    className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10"
+                                    onClick={handleSignIn}
+                                >
+                                    Log In
+                                </Button>
+                            </SignInButton>
+                        )}
+                        {!isSignedIn && (
+                            <SignUpButton mode="modal">
+                                <Button
+                                    className="bg-[#EC4899] hover:bg-[#EC4899]/90 text-white"
+                                    onClick={() => router.push('/home')}
+                                >
+                                    Sign Up
+                                </Button>
+                            </SignUpButton>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -87,14 +119,35 @@ export default function Header() {
                         </nav>
                         {/* Mobile Menu Auth Buttons */}
                         <div className="flex flex-col space-y-3 mt-6">
-                            <SignInButton>
-                                <Button variant="outline" className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10 w-full">
-                                    Log In
+                            {isSignedIn ? (
+                                <Button
+                                    variant="outline"
+                                    className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10 w-full"
+                                    onClick={() => router.push('/home')}
+                                >
+                                    Go to Home
                                 </Button>
-                            </SignInButton>
-                            <SignUpButton>
-                                <Button className="bg-[#EC4899] hover:bg-[#EC4899]/90 text-white w-full">Sign Up</Button>
-                            </SignUpButton>
+                            ) : (
+                                <>
+                                    <SignInButton mode="modal">
+                                        <Button
+                                            variant="outline"
+                                            className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10 w-full"
+                                            onClick={handleSignIn}
+                                        >
+                                            Log In
+                                        </Button>
+                                    </SignInButton>
+                                    <SignUpButton mode="modal">
+                                        <Button
+                                            className="bg-[#EC4899] hover:bg-[#EC4899]/90 text-white w-full"
+                                            onClick={() => router.push('/home')}
+                                        >
+                                            Sign Up
+                                        </Button>
+                                    </SignUpButton>
+                                </>
+                            )}
                         </div>
                     </div>
                 </motion.div>
