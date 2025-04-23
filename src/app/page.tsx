@@ -11,6 +11,7 @@ import TestimonialCard from "../components/testimonial-card"
 import {SignUpButton, useAuth} from "@clerk/nextjs";
 import Image from "next/image";
 import NewsletterSection from "@/components/Newsletter";
+import Link from "next/link";
 
 export default function Home() {
     useAuth()
@@ -247,25 +248,56 @@ export default function Home() {
                         <div>
                             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
                             <ul className="space-y-2">
-                                {["Features", "How It Works", "Community", "Testimonials"].map((link) => (
-                                    <li key={link}>
-                                        <a href="#" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
-                                            {link}
-                                        </a>
-                                    </li>
-                                ))}
+                                <li>
+                                    <Link href="/#features" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        Features
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/#how-it-works" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        How It Works
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/#community" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        Community
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/#testimonials" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        Testimonials
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/about-developers" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        About Devs
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
                         <div>
                             <h4 className="text-lg font-semibold mb-4">Legal</h4>
                             <ul className="space-y-2">
-                                {["Privacy Policy", "Terms of Service", "Cookie Policy", "Contact Us"].map((link) => (
-                                    <li key={link}>
-                                        <a href="#" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
-                                            {link}
-                                        </a>
-                                    </li>
-                                ))}
+                                <li>
+                                    <Link href="/privacy-policy" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        Privacy Policy
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/terms-of-service" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        Terms of Service
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/cookie-policy" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        Cookie Policy
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/contact-us" className="text-gray-400 hover:text-[#38BDF8] transition-colors">
+                                        Contact Us
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
                         <div>

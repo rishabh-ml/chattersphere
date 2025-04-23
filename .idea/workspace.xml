@@ -7,37 +7,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor database connection handling and improve error management in API routes">
-      <change afterPath="$PROJECT_DIR$/.bin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/admin/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/explore/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/home/Feed.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/layout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/notifications/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/popular/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/saved/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/posts/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/post-card.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/right-sidebar.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/sidebar.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/topbar.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/badge.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/dropdown-menu.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/sidebar.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/skeleton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/tabs.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/under-development.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/index.ts" afterDir="false" />
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Add skeleton component and under-development pages; implement sidebar and dropdown menu">
+      <change afterPath="$PROJECT_DIR$/public/avatars/ananya.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/avatars/rishabh.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/about-developers/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/contact-us/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/cookie-policy/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/privacy-policy/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/terms-of-service/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/home/Feed.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/home/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/posts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/EmptyFeed.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/FeedSkeleton.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/PostCard.tsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/utils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/middleware.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/middleware.ts" afterDir="false" />
     </list>
     <list id="c5eea045-d135-4827-b36b-ae86da822b84" name="No push" comment="">
       <change afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
@@ -113,7 +97,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "frontend",
-    "last_opened_file_path": "C:/Users/datam/Desktop/chattersphere",
+    "last_opened_file_path": "C:/Users/datam/Desktop/chattersphere/public/avatars",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.standard": "true",
     "node.js.detected.package.tslint": "true",
@@ -131,6 +115,9 @@
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\datam\Desktop\chattersphere\public\avatars" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\datam\Desktop\chattersphere\src\app\(main)" />
       <recent name="C:\Users\datam\Desktop\chattersphere\src" />
@@ -187,7 +174,7 @@
       <workItem from="1745223495608" duration="441000" />
       <workItem from="1745281223704" duration="7574000" />
       <workItem from="1745345473671" duration="5507000" />
-      <workItem from="1745405054005" duration="4098000" />
+      <workItem from="1745405054005" duration="15251000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial project structure with components, theming, and layout">
       <option name="closed" value="true" />
@@ -253,7 +240,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745194422326</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Add skeleton component and under-development pages; implement sidebar and dropdown menu">
+      <option name="closed" value="true" />
+      <created>1745411493657</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1745411493657</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -261,6 +256,17 @@
   </component>
   <component name="UnknownFeatures">
     <option featureType="com.intellij.fileTypeFactory" implementationName="*.bin" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Add initial project structure with components, theming, and layout" />
@@ -271,6 +277,7 @@
     <MESSAGE value="Refactor layout for improved structure and remove unused theme script" />
     <MESSAGE value="Add database connection and feed components for improved data handling and user experience" />
     <MESSAGE value="Refactor database connection handling and improve error management in API routes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor database connection handling and improve error management in API routes" />
+    <MESSAGE value="Add skeleton component and under-development pages; implement sidebar and dropdown menu" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add skeleton component and under-development pages; implement sidebar and dropdown menu" />
   </component>
 </project>
