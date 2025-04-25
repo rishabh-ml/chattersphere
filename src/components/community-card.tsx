@@ -1,46 +1,109 @@
-"use client"
+"use client";
 
-import * as LucideIcons from "lucide-react"
-import type { LucideIcon } from "lucide-react"
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
+import { Plus, Users, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
+import { Community } from "@/context/CommunityContext";
+import { toast } from "sonner";
 
 interface CommunityCardProps {
-    icon: string
-    name: string
-    members: string
-    description: string
-    color: string
+  community: Community;
+  onJoinLeave?: (communityId: string, isMember: boolean) => Promise<void>;
+  onSelect?: (community: Community) => void;
 }
 
-export default function CommunityCard({ icon, name, members, description, color }: CommunityCardProps) {
-    // Dynamically get the icon from Lucide
-    const IconComponent = LucideIcons[icon as keyof typeof LucideIcons] as LucideIcon
+export default function CommunityCard({
+  community,
+  onJoinLeave,
+  onSelect
+}: CommunityCardProps) {
+  const handleJoinLeave = async () => {
+    if (!onJoinLeave) return;
 
-    return (
-        <motion.div
-            className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow"
-            whileHover={{ y: -5 }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-        >
-            <div className="flex items-center mb-4">
-                <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center mr-4"
-                    style={{ backgroundColor: `${color}20` }}
-                >
-                    {IconComponent && <IconComponent className="h-6 w-6" style={{ color }} />}
-                </div>
-                <div>
-                    <h3 className="text-xl font-semibold text-[#111827]">{name}</h3>
-                    <p className="text-gray-500 text-sm">{members} members</p>
-                </div>
+    const isMember = community.isMember || false;
+
+    try {
+      await onJoinLeave(community.id, isMember);
+      toast.success(isMember
+        ? `Left ${community.name} community`
+        : `Joined ${community.name} community`
+      );
+    } catch (error) {
+      console.error("Error joining/leaving community:", error);
+      toast.error("Failed to update membership status");
+    }
+  };
+
+  return (
+    <motion.div
+      className="bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -2 }}
+    >
+      <div className="p-4">
+        <div className="flex items-center gap-3 mb-3">
+          {community.image ? (
+            <div className="relative h-12 w-12 rounded-full overflow-hidden">
+              <Image
+                src={community.image}
+                alt={community.name}
+                fill
+                className="object-cover"
+              />
             </div>
-            <p className="text-gray-600 mb-4">{description}</p>
-            <button className="text-sm font-medium" style={{ color }}>
-                Join Community →
-            </button>
-        </motion.div>
-    )
+          ) : (
+            <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#00AEEF] to-[#EC4899] flex items-center justify-center text-white font-bold">
+              {community.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <h3 className="font-semibold text-gray-900">{community.name}</h3>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center">
+                <Users className="h-3 w-3 mr-1" />
+                <span>{community.memberCount}</span>
+              </div>
+              <span>•</span>
+              <div className="flex items-center">
+                <MessageSquare className="h-3 w-3 mr-1" />
+                <span>{community.postCount}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{community.description}</p>
+
+        <div className="flex justify-between items-center">
+          <Link
+            href={`/community/${community.id}`}
+            className="text-sm text-[#00AEEF] hover:underline"
+            onClick={() => onSelect && onSelect(community)}
+          >
+            View Community
+          </Link>
+
+          {onJoinLeave && (!community.isCreator || community.isCreator === undefined) && (
+            <Button
+              variant={community.isMember ? "outline" : "default"}
+              size="sm"
+              onClick={handleJoinLeave}
+              className={community.isMember ? "" : "bg-[#00AEEF] hover:bg-[#00AEEF]/90"}
+            >
+              {community.isMember ? "Leave" : (
+                <>
+                  <Plus className="h-4 w-4 mr-1" />
+                  Join
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
 }

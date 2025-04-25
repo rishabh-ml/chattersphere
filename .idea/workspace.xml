@@ -7,10 +7,55 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor database connection handling and improve error management in API routes">
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <change afterPath="$PROJECT_DIR$/.prettierignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.prettierrc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/communities/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/posts/[postId]/vote/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/posts/popular/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/community-list.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/create-community-form.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/create-post-form.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/landing-community-card.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/popular-post-feed.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/post-editor.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/post-feed.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/providers/toast-provider.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/skeletons/comment-skeleton.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/skeletons/community-skeleton.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/skeletons/post-skeleton.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/skeletons/profile-skeleton.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ui/select.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ui/textarea.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/context/CommunityContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/context/PopularPostContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/context/PostContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/models/Comment.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/models/Community.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/models/Post.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/models/User.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/types.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tailwind.config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/newsletter/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/newsletter/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/home/Feed.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/home/Feed.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(main)/explore/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/explore/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(main)/home/Feed.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/home/Feed.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(main)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(main)/popular/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/popular/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/about-developers/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/about-developers/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/posts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/community-card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/community-card.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/post-card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/post-card.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/lib/dbConnect.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/dbConnect.ts" afterDir="false" />
     </list>
     <list id="c5eea045-d135-4827-b36b-ae86da822b84" name="No push" comment="">
@@ -22,6 +67,11 @@
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseLocalColorSettings">
+    <colors>
+      <entry key="e98f1c90-4a09-4b52-94ce-826c44f109a6" value="Blue" />
+    </colors>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -62,7 +112,7 @@
   }
 }</component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
@@ -78,34 +128,75 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;JavaScript Debug.Next.js: debug client-side.executor&quot;: &quot;Debug&quot;,
+    &quot;Jest.All Tests.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;frontend&quot;,
+    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/datam/Desktop/chattersphere/public/avatars&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs.jest.jest_package&quot;: &quot;C:/Users/datam/Desktop/chattersphere&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;npm.lint.executor&quot;: &quot;Run&quot;,
     &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;settings.javascript.linters.eslint&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\datam\\Desktop\\chattersphere\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\datam\Desktop\chattersphere\public\avatars" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\datam\Desktop\chattersphere\src\app\(main)" />
       <recent name="C:\Users\datam\Desktop\chattersphere\src" />
       <recent name="C:\Users\datam\Desktop\chattersphere\public" />
       <recent name="C:\Users\datam\Desktop\chattersphere\public\avatars" />
     </key>
   </component>
+  <component name="RunManager" selected="npm.dev">
+    <configuration name="Next.js: debug client-side" type="JavascriptDebugType" uri="http://localhost:3000/">
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="lint" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="lint" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.dev" />
+        <item itemvalue="npm.lint" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-WS-243.26053.12" />
+        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-WS-251.23774.424" />
       </set>
     </attachedChunks>
   </component>
@@ -113,12 +204,25 @@
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="" />
+      <changelist id="" name="nothing" comment="" />
       <created>1745012727869</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1745012727869</updated>
       <workItem from="1745012730147" duration="12983000" />
       <workItem from="1745062326619" duration="11237000" />
+      <workItem from="1745221723359" duration="772000" />
+      <workItem from="1745223495608" duration="441000" />
+      <workItem from="1745281223704" duration="7574000" />
+      <workItem from="1745345473671" duration="5507000" />
+      <workItem from="1745405054005" duration="26144000" />
+      <workItem from="1745476296578" duration="90000" />
+      <workItem from="1745476503177" duration="17000" />
+      <workItem from="1745476544897" duration="1638000" />
+      <workItem from="1745478713365" duration="243000" />
+      <workItem from="1745482797577" duration="3843000" />
+      <workItem from="1745487336664" duration="10988000" />
+      <workItem from="1745566959644" duration="4423000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial project structure with components, theming, and layout">
       <option name="closed" value="true" />
@@ -176,11 +280,49 @@
       <option name="project" value="LOCAL" />
       <updated>1745193501993</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Refactor database connection handling and improve error management in API routes">
+      <option name="closed" value="true" />
+      <created>1745194422326</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1745194422326</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Add skeleton component and under-development pages; implement sidebar and dropdown menu">
+      <option name="closed" value="true" />
+      <created>1745411493657</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1745411493657</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Refactor navigation links and add new pages for Privacy Policy and Contact Us&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1745449308857</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1745449308857</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.bin" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Add initial project structure with components, theming, and layout" />
@@ -191,6 +333,9 @@
     <MESSAGE value="Refactor layout for improved structure and remove unused theme script" />
     <MESSAGE value="Add database connection and feed components for improved data handling and user experience" />
     <MESSAGE value="Refactor database connection handling and improve error management in API routes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor database connection handling and improve error management in API routes" />
+    <MESSAGE value="Add skeleton component and under-development pages; implement sidebar and dropdown menu" />
+    <MESSAGE value="Refactor navigation links and add new pages for Privacy Policy and Contact Us&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <MESSAGE value="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
   </component>
 </project>

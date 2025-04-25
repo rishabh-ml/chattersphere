@@ -4,12 +4,24 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { motion } from "framer-motion"
-import {SignInButton, SignUpButton} from "@clerk/nextjs";
+import { SignInButton, SignUpButton, useAuth } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const { isSignedIn } = useAuth()
+    const router = useRouter()
 
-    const navLinks = ["Features", "How It Works", "Community", "Testimonials", "Join Now"]
+    const navLinks = ["Features", "How It Works", "Community", "Testimonials", "About Devs"]
+
+    const handleSignIn = () => {
+        if (isSignedIn) {
+            // If user is already signed in, redirect to home page
+            router.push('/home')
+            return
+        }
+    }
 
     return (
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-200">
@@ -18,38 +30,63 @@ export default function Header() {
                     {/* Logo */}
                     <div className="flex items-center">
                         <a href="#" className="flex items-center">
-              <span className="text-2xl font-bold text-[#111827]">
-                <span className="text-[#38BDF8]">Chatter</span>
-                <span className="text-[#EC4899]">Sphere</span>
-              </span>
+                            <span className="text-2xl font-bold text-[#111827]">
+                                <span className="text-[#38BDF8]">Chatter</span>
+                                <span className="text-[#EC4899]">Sphere</span>
+                            </span>
                         </a>
                     </div>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
                         {navLinks.map((link, index) => (
-                            <a
+                            <Link
                                 key={index}
-                                href="#"
+                                href={link === "Features" ? "/#features" :
+                                     link === "How It Works" ? "/#how-it-works" :
+                                     link === "Community" ? "/#community" :
+                                     link === "Testimonials" ? "/#testimonials" :
+                                     link === "About Devs" ? "/about-developers" : "/#"}
                                 className={`text-gray-600 hover:text-[#38BDF8] transition-colors ${
-                                    link === "Join Now" ? "text-[#EC4899] font-medium" : ""
+                                    link === "About Devs" ? "text-[#EC4899] font-medium" : ""
                                 }`}
                             >
                                 {link}
-                            </a>
+                            </Link>
                         ))}
                     </nav>
 
                     {/* Desktop Auth Buttons */}
                     <div className="hidden md:flex items-center space-x-4">
-                        <SignInButton>
-                            <Button variant="outline" className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10">
-                                Log In
+                        {isSignedIn ? (
+                            <Button
+                                variant="outline"
+                                className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10"
+                                onClick={() => router.push('/home')}
+                            >
+                                Go to Home
                             </Button>
-                        </SignInButton>
-                        <SignUpButton>
-                            <Button className="bg-[#EC4899] hover:bg-[#EC4899]/90 text-white">Sign Up</Button>
-                        </SignUpButton>
+                        ) : (
+                            <SignInButton mode="modal">
+                                <Button
+                                    variant="outline"
+                                    className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10"
+                                    onClick={handleSignIn}
+                                >
+                                    Log In
+                                </Button>
+                            </SignInButton>
+                        )}
+                        {!isSignedIn && (
+                            <SignUpButton mode="modal">
+                                <Button
+                                    className="bg-[#EC4899] hover:bg-[#EC4899]/90 text-white"
+                                    onClick={() => router.push('/home')}
+                                >
+                                    Sign Up
+                                </Button>
+                            </SignUpButton>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -73,28 +110,53 @@ export default function Header() {
                     <div className="container mx-auto px-4 py-4">
                         <nav className="flex flex-col space-y-4">
                             {navLinks.map((link, index) => (
-                                <a
+                                <Link
                                     key={index}
-                                    href="#"
+                                    href={link === "Features" ? "/#features" :
+                                         link === "How It Works" ? "/#how-it-works" :
+                                         link === "Community" ? "/#community" :
+                                         link === "Testimonials" ? "/#testimonials" :
+                                         link === "About Devs" ? "/about-developers" : "/#"}
                                     className={`text-gray-600 hover:text-[#38BDF8] transition-colors py-2 ${
-                                        link === "Join Now" ? "text-[#EC4899] font-medium" : ""
+                                        link === "About Devs" ? "text-[#EC4899] font-medium" : ""
                                     }`}
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     {link}
-                                </a>
+                                </Link>
                             ))}
                         </nav>
                         {/* Mobile Menu Auth Buttons */}
                         <div className="flex flex-col space-y-3 mt-6">
-                            <SignInButton>
-                                <Button variant="outline" className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10 w-full">
-                                    Log In
+                            {isSignedIn ? (
+                                <Button
+                                    variant="outline"
+                                    className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10 w-full"
+                                    onClick={() => router.push('/home')}
+                                >
+                                    Go to Home
                                 </Button>
-                            </SignInButton>
-                            <SignUpButton>
-                                <Button className="bg-[#EC4899] hover:bg-[#EC4899]/90 text-white w-full">Sign Up</Button>
-                            </SignUpButton>
+                            ) : (
+                                <>
+                                    <SignInButton mode="modal">
+                                        <Button
+                                            variant="outline"
+                                            className="border-[#38BDF8] text-[#38BDF8] hover:bg-[#38BDF8]/10 w-full"
+                                            onClick={handleSignIn}
+                                        >
+                                            Log In
+                                        </Button>
+                                    </SignInButton>
+                                    <SignUpButton mode="modal">
+                                        <Button
+                                            className="bg-[#EC4899] hover:bg-[#EC4899]/90 text-white w-full"
+                                            onClick={() => router.push('/home')}
+                                        >
+                                            Sign Up
+                                        </Button>
+                                    </SignUpButton>
+                                </>
+                            )}
                         </div>
                     </div>
                 </motion.div>
