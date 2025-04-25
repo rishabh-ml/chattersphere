@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: "ChatterSphere | Connect Through Meaningful Conversations",
   description: "ChatterSphere helps you build meaningful connections through real-time chat, thriving communities, and global interactions in a secure environment.",
   keywords: ["chat platform", "communities", "messaging", "social network"],
@@ -61,28 +62,19 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({
-                                     children,
-                                   }: Readonly<{
+  children,
+}: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-      <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
-        <html lang="en" className="scroll-smooth">
-        <head>
-          <title>ChatterSphere | Connect Through Meaningful Conversations</title>
-          <link rel="icon" type="image/png" href="/icon1.png" sizes="96x96" />
-          <link rel="icon" type="image/svg+xml" href="/icon0.svg" />
-          <link rel="shortcut icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-          <meta name="apple-mobile-web-app-title" content="ChatterSphere" />
-          <link rel="manifest" href="/manifest" />
-        </head>
+    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+      <html lang="en" className="scroll-smooth">
         <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans bg-white text-gray-900`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans bg-white text-gray-900`}
         >
-        {children}
+          {children}
         </body>
-        </html>
-      </ClerkProvider>
+      </html>
+    </ClerkProvider>
   );
 }

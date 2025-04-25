@@ -49,13 +49,16 @@ const developers = [
       "TypeScript",
       "GraphQL",
       "Socket.io",
-      "AWS Lambda"
+      "AWS Lambda",
+        "PHP",
+        "Laravel",
+        "MySQL"
     ],
     social: {
-      github:   "https://github.com/princedwivedi",
-      linkedin: "https://linkedin.com/in/prince-dwivedi",
-      twitter:  "https://twitter.com/prince_dwivedi",
-      website:  "https://princedwivedi.dev"
+      github:   "https://github.com/princedwivedi2",
+      linkedin: "https://www.linkedin.com/in/prince-dwivedi-a42b4b2a1/",
+      twitter:  "https://x.com/Princedwived2",
+      website:  "https://princedwivedi.vercel.app/"
     }
   }
 ]
@@ -174,7 +177,7 @@ export default function AboutDevelopers() {
                     </motion.div>
                 ))}
               </div>
-            
+
             <div className="bg-gradient-to-r from-[#38BDF8]/10 to-[#EC4899]/10 rounded-xl p-8 md:p-12 border border-[#38BDF8]/20">
               <div className="md:flex items-center justify-between">
                 <div className="mb-6 md:mb-0 md:mr-8">
@@ -184,7 +187,7 @@ export default function AboutDevelopers() {
                   </p>
                 </div>
                 <div className="flex-shrink-0">
-                  <Button 
+                  <Button
                     className="bg-[#38BDF8] hover:bg-[#38BDF8]/90 text-white"
                     onClick={() => router.push('/contact-us')}
                   >
@@ -193,14 +196,14 @@ export default function AboutDevelopers() {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-16">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Our Development Journey</h2>
-              
+
               <div className="relative">
                 {/* Timeline line */}
                 <div className="absolute left-0 md:left-1/2 top-0 bottom-0 w-px bg-gray-200 transform md:translate-x-[-0.5px]"></div>
-                
+
                 {/* Timeline items */}
                 {[
                   {
@@ -234,7 +237,7 @@ export default function AboutDevelopers() {
                     description: "We're constantly working to enhance ChatterSphere with new features, improvements, and optimizations based on user feedback and emerging technologies."
                   }
                 ].map((item, index) => (
-                  <motion.div 
+                  <motion.div
                     key={index}
                     className={`relative mb-12 md:mb-16 ${
                       index % 2 === 0 ? "md:pr-12 md:text-right md:ml-0 md:mr-auto" : "md:pl-12 md:ml-auto md:mr-0"
@@ -247,7 +250,7 @@ export default function AboutDevelopers() {
                     <div className={`absolute left-0 md:left-auto ${
                       index % 2 === 0 ? "md:right-[-10px]" : "md:left-[-10px]"
                     } top-0 h-5 w-5 rounded-full bg-[#38BDF8] border-4 border-white`}></div>
-                    
+
                     {/* Content */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
                       <span className="inline-block px-3 py-1 rounded-full bg-[#38BDF8]/10 text-[#38BDF8] text-xs font-medium mb-3">
@@ -263,7 +266,7 @@ export default function AboutDevelopers() {
           </motion.div>
         </div>
       </main>
-      
+
       <footer className="bg-[#0F172A] text-white py-12 mt-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

@@ -154,6 +154,14 @@
   fill: #1F2937;
 }
 
+/* Post editor styles */
+.empty-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #9CA3AF;
+  pointer-events: none;
+  position: absolute;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
