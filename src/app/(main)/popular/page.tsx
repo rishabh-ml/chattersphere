@@ -1,12 +1,36 @@
 "use client"
 
-import { UnderDevelopment } from "@/components/under-development"
+import { motion } from "framer-motion"
+import { PopularPostProvider } from "@/context/PopularPostContext"
+import { PostProvider } from "@/context/PostContext"
+import PopularPostFeed from "@/components/popular-post-feed"
+import CreatePostForm from "@/components/create-post-form"
+import { useUser } from "@clerk/nextjs"
 
 export default function PopularPage() {
+  const { isSignedIn } = useUser()
+
   return (
-    <UnderDevelopment 
-      title="Popular Content Coming Soon" 
-      description="We're working on bringing you the most popular content from across the platform. Stay tuned for trending posts, hot topics, and community favorites!"
-    />
+    <div className="space-y-6">
+      <motion.h1
+        className="text-2xl font-semibold text-gray-800 mb-6"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        Popular Posts
+      </motion.h1>
+
+      {/* Create Post Form */}
+      {isSignedIn && (
+        <PostProvider>
+          <CreatePostForm />
+        </PostProvider>
+      )}
+
+      <PopularPostProvider>
+        <PopularPostFeed />
+      </PopularPostProvider>
+    </div>
   )
 }

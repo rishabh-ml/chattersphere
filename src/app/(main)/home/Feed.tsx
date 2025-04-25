@@ -46,13 +46,14 @@ export default function Feed() {
         </div>
     );
 
+
     const renderFallbackPost = () => (
         <div className="text-center">
             <p className="text-gray-500 mb-4">No posts available. Here&#39;s a placeholder post:</p>
             <PostCard
                 post={{
-                    _id: 'dummy-id',
-                    authorName: 'Rishabh',
+                    id: 'dummy-id',
+                    author: { name: 'Rishabh' },
                     content:
                         'Hey Guys, we are in the middle of the Development of the ChatterSphere. First of all, I wanna thank you all for creating an account on the platform. Stay tuned for more updates!',
                     createdAt: new Date().toISOString(),
@@ -78,7 +79,7 @@ export default function Feed() {
                 <>
                     {posts.map((post, index) => (
                         <motion.div
-                            key={post._id}
+                            key={post.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.1, duration: 0.5 }}

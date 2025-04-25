@@ -9,26 +9,36 @@ import { Plus, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { ToastProvider } from '@/components/providers/toast-provider';
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    // Handle scroll events for "back to top" button
+    // Handle scroll events for "back to top" button with SSR guard
     useEffect(() => {
+        // SSR guard - only run in browser environment
+        if (typeof window === 'undefined') return;
+
         const handleScroll = () => {
             setShowScrollTop(window.scrollY > 500);
         };
+
+        // Initial check
+        handleScroll();
 
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     const scrollToTop = () => {
+        // SSR guard
+        if (typeof window === 'undefined') return;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
         <ClerkProvider>
+            <ToastProvider />
             <div className="relative min-h-screen bg-[#f8fafc]">
                 {/* Sidebar */}
                 <Sidebar />
