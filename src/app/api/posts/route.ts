@@ -1,300 +1,244 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
-import dbConnect from '@/lib/dbConnect';
-import User from '@/models/User';
-import Post from '@/models/Post';
-import Community from '@/models/Community';
+// src/app/api/posts/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
+import Post from "@/models/Post";
+import Community from "@/models/Community";
+import type { Types } from "mongoose";
 
-// Ensure database connection is established
 let isConnected = false;
 
-// Helper function to sanitize HTML content
-function sanitizeHtml(html: string): string {
-  if (!html) return '';
-
-  // More comprehensive sanitization
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-    .replace(/on\w+="[^"]*"/g, '') // Remove event handlers
-    .replace(/javascript:[^\s"']+/g, '') // Remove javascript: URLs
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframes
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ''); // Remove style tags
-}
+// Type for a “lean” post document after .lean()
+type RawPost = {
+  _id: Types.ObjectId;
+  author: Types.ObjectId | { _id: Types.ObjectId; username: string; name: string; image?: string };
+  community?: Types.ObjectId | { _id: Types.ObjectId; name: string; image?: string };
+  content: string;
+  upvotes: Types.ObjectId[];
+  downvotes: Types.ObjectId[];
+  comments: Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = auth();
-
+    const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Connect to the database
     if (!isConnected) {
       await dbConnect();
       isConnected = true;
-      console.log('[POST] Connected to database');
-    } else {
-      console.log('[POST] Using existing database connection');
     }
 
-    // Parse request body
-    const body = await req.json();
-    const { content, communityId } = body;
-    console.log('Received post data:', { content, communityId });
-
-    // Validate content
-    if (!content || content.trim() === '') {
-      console.log('[POST] Error: Empty content');
-      return NextResponse.json(
-        { error: 'Post content is required' },
-        { status: 400 }
-      );
-    }
-
-    // Check content length
-    const MAX_CONTENT_LENGTH = 50000; // 50KB limit
-    if (content.length > MAX_CONTENT_LENGTH) {
-      console.log(`[POST] Error: Content too long (${content.length} chars)`);
-      return NextResponse.json(
-        { error: 'Post content is too long. Please keep it under 50,000 characters.' },
-        { status: 400 }
-      );
-    }
-
-    // Sanitize HTML content
-    const sanitizedContent = sanitizeHtml(content);
-
-    // Find the current user
-    const currentUser = await User.findOne({ clerkId: userId });
-    console.log('Found user:', currentUser ? currentUser._id : 'Not found');
-
-    if (!currentUser) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    // Create post data
-    const postData = {
-      author: currentUser._id,
-      content: sanitizedContent,
-      upvotes: [],
-      downvotes: [],
-      comments: []
+    const { content, communityId } = (await req.json()) as {
+      content: string;
+      communityId?: string;
     };
 
-    // If community is specified, validate and add to post
-    if (communityId) {
-      const community = await Community.findById(communityId);
-      console.log('Found community:', community ? community._id : 'Not found');
-
-      if (!community) {
-        return NextResponse.json(
-          { error: 'Community not found' },
-          { status: 404 }
-        );
-      }
-
-      // Check if user is a member of the community
-      if (!community.members.includes(currentUser._id)) {
-        return NextResponse.json(
-          { error: 'You must be a member of the community to post' },
-          { status: 403 }
-        );
-      }
-
-      postData.community = community._id;
-    }
-
-    console.log('Creating post with data:', postData);
-    // Create the post
-    const newPost = await Post.create(postData);
-    console.log('Created post:', newPost._id);
-
-    // If post is in a community, update the community's posts array
-    if (communityId) {
-      await Community.findByIdAndUpdate(
-        communityId,
-        { $push: { posts: newPost._id } }
+    if (!content.trim()) {
+      return NextResponse.json(
+          { error: "Post content is required" },
+          { status: 400 }
       );
-      console.log('Updated community with new post');
     }
 
-    // Populate author and community information
-    await newPost.populate('author', 'username name image');
-    if (communityId) {
-      await newPost.populate('community', 'name image');
+    const MAX = 50000;
+    if (content.length > MAX) {
+      return NextResponse.json(
+          { error: `Post too long; max ${MAX} chars` },
+          { status: 400 }
+      );
     }
-    console.log('Populated post data');
 
-    // Log the final post object
-    console.log('[POST] Created post successfully:', {
-      id: newPost._id.toString(),
-      author: newPost.author._id,
-      content: newPost.content.substring(0, 50) + (newPost.content.length > 50 ? '...' : ''),
-      community: newPost.community ? newPost.community._id : 'none',
+    const sanitized = content
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/on\w+="[^"]*"/g, "")
+        .replace(/javascript:[^\s"']+/g, "");
+
+    const user = await User.findOne({ clerkId: userId });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Build the post
+    const newPost = await Post.create({
+      author: user._id,
+      content: sanitized,
+      upvotes: [],
+      downvotes: [],
+      comments: [],
+      community: communityId ?? undefined,
     });
 
-    return NextResponse.json({
-      post: {
-        id: newPost._id.toString(),
-        author: newPost.author,
-        content: newPost.content,
-        community: newPost.community,
-        upvoteCount: 0,
-        downvoteCount: 0,
-        voteCount: 0,
-        commentCount: 0,
-        isUpvoted: false,
-        isDownvoted: false,
-        createdAt: newPost.createdAt.toISOString(),
-        updatedAt: newPost.updatedAt.toISOString(),
-      }
-    }, { status: 201 });
-  } catch (error) {
-    console.error('[POST] Error creating post:', error);
-
-    // Handle specific error types
-    if (error instanceof Error) {
-      // MongoDB duplicate key error
-      if (error.message.includes('duplicate key') || error.message.includes('E11000')) {
+    // If communityId was provided, verify membership and update
+    if (communityId) {
+      const com = await Community.findById(communityId);
+      if (!com) {
         return NextResponse.json(
-          { error: 'A similar post already exists' },
-          { status: 409 }
+            { error: "Community not found" },
+            { status: 404 }
         );
       }
-
-      // Validation error
-      if (error.message.includes('validation failed')) {
+      if (!com.members.some((m: Types.ObjectId) => m.equals(user._id))) {
         return NextResponse.json(
-          { error: 'Invalid post data', details: error.message },
-          { status: 400 }
+            { error: "Must join community first" },
+            { status: 403 }
         );
       }
+      await Community.findByIdAndUpdate(communityId, {
+        $push: { posts: newPost._id },
+      });
     }
 
-    // Generic error
+    await newPost.populate("author", "username name image");
+    if (communityId) {
+      await newPost.populate("community", "name image");
+    }
+
     return NextResponse.json(
-      {
-        error: 'Failed to create post',
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
+        {
+          post: {
+            id: newPost._id.toString(),
+            author: newPost.author,
+            content: newPost.content,
+            community: newPost.community,
+            upvoteCount: 0,
+            downvoteCount: 0,
+            voteCount: 0,
+            commentCount: 0,
+            isUpvoted: false,
+            isDownvoted: false,
+            createdAt: newPost.createdAt.toISOString(),
+            updatedAt: newPost.updatedAt.toISOString(),
+          },
+        },
+        { status: 201 }
+    );
+  } catch (err) {
+    console.error("[POST] Error creating post:", err);
+    return NextResponse.json(
+        { error: "Failed to create post" },
+        { status: 500 }
     );
   }
 }
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
-    // Connect to the database
     if (!isConnected) {
       await dbConnect();
       isConnected = true;
-      console.log('[GET] Connected to database');
-    } else {
-      console.log('[GET] Using existing database connection');
     }
 
-    // Get URL parameters
-    const searchParams = req.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const communityId = searchParams.get('communityId');
+    const qp = req.nextUrl.searchParams;
+    const page = parseInt(qp.get("page") ?? "1", 10);
+    const limit = parseInt(qp.get("limit") ?? "10", 10);
+    const communityId = qp.get("communityId") || undefined;
     const skip = (page - 1) * limit;
 
-    console.log('[GET] Query parameters:', { page, limit, communityId });
-
-    // Build query
-    const query: Record<string, unknown> = {};
-
-    // If communityId is provided, filter by community
+    const filter: Record<string, unknown> = {};
     if (communityId) {
-      query.community = communityId;
+      filter.community = communityId;
     }
 
-    // Get posts
-    const posts = await Post.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('author', 'username name image')
-      .populate('community', 'name image')
-      .lean();
+    // Fetch & cast to RawPost[]
+    const raw = (await Post.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("author", "username name image")
+        .populate("community", "name image")
+        .lean()) as unknown as RawPost[];
 
-    // Get total count for pagination
-    const totalPosts = await Post.countDocuments(query);
+    const total = await Post.countDocuments(filter);
 
-    // Calculate if there are more posts to load
-    const hasMore = totalPosts > skip + posts.length;
+    // Identify current user for vote flags
+    let me: Types.ObjectId | null = null;
+    if (userId) {
+      const u = await User.findOne({ clerkId: userId });
+      if (u) me = u._id as Types.ObjectId;
+    }
 
-    // Transform posts to include virtual fields and user-specific data
-    const transformedPosts = await Promise.all(posts.map(async (post) => {
-      const { _id, ...rest } = post;
+    // Transform each RawPost
+    const posts = raw.map((p) => {
+      const {
+        _id,
+        author,
+        community,
+        upvotes,
+        downvotes,
+        comments,
+        content,
+        createdAt,
+        updatedAt,
+      } = p;
 
-      // Check if the current user has voted on this post
-      let isUpvoted = false;
-      let isDownvoted = false;
+      // Narrow author shape
+      const authorInfo =
+          typeof author === "object" && "username" in author
+              ? {
+                id: author._id.toString(),
+                username: author.username,
+                name: author.name,
+                image: author.image,
+              }
+              : { id: (author as Types.ObjectId).toString(), username: "", name: "" };
 
-      if (userId) {
-        const currentUser = await User.findOne({ clerkId: userId });
-        if (currentUser) {
-          isUpvoted = post.upvotes.some(id => id.toString() === currentUser._id.toString());
-          isDownvoted = post.downvotes.some(id => id.toString() === currentUser._id.toString());
-        }
-      }
+      // Narrow community shape
+      const communityInfo =
+          community && typeof community === "object" && "name" in community
+              ? {
+                id: community._id.toString(),
+                name: community.name,
+                image: community.image,
+              }
+              : community
+                  ? { id: (community as Types.ObjectId).toString(), name: "", image: undefined }
+                  : undefined;
+
+      // Vote flags
+      const isUpvoted = me ? upvotes.some((i) => i.equals(me)) : false;
+      const isDownvoted = me ? downvotes.some((i) => i.equals(me)) : false;
 
       return {
         id: _id.toString(),
-        ...rest,
-        upvoteCount: post.upvotes.length,
-        downvoteCount: post.downvotes.length,
-        voteCount: post.upvotes.length - post.downvotes.length,
-        commentCount: post.comments.length,
+        author: authorInfo,
+        content,
+        community: communityInfo,
+        upvoteCount: upvotes.length,
+        downvoteCount: downvotes.length,
+        voteCount: upvotes.length - downvotes.length,
+        commentCount: comments.length,
         isUpvoted,
         isDownvoted,
-        createdAt: post.createdAt.toISOString(),
-        updatedAt: post.updatedAt.toISOString(),
+        createdAt: createdAt.toISOString(),
+        updatedAt: updatedAt.toISOString(),
       };
-    }));
-
-    return NextResponse.json({
-      posts: transformedPosts,
-      pagination: {
-        page,
-        limit,
-        totalPosts,
-        hasMore
-      }
     });
 
-    console.log(`[GET] Successfully fetched ${transformedPosts.length} posts`);
-
-  } catch (error) {
-    console.error('[GET] Error fetching posts:', error);
-
-    // Handle specific error types
-    if (error instanceof Error) {
-      if (error.message.includes('Cast to ObjectId failed')) {
-        return NextResponse.json(
-          { error: 'Invalid ID format' },
-          { status: 400 }
-        );
-      }
-    }
-
     return NextResponse.json(
-      {
-        error: 'Failed to fetch posts',
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
+        {
+          posts,
+          pagination: {
+            page,
+            limit,
+            totalPosts: total,
+            hasMore: total > skip + posts.length,
+          },
+        },
+        { status: 200 }
+    );
+  } catch (err) {
+    console.error("[GET] Error fetching posts:", err);
+    return NextResponse.json(
+        { error: "Failed to fetch posts" },
+        { status: 500 }
     );
   }
 }

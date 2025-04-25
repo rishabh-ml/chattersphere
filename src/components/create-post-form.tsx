@@ -1,6 +1,7 @@
+// src/components/create-post-form.tsx
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Community } from "@/context/CommunityContext";
 import {
@@ -16,7 +17,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Send, X, Loader2 } from "lucide-react";
 import PostEditor from "./post-editor";
 import { toast } from "sonner";
-import DOMPurify from "isomorphic-dompurify";
 
 interface CreatePostFormProps {
   communities?: Community[];
@@ -24,11 +24,10 @@ interface CreatePostFormProps {
 }
 
 export default function CreatePostForm({
-  communities = [],
-  onSuccess,
-}: CreatePostFormProps) {
+                                         communities = [],
+                                         onSuccess,
+                                       }: CreatePostFormProps) {
   const [content, setContent] = useState("");
-  const [htmlContent, setHtmlContent] = useState("");
   const [communityId, setCommunityId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -36,9 +35,9 @@ export default function CreatePostForm({
   const { createPost } = usePosts();
   const { isSignedIn } = useAuth();
 
-  // Collapse the editor if clicking outside and content is empty
+  // Collapse editor when clicking outside if there's no content
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
+    const onClick = (e: MouseEvent) => {
       if (
           formRef.current &&
           !formRef.current.contains(e.target as Node) &&
@@ -48,64 +47,56 @@ export default function CreatePostForm({
         setIsExpanded(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, [isExpanded, content]);
 
-  // Reset content and community when collapsed
+  // Reset state when collapsed
   useEffect(() => {
     if (!isExpanded) {
       setContent("");
-      setHtmlContent("");
       setCommunityId("");
     }
   }, [isExpanded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!isSignedIn) {
       toast.error("Please sign in to create a post");
       return;
     }
 
-    // Use the plain text content for validation
-    const trimmedText = content.trim();
-    if (!trimmedText) {
+    const trimmed = content.trim();
+    if (!trimmed) {
       toast.error("Post content cannot be empty");
       return;
     }
 
-    const MAX_LENGTH = 50000;
-    if (trimmedText.length > MAX_LENGTH) {
+    const MAX = 50000;
+    if (trimmed.length > MAX) {
       toast.error(
-        `Post is too large (${trimmedText.length.toLocaleString()} chars). Keep under ${MAX_LENGTH.toLocaleString()}.`
+          `Post too large (${trimmed.length.toLocaleString()} chars). Keep under ${MAX.toLocaleString()}.`
       );
       return;
     }
 
-    // Sanitize HTML content before submission
-    const sanitizedHtml = DOMPurify.sanitize(htmlContent);
-
-    // Check for potentially unsafe content
-    if (sanitizedHtml.includes("<script") || sanitizedHtml.includes("javascript:")) {
+    if (trimmed.includes("<script") || trimmed.includes("javascript:")) {
       toast.error("Post contains potentially unsafe content");
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const post = await createPost(sanitizedHtml, communityId || undefined);
-      if (post) {
-        toast.success("Post created successfully!");
-        setIsExpanded(false);
-        onSuccess?.();
-      } else {
-        toast.error("Failed to create post. Please try again.");
+      const post = await createPost(trimmed, communityId || undefined);
+      if (!post) {
+        toast.error("Unable to create post. Please try again.");
+        return;
       }
-    } catch (err) {
-      console.error("Error creating post:", err);
-      toast.error((err as Error).message || "Failed to create post");
+      toast.success("Post created successfully!");
+      setIsExpanded(false);
+      onSuccess?.();
+    } catch {
+      toast.error("An unexpected error occurred.");
     } finally {
       setIsSubmitting(false);
     }
@@ -135,14 +126,8 @@ export default function CreatePostForm({
           >
             {isExpanded ? (
                 <PostEditor
-                    value={htmlContent}
-                    onChange={(html) => {
-                      setHtmlContent(html);
-                      // Extract plain text from HTML for validation
-                      const tempDiv = document.createElement('div');
-                      tempDiv.innerHTML = html;
-                      setContent(tempDiv.textContent || tempDiv.innerText || '');
-                    }}
+                    value={content}
+                    onChangeAction={setContent}
                     placeholder="What's on your mind?"
                     minHeight="120px"
                 />
@@ -178,12 +163,8 @@ export default function CreatePostForm({
                     transition={{ duration: 0.2 }}
                 >
                   {communities.length > 0 && (
-                      <Select
-                          value={communityId}
-                          onValueChange={setCommunityId}
-                          className="w-full sm:w-48"
-                      >
-                        <SelectTrigger>
+                      <Select value={communityId} onValueChange={setCommunityId}>
+                        <SelectTrigger className="w-full sm:w-48">
                           <SelectValue placeholder="Select community" />
                         </SelectTrigger>
                         <SelectContent>
