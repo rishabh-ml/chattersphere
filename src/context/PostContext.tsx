@@ -1,4 +1,4 @@
-// app/context/PostContext.tsx
+// src/context/PostContext.tsx
 "use client";
 
 import React, {
@@ -6,8 +6,8 @@ import React, {
     useContext,
     useState,
     useCallback,
-    ReactNode,
     useEffect,
+    ReactNode,
 } from "react";
 
 export interface Post {
@@ -19,11 +19,7 @@ export interface Post {
         image?: string;
     };
     content: string;
-    community?: {
-        _id: string;
-        name: string;
-        image?: string;
-    };
+    community?: { _id: string; name: string; image?: string };
     upvoteCount: number;
     downvoteCount: number;
     voteCount: number;
@@ -40,13 +36,18 @@ interface PostContextType {
     error: string | null;
     hasMore: boolean;
     fetchMorePosts: () => Promise<void>;
-    createPost: (content: string, communityId?: string) => Promise<Post | null>;
+    createPost: (
+        content: string,
+        communityId?: string
+    ) => Promise<Post | null>;
     votePost: (postId: string, voteType: "upvote" | "downvote") => Promise<void>;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
 
-export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const PostProvider: React.FC<{ children: ReactNode }> = ({
+                                                                    children,
+                                                                }) => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -58,16 +59,18 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (loading) return;
             setLoading(true);
             try {
-                const pageToFetch = reset ? 1 : page;
+                const nextPage = reset ? 1 : page;
                 const res = await fetch(
-                    `/api/posts/feed?page=${pageToFetch}&limit=10`
+                    `/api/posts/feed?page=${nextPage}&limit=10`
                 );
-                if (!res.ok) throw new Error(`Server returned ${res.status}`);
-                const { posts: newPosts, pagination } = await res.json();
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    throw new Error(data.error || `Fetch failed (${res.status})`);
+                }
                 setPosts((prev) =>
-                    reset ? newPosts : [...prev, ...newPosts]
+                    reset ? data.posts : [...prev, ...data.posts]
                 );
-                setHasMore(pagination.hasMore);
+                setHasMore(data.pagination.hasMore);
                 setPage(reset ? 2 : page + 1);
                 setError(null);
             } catch (err) {
@@ -82,7 +85,7 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const fetchMorePosts = useCallback(() => fetchPosts(false), [fetchPosts]);
 
     const createPost = useCallback(
-        async (content: string, communityId?: string) => {
+        async (content: string, communityId?: string): Promise<Post | null> => {
             setLoading(true);
             try {
                 const res = await fetch("/api/posts", {
@@ -90,12 +93,15 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ content, communityId }),
                 });
-                if (!res.ok) throw new Error(`Server returned ${res.status}`);
-                const { post } = await res.json();
-                setPosts((prev) => [post, ...prev]);
-                return post;
-            } catch (err) {
-                console.error(err);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    // don't log or throw—just return null
+                    return null;
+                }
+                setPosts((prev) => [data.post, ...prev]);
+                return data.post;
+            } catch {
+                // on exception, return null
                 return null;
             } finally {
                 setLoading(false);
@@ -104,35 +110,52 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         []
     );
 
-    const votePost = useCallback(async (postId: string, voteType: "upvote" | "downvote") => {
-        try {
-            const res = await fetch(`/api/posts/${postId}/vote`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ voteType }),
-            });
-            if (!res.ok) throw new Error(`Server returned ${res.status}`);
-            const { upvoteCount, downvoteCount, voteCount, isUpvoted, isDownvoted } = await res.json();
-            setPosts((prev) =>
-                prev.map((p) =>
-                    p.id === postId
-                        ? { ...p, upvoteCount, downvoteCount, voteCount, isUpvoted, isDownvoted }
-                        : p
-                )
-            );
-        } catch (err) {
-            console.error(err);
-        }
-    }, []);
+    const votePost = useCallback(
+        async (postId: string, voteType: "upvote" | "downvote") => {
+            try {
+                const res = await fetch(`/api/posts/${postId}/vote`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ voteType }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || `Vote failed (${res.status})`);
+                setPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === postId
+                            ? {
+                                ...p,
+                                upvoteCount: data.upvoteCount,
+                                downvoteCount: data.downvoteCount,
+                                voteCount: data.voteCount,
+                                isUpvoted: data.isUpvoted,
+                                isDownvoted: data.isDownvoted,
+                            }
+                            : p
+                    )
+                );
+            } catch {
+                // swallow vote errors
+            }
+        },
+        []
+    );
 
-    // initial load
     useEffect(() => {
         fetchPosts(true);
     }, [fetchPosts]);
 
     return (
         <PostContext.Provider
-            value={{ posts, loading, error, hasMore, fetchMorePosts, createPost, votePost }}
+            value={{
+                posts,
+                loading,
+                error,
+                hasMore,
+                fetchMorePosts,
+                createPost,
+                votePost,
+            }}
         >
             {children}
         </PostContext.Provider>
@@ -141,6 +164,8 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 export const usePosts = () => {
     const ctx = useContext(PostContext);
-    if (!ctx) throw new Error("usePosts must be inside PostProvider");
+    if (!ctx) {
+        throw new Error("usePosts must be used within a PostProvider");
+    }
     return ctx;
 };
