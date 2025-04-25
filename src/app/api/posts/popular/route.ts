@@ -1,175 +1,228 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs';
-import dbConnect from '@/lib/dbConnect';
-import User from '@/models/User';
-import Post from '@/models/Post';
-import mongoose from 'mongoose';
+// src/app/api/posts/popular/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
+import Post from "@/models/Post";
+import type { Types } from "mongoose";
 
-// Ensure database connection is established
 let isConnected = false;
 
 const DECAY_FACTOR = 45000; // ~12.5 hours half-life
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 interface CachedPost {
-  _id: mongoose.Types.ObjectId;
-  author: mongoose.Types.ObjectId | { _id: mongoose.Types.ObjectId; username: string; name: string; image?: string };
+  _id: Types.ObjectId;
+  author:
+      | Types.ObjectId
+      | { _id: Types.ObjectId; username: string; name: string; image?: string };
   content: string;
-  community?: mongoose.Types.ObjectId | { _id: mongoose.Types.ObjectId; name: string; image?: string };
-  upvotes: mongoose.Types.ObjectId[];
-  downvotes: mongoose.Types.ObjectId[];
-  comments: mongoose.Types.ObjectId[];
+  community?:
+      | Types.ObjectId
+      | { _id: Types.ObjectId; name: string; image?: string };
+  upvotes: Types.ObjectId[];
+  downvotes: Types.ObjectId[];
+  comments: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
-  score?: number;
+  score: number;
 }
 
 let cachedPosts: { posts: CachedPost[]; cacheKey: string } | null = null;
 let lastCacheTime = 0;
 
-function calculateScore(upvotes: number, downvotes: number, createdAt: Date): number {
+function calculateScore(
+    upvotes: number,
+    downvotes: number,
+    createdAt: Date
+): number {
   const voteScore = upvotes - downvotes;
-  const ageInMs = Date.now() - createdAt.getTime();
-  return voteScore / Math.pow(1 + ageInMs / DECAY_FACTOR, 1.5);
+  const ageMs = Date.now() - createdAt.getTime();
+  return voteScore / Math.pow(1 + ageMs / DECAY_FACTOR, 1.5);
 }
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
-    // Connect to the database
     if (!isConnected) {
       await dbConnect();
       isConnected = true;
-      console.log('[POPULAR] Connected to database');
-    } else {
-      console.log('[POPULAR] Using existing database connection');
+      console.log("[POPULAR] DB connected");
     }
 
-    const searchParams = req.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const timeRange = searchParams.get('timeRange') || 'day';
+    const qp = req.nextUrl.searchParams;
+    const page = parseInt(qp.get("page") ?? "1", 10);
+    const limit = parseInt(qp.get("limit") ?? "10", 10);
+    const timeRange = qp.get("timeRange") ?? "day";
     const skip = (page - 1) * limit;
 
-    console.log('[POPULAR] Query parameters:', { page, limit, timeRange });
-
-    let timeThreshold = new Date();
+    // compute time threshold
+    const threshold = new Date();
     switch (timeRange) {
-      case 'day':
-        timeThreshold.setDate(timeThreshold.getDate() - 1);
+      case "day":
+        threshold.setDate(threshold.getDate() - 1);
         break;
-      case 'week':
-        timeThreshold.setDate(timeThreshold.getDate() - 7);
+      case "week":
+        threshold.setDate(threshold.getDate() - 7);
         break;
-      case 'month':
-        timeThreshold.setMonth(timeThreshold.getMonth() - 1);
+      case "month":
+        threshold.setMonth(threshold.getMonth() - 1);
         break;
-      case 'all':
-        timeThreshold = new Date(0);
+      case "all":
+        threshold.setTime(0);
         break;
-      default:
-        timeThreshold.setDate(timeThreshold.getDate() - 1);
     }
 
     const now = Date.now();
     const cacheKey = `${timeRange}-${page}-${limit}`;
-    const shouldUseCache =
-      cachedPosts !== null &&
-      cachedPosts.cacheKey === cacheKey &&
-      (now - lastCacheTime) < CACHE_TTL &&
-      page === 1;
+    const useCache =
+        page === 1 &&
+        cachedPosts?.cacheKey === cacheKey &&
+        now - lastCacheTime < CACHE_TTL;
 
-    let posts;
-
-    if (shouldUseCache) {
-      console.log('[POPULAR] Using cached posts');
-      posts = cachedPosts.posts;
+    let raw: unknown[];
+    if (useCache) {
+      console.log("[POPULAR] using cache");
+      raw = cachedPosts!.posts;
     } else {
-      console.log('[POPULAR] Fetching fresh posts');
-      posts = await Post.find({
-        createdAt: { $gte: timeThreshold }
-      })
-        .populate('author', 'username name image')
-        .populate('community', 'name image')
-        .lean();
-
+      console.log("[POPULAR] fetching fresh");
+      raw = (await Post.find({ createdAt: { $gte: threshold } })
+          .populate("author", "username name image")
+          .populate("community", "name image")
+          .lean()) as unknown[];
       if (page === 1) {
-        cachedPosts = {
-          posts,
-          cacheKey
-        };
+        // build and cache scored posts
+        const buildCache = (raw as unknown[]).map((p) => {
+          const post = p as CachedPost;
+          return {
+            ...post,
+            score: calculateScore(
+                post.upvotes.length,
+                post.downvotes.length,
+                post.createdAt
+            ),
+          };
+        });
+        cachedPosts = { posts: buildCache, cacheKey };
         lastCacheTime = now;
       }
     }
 
-    const scoredPosts = posts.map((post: CachedPost) => ({
+    // ensure we have scores
+    const scored = (raw as CachedPost[]).map((post) => ({
       ...post,
-      score: calculateScore(post.upvotes.length, post.downvotes.length, post.createdAt)
+      score:
+          typeof post.score === "number"
+              ? post.score
+              : calculateScore(
+                  post.upvotes.length,
+                  post.downvotes.length,
+                  post.createdAt
+              ),
     }));
 
-    scoredPosts.sort((a: CachedPost, b: CachedPost) => (b.score || 0) - (a.score || 0));
+    // sort by score desc
+    scored.sort((a, b) => b.score - a.score);
 
-    const paginatedPosts = scoredPosts.slice(skip, skip + limit);
+    const pagePosts = scored.slice(skip, skip + limit);
 
-    const transformedPosts = await Promise.all(paginatedPosts.map(async (post: CachedPost) => {
-      const { _id, score, ...rest } = post;
+    // load user for vote flags
+    let me: Types.ObjectId | null = null;
+    if (userId) {
+      const cu = await User.findOne({ clerkId: userId });
+      if (cu) me = cu._id as Types.ObjectId;
+    }
 
-      let isUpvoted = false;
-      let isDownvoted = false;
+    // transform for API
+    const transformed = pagePosts.map((post) => {
+      const {
+        _id,
+        author,
+        community,
+        upvotes,
+        downvotes,
+        comments,
+        createdAt,
+        updatedAt,
+        score,
+        content,
+      } = post;
 
-      if (userId) {
-        const currentUser = await User.findOne({ clerkId: userId });
-        if (currentUser) {
-          isUpvoted = post.upvotes.some((id: mongoose.Types.ObjectId) => id.toString() === currentUser._id.toString());
-          isDownvoted = post.downvotes.some((id: mongoose.Types.ObjectId) => id.toString() === currentUser._id.toString());
+      // flatten author
+      let authorInfo: {
+        id: string;
+        username?: string;
+        name?: string;
+        image?: string;
+      };
+      if (typeof author === "object" && "username" in author) {
+        authorInfo = {
+          id: author._id.toString(),
+          username: author.username,
+          name: author.name,
+          image: author.image,
+        };
+      } else {
+        authorInfo = { id: author.toString() };
+      }
+
+      // flatten community
+      let communityInfo: { id: string; name?: string; image?: string } | undefined;
+      if (community) {
+        if (typeof community === "object" && "name" in community) {
+          communityInfo = {
+            id: community._id.toString(),
+            name: community.name,
+            image: community.image,
+          };
+        } else {
+          communityInfo = { id: community.toString() };
         }
       }
 
+      const isUp = me
+          ? upvotes.some((id) => id.equals(me))
+          : false;
+      const isDown = me
+          ? downvotes.some((id) => id.equals(me))
+          : false;
+
       return {
         id: _id.toString(),
-        ...rest,
-        upvoteCount: post.upvotes.length,
-        downvoteCount: post.downvotes.length,
-        voteCount: post.upvotes.length - post.downvotes.length,
-        commentCount: post.comments.length,
-        isUpvoted,
-        isDownvoted,
-        createdAt: post.createdAt.toISOString(),
-        updatedAt: post.updatedAt.toISOString(),
-        popularityScore: score.toFixed(2)
+        author: authorInfo,
+        community: communityInfo,
+        content,
+        upvoteCount: upvotes.length,
+        downvoteCount: downvotes.length,
+        voteCount: upvotes.length - downvotes.length,
+        commentCount: comments.length,
+        isUpvoted: isUp,
+        isDownvoted: isDown,
+        createdAt: createdAt.toISOString(),
+        updatedAt: updatedAt.toISOString(),
+        popularityScore: score.toFixed(2),
       };
-    }));
-
-    console.log(`[POPULAR] Successfully fetched ${transformedPosts.length} popular posts`);
-
-    return NextResponse.json({
-      posts: transformedPosts,
-      pagination: {
-        page,
-        limit,
-        totalPosts: posts.length,
-        hasMore: posts.length > skip + limit
-      },
-      timeRange
     });
-  } catch (error) {
-    console.error('[POPULAR] Error fetching popular posts:', error);
-
-    if (error instanceof Error) {
-      if (error.message.includes('Cast to ObjectId failed')) {
-        return NextResponse.json(
-          { error: 'Invalid ID format' },
-          { status: 400 }
-        );
-      }
-    }
 
     return NextResponse.json(
-      {
-        error: 'Failed to fetch popular posts',
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
+        {
+          posts: transformed,
+          pagination: {
+            page,
+            limit,
+            totalPosts: scored.length,
+            hasMore: scored.length > skip + limit,
+          },
+          timeRange,
+        },
+        { status: 200 }
+    );
+  } catch (err) {
+    console.error("[POPULAR] error:", err);
+    return NextResponse.json(
+        { error: "Failed to fetch popular posts" },
+        { status: 500 }
     );
   }
 }

@@ -7,56 +7,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
-      <change afterPath="$PROJECT_DIR$/.prettierignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.prettierrc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/communities/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/posts/[postId]/vote/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/posts/popular/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/community-list.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/create-community-form.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/create-post-form.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/landing-community-card.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/popular-post-feed.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/post-editor.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/post-feed.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/providers/toast-provider.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/skeletons/comment-skeleton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/skeletons/community-skeleton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/skeletons/post-skeleton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/skeletons/profile-skeleton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/select.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/textarea.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/context/CommunityContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/context/PopularPostContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/context/PostContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/Comment.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/Community.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/Post.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/User.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tailwind.config.js" afterDir="false" />
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <change afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/(main)/explore/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/explore/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/(main)/home/Feed.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/home/Feed.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/popular/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/popular/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/about-developers/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/about-developers/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/posts/[postId]/vote/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/[postId]/vote/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/posts/popular/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/popular/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/api/posts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/globals.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/community-card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/community-card.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/post-card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/post-card.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/dbConnect.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/dbConnect.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/icon0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/icon0.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/community-list.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/community-list.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/create-community-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/create-community-form.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/create-post-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/create-post-form.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/post-editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/post-editor.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/context/PostContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PostContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/tailwind.config.js" afterDir="false" />
     </list>
     <list id="c5eea045-d135-4827-b36b-ae86da822b84" name="No push" comment="">
       <change afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
@@ -76,8 +47,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript File" />
         <option value="TypeScript JSX File" />
+        <option value="TypeScript File" />
       </list>
     </option>
   </component>
@@ -111,6 +82,9 @@
     &quot;repository&quot;: &quot;chattersphere&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/.next/types/app/api/communities/route.ts" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -222,7 +196,7 @@
       <workItem from="1745478713365" duration="243000" />
       <workItem from="1745482797577" duration="3843000" />
       <workItem from="1745487336664" duration="10988000" />
-      <workItem from="1745566959644" duration="4423000" />
+      <workItem from="1745566959644" duration="13417000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial project structure with components, theming, and layout">
       <option name="closed" value="true" />
@@ -304,7 +278,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745449308857</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1745571773014</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1745571773014</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -336,6 +318,7 @@
     <MESSAGE value="Add skeleton component and under-development pages; implement sidebar and dropdown menu" />
     <MESSAGE value="Refactor navigation links and add new pages for Privacy Policy and Contact Us&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
     <MESSAGE value="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <MESSAGE value="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
   </component>
 </project>
