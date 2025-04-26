@@ -13,13 +13,17 @@ import React, {
 export interface Post {
     id: string;
     author: {
-        _id: string;
+        id: string;
         username: string;
         name: string;
         image?: string;
     };
     content: string;
-    community?: { _id: string; name: string; image?: string };
+    community?: {
+        id: string;
+        name: string;
+        image?: string;
+    };
     upvoteCount: number;
     downvoteCount: number;
     voteCount: number;
@@ -40,7 +44,10 @@ interface PostContextType {
         content: string,
         communityId?: string
     ) => Promise<Post | null>;
-    votePost: (postId: string, voteType: "upvote" | "downvote") => Promise<void>;
+    votePost: (
+        postId: string,
+        voteType: "upvote" | "downvote"
+    ) => Promise<void>;
 }
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
@@ -56,12 +63,12 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({
 
     const fetchPosts = useCallback(
         async (reset = false) => {
-            if (loading) return;
+            if (!reset && loading) return;
             setLoading(true);
             try {
                 const nextPage = reset ? 1 : page;
                 const res = await fetch(
-                    `/api/posts/feed?page=${nextPage}&limit=10`
+                    `/api/posts?page=${nextPage}&limit=10`
                 );
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok) {
@@ -95,13 +102,11 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({
                 });
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok) {
-                    // don't log or throw—just return null
                     return null;
                 }
                 setPosts((prev) => [data.post, ...prev]);
                 return data.post;
             } catch {
-                // on exception, return null
                 return null;
             } finally {
                 setLoading(false);
