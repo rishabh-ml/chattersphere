@@ -1,60 +1,41 @@
+// src/lib/dbConnect.ts
 import mongoose from "mongoose";
+
+declare global {
+    // Global cache for mongoose connection
+    // eslint-disable-next-line no-var
+    var mongooseConnection: {
+        isConnected?: boolean;
+        promise?: Promise<typeof mongoose>;
+    };
+}
 
 const MONGODB_URI = process.env.MONGODB_URI as string;
 
 if (!MONGODB_URI) {
     throw new Error(
-        "❌ Please define the MONGODB_URI environment variable inside .env.local"
+        "Please define the MONGODB_URI environment variable inside .env.local"
     );
 }
 
-console.log('MongoDB URI is defined');
-
-interface MongooseCache {
-    conn: mongoose.Mongoose | null;
-    promise: Promise<mongoose.Mongoose> | null;
-}
-
-// Extend global type for cached mongoose connection
-declare global {
-    // eslint-disable-next-line no-var
-    var mongooseCache: MongooseCache | undefined;
-}
-
-const cached: MongooseCache = global.mongooseCache || { conn: null, promise: null };
-global.mongooseCache = cached;
-
-async function dbConnect(): Promise<mongoose.Mongoose> {
-    if (cached.conn) {
-        console.log('Using existing database connection');
-        return cached.conn;
+async function dbConnect(): Promise<typeof mongoose> {
+    if (global.mongooseConnection?.isConnected) {
+        return mongoose;
     }
 
-    if (!cached.promise) {
-        console.log('Creating new database connection');
-        cached.promise = mongoose.connect(MONGODB_URI, {
-            dbName: "chattersphere", // ✅ Locks to correct database
-            bufferCommands: false,
-        }).then(mongoose => {
-            console.log('Database connected successfully');
-            return mongoose;
-        }).catch(error => {
-            console.error('Error connecting to database:', error);
-            throw error;
-        });
-    } else {
-        console.log('Using existing database connection promise');
+    if (!global.mongooseConnection?.promise) {
+        global.mongooseConnection = {
+            promise: mongoose
+                .connect(MONGODB_URI, { dbName: "chattersphere" })
+                .then((mongooseInstance) => {
+                    global.mongooseConnection.isConnected = true;
+                    return mongooseInstance;
+                }),
+        };
     }
 
-    try {
-        cached.conn = await cached.promise;
-        console.log('Database connection established');
-        return cached.conn;
-    } catch (e) {
-        cached.promise = null;
-        console.error('Failed to establish database connection:', e);
-        throw e;
-    }
+    await global.mongooseConnection.promise;
+    return mongoose;
 }
 
 export default dbConnect;
