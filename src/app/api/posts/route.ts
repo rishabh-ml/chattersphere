@@ -34,14 +34,23 @@ type RawPost = {
 
 export async function GET(req: NextRequest) {
   try {
+    console.log('[GET] Received request to fetch posts');
+
     const { userId } = await auth();
+    console.log(`[GET] User ID from auth: ${userId || 'not authenticated'}`);
+
+    console.log('[GET] Connecting to database...');
     await dbConnect();
+    console.log('[GET] Connected to database');
 
     const url = req.nextUrl;
     const page = parseInt(url.searchParams.get("page") ?? "1", 10);
     const limit = parseInt(url.searchParams.get("limit") ?? "10", 10);
     const communityIdParam = url.searchParams.get("communityId") ?? undefined;
     const skip = (page - 1) * limit;
+
+    console.log(`[GET] Fetching posts: page=${page}, limit=${limit}${communityIdParam ? `, communityId=${communityIdParam}` : ''}`);
+
 
     const filter: Record<string, unknown> = {};
 
@@ -56,15 +65,38 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const rawPosts = await Post.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .populate("author", "username name image")
-        .populate("community", "name image")
-        .lean<RawPost[]>();
+    // Fetch posts with error handling
+    let rawPosts;
+    try {
+      rawPosts = await Post.find(filter)
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate("author", "username name image")
+          .populate("community", "name image")
+          .lean<RawPost[]>();
 
-    const total = await Post.countDocuments(filter);
+      console.log(`[GET] Successfully fetched ${rawPosts.length} posts`);
+    } catch (fetchError) {
+      console.error('[GET] Error fetching posts:', fetchError);
+      return NextResponse.json({
+        error: "Failed to fetch posts",
+        details: fetchError instanceof Error ? fetchError.message : 'Unknown error'
+      }, { status: 500 });
+    }
+
+    // Count total posts
+    let total;
+    try {
+      total = await Post.countDocuments(filter);
+      console.log(`[GET] Total posts count: ${total}`);
+    } catch (countError) {
+      console.error('[GET] Error counting posts:', countError);
+      return NextResponse.json({
+        error: "Failed to count posts",
+        details: countError instanceof Error ? countError.message : 'Unknown error'
+      }, { status: 500 });
+    }
 
     let meId: Types.ObjectId | null = null;
     if (userId) {
@@ -172,16 +204,25 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('[POST] Received post creation request');
+
     const { userId } = await auth();
     if (!userId) {
+      console.log('[POST] Unauthorized request - no userId');
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    console.log('[POST] Connecting to database...');
     await dbConnect();
+    console.log('[POST] Connected to database');
 
     const { content, communityId } = (await req.json()) as {
       content: string;
       communityId?: string;
     };
+
+    console.log(`[POST] Received content (${content.length} chars)${communityId ? ` for community ${communityId}` : ''}`);
+
 
     if (!content.trim()) {
       return NextResponse.json(
@@ -201,9 +242,37 @@ export async function POST(req: NextRequest) {
         .replace(/on\w+="[^"]*"/g, "")
         .replace(/javascript:[^\s"']+/g, "");
 
-    const user = await User.findOne({ clerkId: userId });
+    console.log(`[POST] Looking for user with clerkId: ${userId}`);
+    let user = await User.findOne({ clerkId: userId });
+
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      console.log(`[POST] User with clerkId ${userId} not found in database`);
+
+      // Create a new user if not found
+      console.log(`[POST] Attempting to create a new user for clerkId: ${userId}`);
+      try {
+        // This is a fallback mechanism - ideally the webhook should create the user
+        const newUser = await User.create({
+          clerkId: userId,
+          username: `user_${userId.slice(0, 8)}`,
+          name: `User ${userId.slice(0, 6)}`,
+          email: `user_${userId.slice(0, 8)}@example.com`,
+          following: [],
+          followers: [],
+          communities: []
+        });
+
+        console.log(`[POST] Created new user with id: ${newUser._id}`);
+        user = newUser;
+      } catch (userCreateError) {
+        console.error('[POST] Failed to create user:', userCreateError);
+        return NextResponse.json({
+          error: "User not found and automatic creation failed",
+          details: userCreateError instanceof Error ? userCreateError.message : 'Unknown error'
+        }, { status: 404 });
+      }
+    } else {
+      console.log(`[POST] Found user: ${user.username} (${user._id})`);
     }
 
     const newPost = await Post.create({
@@ -269,6 +338,9 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("[POST] Error creating post:", error);
-    return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
+    return NextResponse.json({
+      error: "Failed to create post",
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

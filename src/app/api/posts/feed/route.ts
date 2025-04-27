@@ -1,16 +1,16 @@
-// src/app/api/posts/feed/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Post from "@/models/Post";
 import type { Types } from "mongoose";
+import "@/models/Community";
 
 type RawPost = {
   _id: Types.ObjectId;
-  upvotes: Types.ObjectId[];
-  downvotes: Types.ObjectId[];
-  comments: unknown[];
+  upvotes?: Types.ObjectId[];
+  downvotes?: Types.ObjectId[];
+  comments?: unknown[];
   createdAt: Date;
   updatedAt: Date;
   [key: string]: unknown;
@@ -18,7 +18,6 @@ type RawPost = {
 
 export async function GET(req: NextRequest) {
   try {
-    // server-side auth returns a Promise
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -36,10 +35,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // fetch raw posts and cast via unknown to satisfy TS
-    const postsRaw = (await Post.find({
-      author: { $in: currentUser.following },
-    })
+    const queryCondition =
+        currentUser.following.length > 0
+            ? { author: { $in: currentUser.following } }
+            : {}; // If no following, show all posts
+
+    const postsRaw = (await Post.find(queryCondition)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -47,18 +48,16 @@ export async function GET(req: NextRequest) {
         .populate("community", "name image")
         .lean()) as unknown as RawPost[];
 
-    const totalPosts = await Post.countDocuments({
-      author: { $in: currentUser.following },
-    });
+    const totalPosts = await Post.countDocuments(queryCondition);
     const hasMore = totalPosts > skip + postsRaw.length;
 
     const me = currentUser._id as Types.ObjectId;
     const transformed = postsRaw.map((post) => {
       const {
         _id,
-        upvotes,
-        downvotes,
-        comments,
+        upvotes = [],
+        downvotes = [],
+        comments = [],
         createdAt,
         updatedAt,
         ...rest

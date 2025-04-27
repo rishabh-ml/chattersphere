@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: "ChatterSphere | Connect Through Meaningful Conversations",
-  description: "ChatterSphere helps you build meaningful connections through real-time chat, thriving communities, and global interactions in a secure environment.",
+  description: "ChatterSphere helps you build meaningful connections through real-time chat, thriving community, and global interactions in a secure environment.",
   keywords: ["chat platform", "communities", "messaging", "social network"],
   authors: [{ name: "ChatterSphere Team" }],
   creator: "ChatterSphere",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://chattersphere.example.com",
     title: "ChatterSphere | Connect Through Meaningful Conversations",
-    description: "Build meaningful connections through real-time chat and thriving communities.",
+    description: "Build meaningful connections through real-time chat and thriving community.",
     siteName: "ChatterSphere",
     images: [
       {
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "ChatterSphere | Connect Through Meaningful Conversations",
-    description: "Build meaningful connections through real-time chat and thriving communities.",
+    description: "Build meaningful connections through real-time chat and thriving community.",
     images: ["/twitter-image.png"],
   },
   verification: {

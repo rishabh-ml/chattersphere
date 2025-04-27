@@ -7,13 +7,33 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor database connection handling, improve middleware configuration, and enhance Post model structure&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <change afterPath="$PROJECT_DIR$/src/app/(main)/community/[communityId]/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(main)/profile/[userId]/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/communities/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ui/avatar.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ui/card.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ui/tooltip.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/api/posts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/community-list.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/community-list.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/create-post-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/create-post-form.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/tabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/tabs.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/under-development.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/under-development.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/context/CommunityContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/CommunityContext.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/context/PostContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PostContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/dbConnect.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/dbConnect.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/middleware.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/middleware.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/Post.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/Post.ts" afterDir="false" />
     </list>
     <list id="c5eea045-d135-4827-b36b-ae86da822b84" name="No push" comment="">
       <change afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
@@ -116,6 +136,7 @@
       <recent name="C:\Users\datam\Desktop\chattersphere\public\avatars" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\datam\Desktop\chattersphere" />
       <recent name="C:\Users\datam\Desktop\chattersphere\src\app\(main)" />
       <recent name="C:\Users\datam\Desktop\chattersphere\src" />
       <recent name="C:\Users\datam\Desktop\chattersphere\public" />
@@ -185,6 +206,7 @@
       <workItem from="1745592152307" duration="4504000" />
       <workItem from="1745614438244" duration="2816000" />
       <workItem from="1745687643701" duration="180000" />
+      <workItem from="1745687843042" duration="16138000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial project structure with components, theming, and layout">
       <option name="closed" value="true" />
@@ -282,7 +304,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745580873167</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Refactor database connection handling, improve middleware configuration, and enhance Post model structure&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1745687922018</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1745687922018</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -315,6 +345,7 @@
     <MESSAGE value="Refactor navigation links and add new pages for Privacy Policy and Contact Us&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
     <MESSAGE value="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
     <MESSAGE value="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <MESSAGE value="Refactor database connection handling, improve middleware configuration, and enhance Post model structure&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor database connection handling, improve middleware configuration, and enhance Post model structure&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
   </component>
 </project>

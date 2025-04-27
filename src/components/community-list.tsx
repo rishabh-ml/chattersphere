@@ -15,7 +15,7 @@ interface CommunityListProps {
 }
 
 export default function CommunityList({
-  emptyMessage = "No communities found",
+  emptyMessage = "No community found",
   onCommunitySelect,
 }: CommunityListProps) {
   const {
