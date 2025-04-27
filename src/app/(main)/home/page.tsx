@@ -62,7 +62,7 @@ export default function Home() {
       {activeTab === "feed" && (
         <PostProvider>
           <PostFeed emptyMessage={isSignedIn ?
-            "Your feed is empty. Follow users or join communities to see posts here!" :
+            "Your feed is empty. Follow users or join community to see posts here!" :
             "Sign in to see posts from users you follow!"}
           />
         </PostProvider>

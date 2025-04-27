@@ -67,21 +67,41 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({
             setLoading(true);
             try {
                 const nextPage = reset ? 1 : page;
+                console.log(`[PostContext] Fetching posts: page=${nextPage}, limit=10`);
+
                 const res = await fetch(
-                    `/api/posts?page=${nextPage}&limit=10`
+                    `/api/posts/feed?page=${nextPage}&limit=10`
                 );
-                const data = await res.json().catch(() => ({}));
+
+                const data = await res.json().catch((err) => {
+                    console.error('[PostContext] Error parsing response:', err);
+                    return {};
+                });
+
                 if (!res.ok) {
-                    throw new Error(data.error || `Fetch failed (${res.status})`);
+                    const errorMessage = data.error || `Fetch failed (${res.status})`;
+                    const errorDetails = data.details ? `: ${data.details}` : '';
+                    console.error(`[PostContext] API error: ${errorMessage}${errorDetails}`);
+                    throw new Error(`${errorMessage}${errorDetails}`);
                 }
+
+                console.log(`[PostContext] Fetched ${data.posts?.length || 0} posts`);
+
+                if (!data.posts || !Array.isArray(data.posts)) {
+                    console.error('[PostContext] Invalid response format - posts array missing');
+                    throw new Error('Invalid response format');
+                }
+
                 setPosts((prev) =>
                     reset ? data.posts : [...prev, ...data.posts]
                 );
-                setHasMore(data.pagination.hasMore);
+                setHasMore(data.pagination?.hasMore || false);
                 setPage(reset ? 2 : page + 1);
                 setError(null);
             } catch (err) {
-                setError(err instanceof Error ? err.message : "Unknown error");
+                const errorMessage = err instanceof Error ? err.message : "Unknown error";
+                console.error('[PostContext] Error fetching posts:', errorMessage);
+                setError(errorMessage);
             } finally {
                 setLoading(false);
             }
@@ -94,25 +114,42 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({
     const createPost = useCallback(
         async (content: string, communityId?: string): Promise<Post | null> => {
             setLoading(true);
+            setError(null);
             try {
+                console.log(`[PostContext] Creating post with content length: ${content.length}${communityId ? `, communityId: ${communityId}` : ''}`);
+
                 const res = await fetch("/api/posts", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ content, communityId }),
                 });
-                const data = await res.json().catch(() => ({}));
+
+                const data = await res.json().catch((err) => {
+                    console.error('[PostContext] Error parsing response:', err);
+                    return {};
+                });
+
                 if (!res.ok) {
+                    const errorMessage = data.error || `Failed to create post (${res.status})`;
+                    const errorDetails = data.details ? `: ${data.details}` : '';
+                    console.error(`[PostContext] API error: ${errorMessage}${errorDetails}`);
+                    setError(`${errorMessage}${errorDetails}`);
                     return null;
                 }
+
+                console.log('[PostContext] Post created successfully:', data.post?.id);
                 setPosts((prev) => [data.post, ...prev]);
                 return data.post;
-            } catch {
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : 'Unknown error creating post';
+                console.error('[PostContext] Exception:', errorMessage);
+                setError(errorMessage);
                 return null;
             } finally {
                 setLoading(false);
             }
         },
-        []
+        [setError]
     );
 
     const votePost = useCallback(

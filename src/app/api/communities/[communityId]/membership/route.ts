@@ -1,4 +1,4 @@
-// src/app/api/communities/[communityId]/membership/route.ts
+// src/app/api/community/[communityId]/membership/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";

@@ -51,7 +51,7 @@
     const [page, setPage] = useState<number>(1);
     const [sortBy, setSortByState] = useState<'members' | 'posts' | 'recent'>('members');
 
-    // Fetch communities function
+    // Fetch community function
     const fetchCommunities = useCallback(async (reset = false) => {
       try {
         setLoading(true);
@@ -61,7 +61,7 @@
         const response = await fetch(`/api/communities?page=${newPage}&limit=10&sort=${sortBy}`);
 
         if (!response.ok) {
-          throw new Error('Failed to fetch communities');
+          throw new Error('Failed to fetch community');
         }
 
         const data = await response.json();
@@ -86,7 +86,7 @@
       setSortByState(sort);
     }, [setSortByState]);
 
-    // Fetch more communities function
+    // Fetch more community function
     const fetchMoreCommunities = useCallback(async () => {
       if (!loading && hasMore) {
         await fetchCommunities();
@@ -112,7 +112,7 @@
 
         const data = await response.json();
 
-        // Add the new community to the beginning of the communities array
+        // Add the new community to the beginning of the community array
         setCommunities(prev => [data.community, ...prev]);
 
         return data.community;
@@ -141,7 +141,7 @@
 
         const data = await response.json();
 
-        // Update the community in the communities array
+        // Update the community in the community array
         setCommunities(prev => prev.map(community => {
           if (community.id === communityId) {
             return {
@@ -174,7 +174,7 @@
 
         const data = await response.json();
 
-        // Update the community in the communities array
+        // Update the community in the community array
         setCommunities(prev => prev.map(community => {
           if (community.id === communityId) {
             return {
@@ -191,7 +191,7 @@
       }
     }, [setCommunities, setError]);
 
-    // Effect to fetch communities when sortBy changes
+    // Effect to fetch community when sortBy changes
     React.useEffect(() => {
       fetchCommunities(true);
     }, [sortBy, fetchCommunities]);
