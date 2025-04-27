@@ -15,15 +15,15 @@ export async function GET(
     try {
         // 1) Always connect to database first
         await connectToDatabase();
-
+        
         // 2) Validate the communityId parameter
         if (!isValidObjectId(params.communityId)) {
             return NextResponse.json(
-                { error: "Invalid community ID" },
+                { error: "Invalid community ID" }, 
                 { status: 400 }
             );
         }
-
+        
         // 3) Optional Clerk auth
         const { userId } = await auth();
 
@@ -33,24 +33,27 @@ export async function GET(
             .lean()
             .then(data => data as CommunityType | null);
 
-        // 4) Handle community not found with 404
+        // 5) Handle community not found with 404
         if (!community) {
-            return NextResponse.json({ error: "Community not found" }, { status: 404 });
+            return NextResponse.json(
+                { error: "Community not found" }, 
+                { status: 404 }
+            );
         }
 
-        // 4) Determine current user’s ObjectId
+        // 6) Determine current user's ObjectId
         let me: Types.ObjectId | null = null;
         if (userId) {
             const cu = await User.findOne({ clerkId: userId });
             if (cu) me = cu._id;
         }
 
-        // 5) Build flags with safe array checks
+        // 7) Build flags with safe array checks
         const members = community.members || [];
         const mods = community.moderators || [];
         const posts = community.posts || [];
-
-        // 6) Use utility function to map creator
+        
+        // 8) Use utility function to map creator
         const creatorInfo = mapCreator(community.creator);
 
         const isMember = isMemberOf(me, members);
@@ -61,7 +64,7 @@ export async function GET(
                 : (community.creator as Types.ObjectId).equals(me)
         );
 
-        // 7) Respond
+        // 9) Respond with consistent structure
         return NextResponse.json(
             {
                 community: {

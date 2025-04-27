@@ -5,8 +5,7 @@ import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Community from "@/models/Community";
 import type { Types } from "mongoose";
-
-let isConnected = false;
+import { mapCreator, isMemberOf, safeArrayLength } from "@/lib/utils/communityUtils";
 
 interface RawCommunity {
   _id: Types.ObjectId;
@@ -30,12 +29,10 @@ interface RawCommunity {
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    // Always connect to database first
+    await connectToDatabase();
 
-    if (!isConnected) {
-      await connectToDatabase();
-      isConnected = true;
-    }
+    const { userId } = await auth();
 
     const qp = request.nextUrl.searchParams;
     const page = parseInt(qp.get("page") ?? "1", 10);
@@ -43,19 +40,41 @@ export async function GET(request: NextRequest) {
     const sortBy = qp.get("sort") ?? "members";
     const skip = (page - 1) * limit;
 
-    // telling TS it's an array
-    const raw = await Community.find()
-        .populate("creator", "username name image")
-        .lean<RawCommunity[]>();
+    // Build sort options for MongoDB query
+    let sortOptions = {};
+    if (sortBy === "recent") {
+      sortOptions = { createdAt: -1 };
+    } else if (sortBy === "posts") {
+      // We'll need to sort in memory since posts is an array
+      sortOptions = {};
+    } else {
+      // Default sort by members
+      sortOptions = {}; // We'll need to sort in memory for member count
+    }
 
-    raw.sort((a, b) => {
-      if (sortBy === "recent") return b.createdAt.getTime() - a.createdAt.getTime();
-      if (sortBy === "posts")  return b.posts.length - a.posts.length;
-      return b.members.length - a.members.length;
-    });
+    // Get total count first for pagination
+    const total = await Community.countDocuments();
 
-    const total = raw.length;
-    const slice = raw.slice(skip, skip + limit);
+    // Use MongoDB's skip and limit for efficient pagination
+    const query = Community.find()
+      .populate("creator", "username name image")
+      .skip(skip)
+      .limit(limit);
+
+    // Apply sort if it's by creation date
+    if (sortBy === "recent") {
+      query.sort(sortOptions);
+    }
+
+    // Execute query
+    const raw = await query.lean<RawCommunity[]>();
+
+    // For sorts that need in-memory processing (posts count, members count)
+    if (sortBy === "posts") {
+      raw.sort((a, b) => safeArrayLength(b.posts) - safeArrayLength(a.posts));
+    } else if (sortBy === "members") {
+      raw.sort((a, b) => safeArrayLength(b.members) - safeArrayLength(a.members));
+    }
 
     // optional membership flags
     let me: Types.ObjectId | null = null;
@@ -64,18 +83,9 @@ export async function GET(request: NextRequest) {
       if (cu) me = cu._id;
     }
 
-    const communities = slice.map((c) => {
-      let creatorInfo: { id: string; username: string; name: string; image?: string };
-      if (typeof c.creator === "object" && "username" in c.creator) {
-        creatorInfo = {
-          id: c.creator._id.toString(),
-          username: c.creator.username,
-          name: c.creator.name,
-          image: c.creator.image,
-        };
-      } else {
-        creatorInfo = { id: (c.creator as Types.ObjectId).toString(), username: "", name: "" };
-      }
+    const communities = raw.map((c) => {
+      // Use utility function to map creator
+      const creatorInfo = mapCreator(c.creator);
 
       return {
         id: c._id.toString(),
@@ -83,19 +93,37 @@ export async function GET(request: NextRequest) {
         description: c.description,
         image: c.image,
         creator: creatorInfo,
-        memberCount: c.members.length,
-        postCount: c.posts.length,
-        isMember: me ? c.members.some((m) => m.equals(me)) : false,
-        isModerator: me ? c.moderators.some((m) => m.equals(me)) : false,
+        memberCount: safeArrayLength(c.members),
+        postCount: safeArrayLength(c.posts),
+        isMember: isMemberOf(me, c.members),
+        isModerator: isMemberOf(me, c.moderators),
         isCreator:
             me &&
-            (typeof c.creator === "object"
+            (typeof c.creator === "object" && "_id" in c.creator
                 ? c.creator._id.equals(me)
                 : (c.creator as Types.ObjectId).equals(me)),
         createdAt: c.createdAt.toISOString(),
         updatedAt: c.updatedAt.toISOString(),
       };
     });
+
+    // If no communities found, return empty array with message
+    if (communities.length === 0 && page === 1) {
+      return NextResponse.json(
+        {
+          communities: [],
+          message: "No communities yet. Be the first to create one!",
+          pagination: {
+            page,
+            limit,
+            totalCommunities: 0,
+            hasMore: false,
+          },
+          sort: sortBy,
+        },
+        { status: 200 }
+      );
+    }
 
     return NextResponse.json(
         {
