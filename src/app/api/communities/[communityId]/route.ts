@@ -5,7 +5,7 @@ import connectToDatabase from "@/lib/dbConnect";
 import Community from "@/models/Community";
 import User from "@/models/User";
 import type { Types } from "mongoose";
-import { mapCreator, isMemberOf, safeArrayLength, isValidObjectId } from "@/lib/utils/communityUtils";
+import { mapCreator, isMemberOf, safeArrayLength, isValidObjectId, isCreatorOf } from "@/lib/utils/communityUtils";
 import { CommunityType } from "@/types/CommunityType";
 
 export async function GET(
@@ -55,11 +55,7 @@ export async function GET(
 
         const isMember = isMemberOf(me, members);
         const isModerator = isMemberOf(me, mods);
-        const isCreator = me && (
-            typeof community.creator === "object" && "_id" in community.creator
-                ? community.creator._id.equals(me)
-                : (community.creator as Types.ObjectId).equals(me)
-        );
+        const isCreator = isCreatorOf(me, community.creator);
 
         // 7) Respond
         return NextResponse.json(

@@ -1,12 +1,13 @@
 // src/lib/utils/communityUtils.ts
 import { Types } from "mongoose";
+import { PopulatedCreator } from "@/types/CommunityType";
 
 /**
  * Maps a creator object from MongoDB to a consistent format for API responses
  * Handles both populated and unpopulated creator references
  */
 export function mapCreator(
-  creator: Types.ObjectId | { _id: Types.ObjectId; username?: string; name?: string; image?: string }
+  creator: Types.ObjectId | PopulatedCreator
 ): { id: string; username: string; name: string; image?: string } {
   if (typeof creator === "object" && "username" in creator && creator.username) {
     return {
@@ -42,7 +43,7 @@ export function isMemberOf(
 /**
  * Safely gets the length of an array, handling null/undefined
  */
-export function safeArrayLength(arr: any[] | undefined | null): number {
+export function safeArrayLength<T>(arr: T[] | undefined | null): number {
   if (!arr || !Array.isArray(arr)) {
     return 0;
   }
@@ -62,7 +63,7 @@ export function isValidObjectId(id: string): boolean {
  */
 export function isCreatorOf(
   userId: Types.ObjectId | null,
-  creator: Types.ObjectId | { _id: Types.ObjectId }
+  creator: Types.ObjectId | PopulatedCreator
 ): boolean {
   if (!userId) return false;
 
