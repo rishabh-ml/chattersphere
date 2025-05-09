@@ -7,28 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
-      <change afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/explore/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/explore/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/home/Feed.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/home/Feed.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/communities/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/[postId]/vote/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/[postId]/vote/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/popular/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/popular/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/icon0.svg" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/icon0.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/community-list.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/community-list.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/create-community-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/create-community-form.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/create-post-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/create-post-form.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/post-editor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/post-editor.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/PostContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PostContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/tailwind.config.js" afterDir="false" />
-    </list>
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
     <list id="c5eea045-d135-4827-b36b-ae86da822b84" name="No push" comment="">
       <change afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/next.config.js" afterDir="false" />
@@ -196,7 +175,7 @@
       <workItem from="1745478713365" duration="243000" />
       <workItem from="1745482797577" duration="3843000" />
       <workItem from="1745487336664" duration="10988000" />
-      <workItem from="1745566959644" duration="13417000" />
+      <workItem from="1745566959644" duration="13884000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial project structure with components, theming, and layout">
       <option name="closed" value="true" />
@@ -286,7 +265,15 @@
       <option name="project" value="LOCAL" />
       <updated>1745571773014</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1745580873167</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1745580873167</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
