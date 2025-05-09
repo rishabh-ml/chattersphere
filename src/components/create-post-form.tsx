@@ -32,8 +32,8 @@ export default function CreatePostForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
-  const { createPost } = usePosts();
-  const { isSignedIn } = useAuth();
+  const { createPost, error } = usePosts();
+  const { isSignedIn, userId } = useAuth();
 
   // Collapse editor when clicking outside if there's no content
   useEffect(() => {
@@ -87,16 +87,30 @@ export default function CreatePostForm({
 
     try {
       setIsSubmitting(true);
+      console.log(`[CreatePostForm] Submitting post with userId: ${userId}, content length: ${trimmed.length}`);
+
       const post = await createPost(trimmed, communityId || undefined);
+
       if (!post) {
-        toast.error("Unable to create post. Please try again.");
+        if (error) {
+          toast.error(`Error: ${error}`);
+          console.error(`[CreatePostForm] Post creation failed with error: ${error}`);
+        } else {
+          toast.error("Unable to create post. Please try again.");
+          console.error('[CreatePostForm] Post creation failed without specific error');
+        }
         return;
       }
+
+      console.log(`[CreatePostForm] Post created successfully with ID: ${post.id}`);
       toast.success("Post created successfully!");
       setIsExpanded(false);
+      setContent("");
       onSuccess?.();
-    } catch {
-      toast.error("An unexpected error occurred.");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      console.error(`[CreatePostForm] Exception during post creation: ${errorMessage}`);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
