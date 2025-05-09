@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SPLITTER_PROPORTION" value="0.36594203" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+<<<<<<< HEAD
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+=======
+    <list default="true" id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="Refactor database connection handling, improve middleware configuration, and enhance Post model structure&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <change afterPath="$PROJECT_DIR$/src/app/(main)/community/[communityId]/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/(main)/profile/[userId]/page.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/communities/route.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ui/avatar.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ui/card.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ui/tooltip.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/posts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/webhook/clerk/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/community-list.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/community-list.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/create-post-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/create-post-form.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/tabs.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/tabs.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/under-development.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/under-development.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/context/CommunityContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/CommunityContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/context/PostContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PostContext.tsx" afterDir="false" />
+    </list>
+>>>>>>> 4c74be27f19335e5b956190fea65a1f797f84875
+    <list id="c5eea045-d135-4827-b36b-ae86da822b84" name="No push" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/next.config.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/next.config.mjs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DatabaseLocalColorSettings">
+    <colors>
+      <entry key="e98f1c90-4a09-4b52-94ce-826c44f109a6" value="Blue" />
+    </colors>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript JSX File" />
+        <option value="TypeScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;rishabh-ml&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/rishabh-ml/chattersphere&quot;,
+    &quot;accountId&quot;: &quot;5499b3b1-cae4-4331-afb5-f75bfde8b523&quot;
+  },
+  &quot;recentNewPullRequestHead&quot;: {
+    &quot;server&quot;: {
+      &quot;useHttp&quot;: false,
+      &quot;host&quot;: &quot;github.com&quot;,
+      &quot;port&quot;: null,
+      &quot;suffix&quot;: null
+    },
+    &quot;owner&quot;: &quot;rishabh-ml&quot;,
+    &quot;repository&quot;: &quot;chattersphere&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/.next/types/app/api/communities/route.ts" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2vv5Ugk8xzaD56Qdk1nTNqfbzVZ" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;JavaScript Debug.Next.js: debug client-side.executor&quot;: &quot;Debug&quot;,
+    &quot;Jest.All Tests.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;frontend&quot;,
+    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/datam/Desktop/chattersphere/public/avatars&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs.jest.jest_package&quot;: &quot;C:/Users/datam/Desktop/chattersphere&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;npm.lint.executor&quot;: &quot;Run&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\datam\\Desktop\\chattersphere\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\datam\Desktop\chattersphere\public\avatars" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\datam\Desktop\chattersphere" />
+      <recent name="C:\Users\datam\Desktop\chattersphere\src\app\(main)" />
+      <recent name="C:\Users\datam\Desktop\chattersphere\src" />
+      <recent name="C:\Users\datam\Desktop\chattersphere\public" />
+      <recent name="C:\Users\datam\Desktop\chattersphere\public\avatars" />
+    </key>
+  </component>
+  <component name="RunManager" selected="npm.dev">
+    <configuration name="Next.js: debug client-side" type="JavascriptDebugType" uri="http://localhost:3000/">
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="lint" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="lint" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.dev" />
+        <item itemvalue="npm.lint" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-WS-251.23774.424" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="196753e1-821d-400d-9d9c-9e2c8b595634" name="Changes" comment="" />
+      <created>1745012727869</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1745012727869</updated>
+      <workItem from="1745012730147" duration="12983000" />
+      <workItem from="1745062326619" duration="11237000" />
+      <workItem from="1745221723359" duration="772000" />
+      <workItem from="1745223495608" duration="441000" />
+      <workItem from="1745281223704" duration="7574000" />
+      <workItem from="1745345473671" duration="5507000" />
+      <workItem from="1745405054005" duration="26144000" />
+      <workItem from="1745476296578" duration="90000" />
+      <workItem from="1745476503177" duration="17000" />
+      <workItem from="1745476544897" duration="1638000" />
+      <workItem from="1745478713365" duration="243000" />
+      <workItem from="1745482797577" duration="3843000" />
+      <workItem from="1745487336664" duration="10988000" />
+      <workItem from="1745566959644" duration="13884000" />
+<<<<<<< HEAD
+=======
+      <workItem from="1745592152307" duration="4504000" />
+      <workItem from="1745614438244" duration="2816000" />
+      <workItem from="1745687643701" duration="180000" />
+      <workItem from="1745687843042" duration="16138000" />
+>>>>>>> 4c74be27f19335e5b956190fea65a1f797f84875
+    </task>
+    <task id="LOCAL-00001" summary="Add initial project structure with components, theming, and layout">
+      <option name="closed" value="true" />
+      <created>1745053161327</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1745053161327</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Refactor layout and add manifest for PWA support">
+      <option name="closed" value="true" />
+      <created>1745053935494</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1745053935494</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Add utility functions, components, and middleware for enhanced UI and authentication">
+      <option name="closed" value="true" />
+      <created>1745085396992</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1745085396993</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Update ClerkProvider to use publishable key from environment variables">
+      <option name="closed" value="true" />
+      <created>1745085840632</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1745085840632</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Refactor StepCard and TestimonialCard for improved performance and interactivity">
+      <option name="closed" value="true" />
+      <created>1745189201896</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1745189201896</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Refactor layout for improved structure and remove unused theme script">
+      <option name="closed" value="true" />
+      <created>1745189890256</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1745189890256</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Add database connection and feed components for improved data handling and user experience">
+      <option name="closed" value="true" />
+      <created>1745193501993</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1745193501993</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Refactor database connection handling and improve error management in API routes">
+      <option name="closed" value="true" />
+      <created>1745194422326</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1745194422326</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Add skeleton component and under-development pages; implement sidebar and dropdown menu">
+      <option name="closed" value="true" />
+      <created>1745411493657</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1745411493657</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Refactor navigation links and add new pages for Privacy Policy and Contact Us&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1745449308857</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1745449308857</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1745571773014</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1745571773014</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1745580873167</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1745580873167</updated>
+    </task>
+<<<<<<< HEAD
+    <option name="localTasksCounter" value="13" />
+=======
+    <task id="LOCAL-00013" summary="Refactor database connection handling, improve middleware configuration, and enhance Post model structure&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;">
+      <option name="closed" value="true" />
+      <created>1745687922018</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1745687922018</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
+>>>>>>> 4c74be27f19335e5b956190fea65a1f797f84875
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.bin" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Add initial project structure with components, theming, and layout" />
+    <MESSAGE value="Refactor layout and add manifest for PWA support" />
+    <MESSAGE value="Add utility functions, components, and middleware for enhanced UI and authentication" />
+    <MESSAGE value="Update ClerkProvider to use publishable key from environment variables" />
+    <MESSAGE value="Refactor StepCard and TestimonialCard for improved performance and interactivity" />
+    <MESSAGE value="Refactor layout for improved structure and remove unused theme script" />
+    <MESSAGE value="Add database connection and feed components for improved data handling and user experience" />
+    <MESSAGE value="Refactor database connection handling and improve error management in API routes" />
+    <MESSAGE value="Add skeleton component and under-development pages; implement sidebar and dropdown menu" />
+    <MESSAGE value="Refactor navigation links and add new pages for Privacy Policy and Contact Us&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <MESSAGE value="Add Prettier configuration, ignore files, and implement skeleton components for posts and comments&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <MESSAGE value="Refactor Tailwind CSS configuration, enhance ExplorePage layout, and implement community API routes&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <MESSAGE value="Refactor database connection handling, improve middleware configuration, and enhance Post model structure&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor database connection handling, improve middleware configuration, and enhance Post model structure&#10;&#10;Co-authored-by: princedwivedi2 &lt;officialprince921@gmail.com&gt;" />
+  </component>
+</project>
