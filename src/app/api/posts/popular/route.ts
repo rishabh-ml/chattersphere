@@ -127,11 +127,12 @@ export async function GET(req: NextRequest) {
 
     const pagePosts = scored.slice(skip, skip + limit);
 
-    // load user for vote flags
+    // load user for vote flags and saved posts
     let me: Types.ObjectId | null = null;
+    let user = null;
     if (userId) {
-      const cu = await User.findOne({ clerkId: userId });
-      if (cu) me = cu._id as Types.ObjectId;
+      user = await User.findOne({ clerkId: userId });
+      if (user) me = user._id as Types.ObjectId;
     }
 
     // transform for API
@@ -188,6 +189,9 @@ export async function GET(req: NextRequest) {
           ? downvotes.some((id) => id.equals(me))
           : false;
 
+      // Check if the post is saved by the user
+      const isSaved = me && user ? user.savedPosts.some((id) => id.equals(_id)) : false;
+
       return {
         id: _id.toString(),
         author: authorInfo,
@@ -199,6 +203,7 @@ export async function GET(req: NextRequest) {
         commentCount: comments.length,
         isUpvoted: isUp,
         isDownvoted: isDown,
+        isSaved,
         createdAt: createdAt.toISOString(),
         updatedAt: updatedAt.toISOString(),
         popularityScore: score.toFixed(2),

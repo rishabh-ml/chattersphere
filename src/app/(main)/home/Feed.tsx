@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import PostCard from "@/components/post-card";
-import { type Post } from "@/types";
+import { type Post } from "@/context/PostContext";
 import { motion } from "framer-motion";
 
 export default function Feed() {
@@ -59,7 +59,7 @@ export default function Feed() {
                     post={{
                         id: "dummy-id",
                         author: {
-                            _id: "dummy-author-id",
+                            id: "dummy-author-id",
                             username: "placeholder",
                             name: "Rishabh",
                             image: undefined,

@@ -2,69 +2,173 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Share2, MessageCircle, User, Users, Info, GridIcon, Calendar } from "lucide-react";
-import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { User } from "@/types";
+import ProfileHeader from "@/components/Profile/ProfileHeader";
+import ProfileTabs from "@/components/Profile/ProfileTabs";
+import ErrorBoundary from "@/components/error-boundary";
+import { useFetch } from "@/hooks/useFetch";
+import { sanitizeInput } from "@/lib/security";
 
-interface PublicUser {
-    id: string;
-    username: string;
-    name: string;
-    image?: string;
-    followerCount: number;
-    followingCount: number;
-    communityCount: number;
-    joinedDate: string;
-    isFollowing: boolean;
-}
-
-export default function PublicProfilePage() {
+export default function ProfilePage() {
     const { userId } = useParams<{ userId: string }>();
     const router = useRouter();
-    const [user, setUser] = useState<PublicUser | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { user: clerkUser, isSignedIn } = useUser();
     const [followLoading, setFollowLoading] = useState(false);
+    // Add state for user to fix the missing setUser issue
+    const [userState, setUserState] = useState<User | null>(null);
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const res = await fetch(`/api/users/${userId}`);
-                if (!res.ok) throw new Error("Failed to fetch user profile");
-                const data = await res.json();
-                setUser(data.user);
-            } catch (err) {
-                setError((err as Error).message);
-            } finally {
-                setLoading(false);
-            }
-        };
+    // Sanitize userId to prevent injection attacks
+    const sanitizedUserId = userId ? sanitizeInput(userId.toString()) : null;
 
-        if (userId) {
-            fetchUser();
+    // Use our optimized fetch hook for data fetching with retries
+    const {
+        data: profileData,
+        loading,
+        error: fetchError,
+        refetch
+    } = useFetch<{ profile: User }>(
+        sanitizedUserId ? `/api/profile/${sanitizedUserId}` : '',
+        {
+            retries: 2,
+            retryDelay: 1000
         }
-    }, [userId]);
+    );
+
+    // Update userState when profileData changes
+    useEffect(() => {
+        if (profileData?.profile) {
+            setUserState(profileData.profile);
+        }
+    }, [profileData]);
+
+    // Use userState instead of directly accessing profileData
+    const user = userState;
+    const error = fetchError?.message || (!sanitizedUserId ? "Invalid or missing userId" : null);
+
+    // Check if the current user is the profile owner
+    const isOwner = isSignedIn && user?.clerkId === clerkUser?.id;
 
     const handleFollowToggle = async () => {
-        if (!user) return;
+        if (!user || !isSignedIn) {
+            toast.error("You must be signed in to follow users");
+            return;
+        }
+
         try {
             setFollowLoading(true);
-            const res = await fetch(`/api/users/${user.id}/follow`, {
+            const res = await fetch(`/api/users/${userId}/follow`, {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
             });
-            if (!res.ok) throw new Error("Failed to update follow status");
-            const data = await res.json();
-            setUser((prev) => prev && { ...prev, isFollowing: data.isFollowing, followerCount: data.followerCount });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to toggle follow status");
+            }
+
+            setUserState(prev => prev ? {
+                ...prev,
+                isFollowing: !prev.isFollowing,
+                followerCount: prev.isFollowing ? prev.followerCount - 1 : prev.followerCount + 1
+            } : null);
+
+            toast.success(user.isFollowing ? "Unfollowed successfully" : "Followed successfully");
         } catch (err) {
-            console.error("Follow error:", err);
+            console.error("Follow toggle error:", err);
+            toast.error((err as Error).message || "Failed to update follow status");
         } finally {
             setFollowLoading(false);
+        }
+    };
+
+    const handleAvatarUpload = async (file: File) => {
+        if (!user || !isOwner) {
+            toast.error("You can only update your own profile");
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append("avatar", file);
+
+            const res = await fetch(`/api/profile/${userId}/avatar`, {
+                method: "PUT",
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to upload avatar");
+            }
+
+            const data = await res.json();
+            setUserState(prev => prev ? { ...prev, image: data.avatarUrl } : null);
+        } catch (err) {
+            console.error("Avatar upload error:", err);
+            throw err; // Re-throw to be handled by the component
+        }
+    };
+
+    const handleProfileUpdate = async (data: any) => {
+        if (!user || !isOwner) {
+            toast.error("You can only update your own profile");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/profile/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to update profile");
+            }
+
+            const responseData = await res.json();
+            setUserState(prev => prev ? { ...prev, ...responseData.profile } : null);
+        } catch (err) {
+            console.error("Profile update error:", err);
+            throw err; // Re-throw to be handled by the component
+        }
+    };
+
+    const handlePrivacyUpdate = async (data: any) => {
+        if (!user || !isOwner) {
+            toast.error("You can only update your own privacy settings");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/profile/${userId}/privacy`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Failed to update privacy settings");
+            }
+
+            const responseData = await res.json();
+            setUserState(prev => prev ? { ...prev, privacySettings: responseData.privacySettings } : null);
+        } catch (err) {
+            console.error("Privacy settings update error:", err);
+            throw err; // Re-throw to be handled by the component
         }
     };
 
@@ -100,108 +204,27 @@ export default function PublicProfilePage() {
     }
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-4xl mx-auto pb-12">
-            {/* Profile Banner */}
-            <div className="relative h-64 w-full bg-gradient-to-r from-indigo-500 via-purple-400 to-pink-400 rounded-b-lg overflow-hidden" />
+        <ErrorBoundary>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="max-w-4xl mx-auto pb-12"
+            >
+                <ProfileHeader
+                    user={user}
+                    isOwner={isOwner || false}
+                    onAvatarUpload={handleAvatarUpload}
+                    onFollowToggle={handleFollowToggle}
+                    followLoading={followLoading}
+                />
 
-            {/* Profile Header */}
-            <div className="relative px-6">
-                <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="relative mt-[-64px]">
-                    <Avatar className="h-32 w-32 border-4 border-white shadow-md">
-                        {user.image ? (
-                            <AvatarImage src={user.image} alt={user.name} />
-                        ) : (
-                            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-600 text-white text-4xl">
-                                {user.name.charAt(0)}
-                            </AvatarFallback>
-                        )}
-                    </Avatar>
-                </motion.div>
-
-                <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="mt-4">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
-                            <p className="text-gray-500 flex items-center gap-1">
-                                <span>@{user.username}</span>
-                                <span className="text-gray-300 px-1">•</span>
-                                <span className="text-sm flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Joined {user.joinedDate ? format(new Date(user.joinedDate), 'MMM yyyy') : 'recently'}
-                </span>
-                            </p>
-                        </div>
-
-                        <div className="flex gap-2 mt-4 md:mt-0">
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="outline" size="icon" className="rounded-full">
-                                            <Share2 className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Share profile</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-
-                            <Button
-                                disabled={followLoading}
-                                onClick={handleFollowToggle}
-                                className={user.isFollowing ? "bg-gray-200 text-gray-600" : "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"}
-                            >
-                                {user.isFollowing ? "Unfollow" : "Follow"}
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex flex-wrap gap-6 mt-6">
-                        <Badge variant="secondary" className="px-4 py-2 rounded-full">
-                            <User className="h-3.5 w-3.5 mr-1 text-indigo-500" />
-                            <span className="font-semibold text-indigo-700">{user.followerCount}</span> Followers
-                        </Badge>
-                        <Badge variant="secondary" className="px-4 py-2 rounded-full">
-                            <User className="h-3.5 w-3.5 mr-1 text-indigo-500" />
-                            <span className="font-semibold text-indigo-700">{user.followingCount}</span> Following
-                        </Badge>
-                        <Badge variant="secondary" className="px-4 py-2 rounded-full">
-                            <Users className="h-3.5 w-3.5 mr-1 text-indigo-500" />
-                            <span className="font-semibold text-indigo-700">{user.communityCount}</span> Communities
-                        </Badge>
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* Tabs */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-8 px-6">
-                <Tabs defaultValue="about">
-                    <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto">
-                        <TabsTrigger value="about" className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">
-                            <Info className="h-4 w-4 mr-2" /> About
-                        </TabsTrigger>
-                        <TabsTrigger value="posts" className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700">
-                            <GridIcon className="h-4 w-4 mr-2" /> Posts
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="about" className="mt-6">
-                        <div className="bg-white rounded-lg p-6 shadow-sm">
-                            <h2 className="text-xl font-semibold mb-2">Profile Info</h2>
-                            <p><strong>Username:</strong> @{user.username}</p>
-                            <p><strong>Joined:</strong> {format(new Date(user.joinedDate), 'MMMM d, yyyy')}</p>
-                            <p><strong>Bio:</strong> No bio yet.</p>
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="posts" className="mt-6">
-                        <div className="bg-white rounded-lg p-6 shadow-sm text-center text-gray-500">
-                            No posts available yet.
-                        </div>
-                    </TabsContent>
-                </Tabs>
+                <ProfileTabs
+                    user={user}
+                    isOwner={isOwner || false}
+                    onProfileUpdate={handleProfileUpdate}
+                    onPrivacyUpdate={handlePrivacyUpdate}
+                />
             </motion.div>
-        </motion.div>
+        </ErrorBoundary>
     );
 }

@@ -3,7 +3,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
-import Community from "@/models/Community";
 import type { Types } from "mongoose";
 
 export async function GET(
@@ -13,15 +12,29 @@ export async function GET(
     try {
         await connectToDatabase();
 
+        // Define user document type
+        interface UserDocument {
+            _id: Types.ObjectId;
+            communities: CommunityDocument[];
+        }
+
         // 1) Load user
-        const user = await User.findById(params.userId).populate("communities").lean();
+        const user = await User.findById(params.userId).populate("communities").lean() as UserDocument | null;
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
+        // Define the community type
+        interface CommunityDocument {
+            _id: Types.ObjectId;
+            name: string;
+            image?: string;
+            members: Types.ObjectId[];
+        }
+
         // 2) Transform communities
-        const communities = (user.communities as any[]).map((community) => ({
+        const communities = user.communities.map((community) => ({
             id: community._id.toString(),
             name: community.name,
             image: community.image || "/placeholder.png",

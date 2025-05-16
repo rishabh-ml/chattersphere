@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowUp, ArrowDown, MessageSquare, Bookmark, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { type Post } from "@/context/PostContext";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import DOMPurify from "isomorphic-dompurify";
+import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
 
 interface PostCardProps {
     post: Post;
@@ -23,7 +26,15 @@ export default function PostCard({ post, onVote }: PostCardProps) {
     const [voteCount, setVoteCount] = useState(post.voteCount);
     const [isUpvoted, setIsUpvoted] = useState(post.isUpvoted);
     const [isDownvoted, setIsDownvoted] = useState(post.isDownvoted);
-    const [saved, setSaved] = useState(false);
+    const [saved, setSaved] = useState(post.isSaved || false);
+    const { isSignedIn } = useUser();
+
+    // Initialize saved state from post prop if available
+    useEffect(() => {
+        if (post.isSaved !== undefined) {
+            setSaved(post.isSaved);
+        }
+    }, [post.isSaved]);
 
     const handleUpvote = async () => {
         if (onVote) {
@@ -67,8 +78,36 @@ export default function PostCard({ post, onVote }: PostCardProps) {
         }
     };
 
-    const toggleSave = () => {
-        setSaved(!saved);
+    const toggleSave = async () => {
+        if (!isSignedIn) {
+            toast.error("Please sign in to save posts");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/posts/${post.id}/save`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save post');
+            }
+
+            const data = await response.json();
+            setSaved(data.isSaved);
+
+            if (data.isSaved) {
+                toast.success("Post saved successfully");
+            } else {
+                toast.success("Post removed from saved items");
+            }
+        } catch (error) {
+            console.error('Error saving post:', error);
+            toast.error("Failed to save post");
+        }
     };
 
     return (
@@ -96,7 +135,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                             </div>
                         )}
                         <div>
-                            <Link href={`/profile/${post.author._id}`} className="text-sm font-medium text-gray-900 hover:text-[#00AEEF] transition-colors">
+                            <Link href={`/profile/${post.author.id}`} className="text-sm font-medium text-gray-900 hover:text-[#00AEEF] transition-colors">
                                 {post.author.name}
                             </Link>
                             <div className="flex items-center gap-2">
@@ -106,7 +145,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                                 {post.community && (
                                     <>
                                         <span className="text-xs text-gray-500">•</span>
-                                        <Link href={`/community/${post.community._id}`}>
+                                        <Link href={`/community/${post.community.id}`}>
                                             <Badge variant="outline" className="text-xs bg-blue-50 text-[#00AEEF] hover:bg-blue-100 border-blue-100">
                                                 {post.community.name}
                                             </Badge>
@@ -125,6 +164,43 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                     aria-label="Post content"
                 />
+
+                {/* Media Gallery */}
+                {post.mediaUrls && post.mediaUrls.length > 0 && (
+                    <div className="mb-4">
+                        {post.mediaUrls.length === 1 ? (
+                            <div className="rounded-md overflow-hidden">
+                                <Image
+                                    src={post.mediaUrls[0]}
+                                    alt="Post media"
+                                    width={600}
+                                    height={400}
+                                    className="w-full h-auto object-cover max-h-[400px]"
+                                />
+                            </div>
+                        ) : (
+                            <Carousel className="w-full">
+                                <CarouselContent>
+                                    {post.mediaUrls.map((url, index) => (
+                                        <CarouselItem key={index}>
+                                            <div className="rounded-md overflow-hidden">
+                                                <Image
+                                                    src={url}
+                                                    alt={`Post media ${index + 1}`}
+                                                    width={600}
+                                                    height={400}
+                                                    className="w-full h-auto object-cover max-h-[400px]"
+                                                />
+                                            </div>
+                                        </CarouselItem>
+                                    ))}
+                                </CarouselContent>
+                                <CarouselPrevious className="left-2" />
+                                <CarouselNext className="right-2" />
+                            </Carousel>
+                        )}
+                    </div>
+                )}
 
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -167,10 +243,12 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                         </div>
 
                         {/* Comments */}
-                        <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-500 hover:text-[#00AEEF] hover:bg-blue-50">
-                            <MessageSquare className="h-4 w-4" />
-                            <span className="text-xs">{post.commentCount}</span>
-                        </Button>
+                        <Link href={`/posts/${post.id}`}>
+                            <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-500 hover:text-[#00AEEF] hover:bg-blue-50">
+                                <MessageSquare className="h-4 w-4" />
+                                <span className="text-xs">{post.commentCount}</span>
+                            </Button>
+                        </Link>
                     </div>
 
                     <div className="flex items-center gap-1">

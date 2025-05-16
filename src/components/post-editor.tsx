@@ -12,9 +12,11 @@ import {
   AlignRight,
   Heading1,
   Heading2,
+  Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import createDOMPurify from "dompurify";
+import MediaUploader from "@/components/media-uploader";
 
 interface PostEditorProps {
   value: string;
@@ -22,6 +24,7 @@ interface PostEditorProps {
   placeholder?: string;
   minHeight?: string;
   maxHeight?: string;
+  enableMediaUpload?: boolean;
 }
 
 export default function PostEditor({
@@ -30,9 +33,11 @@ export default function PostEditor({
                                      placeholder = "What's on your mind?",
                                      minHeight = "120px",
                                      maxHeight = "300px",
+                                     enableMediaUpload = true,
                                    }: PostEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [showMediaUploader, setShowMediaUploader] = useState<boolean>(false);
 
   // Initialize DOMPurify once
   const DOMPurify = typeof window !== "undefined"
@@ -176,6 +181,43 @@ export default function PostEditor({
         range.insertNode(el);
       });
 
+  // Handle media upload completion
+  const handleMediaUpload = (url: string) => {
+    // Insert the image at the current cursor position or at the end
+    if (editorRef.current) {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        const imgElement = document.createElement('img');
+        imgElement.src = url;
+        imgElement.alt = 'Uploaded image';
+        imgElement.style.maxWidth = '100%';
+        imgElement.className = 'my-2 rounded-md';
+
+        range.insertNode(imgElement);
+        range.setStartAfter(imgElement);
+        range.setEndAfter(imgElement);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else {
+        // If no selection, append to the end
+        const imgElement = document.createElement('img');
+        imgElement.src = url;
+        imgElement.alt = 'Uploaded image';
+        imgElement.style.maxWidth = '100%';
+        imgElement.className = 'my-2 rounded-md';
+
+        editorRef.current.appendChild(imgElement);
+      }
+
+      // Trigger input event to update the value
+      handleInput();
+
+      // Hide the media uploader
+      setShowMediaUploader(false);
+    }
+  };
+
   return (
       <div className="w-full">
         <div
@@ -267,7 +309,29 @@ export default function PostEditor({
           >
             <AlignRight className="h-4 w-4" />
           </Button>
+
+          {enableMediaUpload && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMediaUploader(!showMediaUploader)}
+              className="h-8 px-2 text-gray-700 hover:bg-gray-200 ml-auto"
+            >
+              <ImageIcon className="h-4 w-4" />
+            </Button>
+          )}
         </div>
+
+        {showMediaUploader && enableMediaUpload && (
+          <div className="mb-3">
+            <MediaUploader
+              onUploadComplete={handleMediaUpload}
+              type="post"
+              className="mt-2"
+            />
+          </div>
+        )}
 
         <div
             ref={editorRef}

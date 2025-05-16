@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
-import User, { IUser } from "@/models/User";
+import User from "@/models/User";
 import mongoose from "mongoose";
 
 interface PublicUserResponse {
@@ -15,6 +15,22 @@ interface PublicUserResponse {
   communityCount: number;
   joinedDate: string;
   isFollowing: boolean;
+}
+
+// Define MongoDB document type after lean()
+interface UserDocument {
+  _id: mongoose.Types.ObjectId;
+  clerkId: string;
+  username: string;
+  name: string;
+  email: string;
+  bio?: string;
+  image?: string;
+  following: mongoose.Types.ObjectId[];
+  followers: mongoose.Types.ObjectId[];
+  communities: mongoose.Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export async function GET(
@@ -33,13 +49,13 @@ export async function GET(
     const userDoc = await User.findById(params.userId)
         .populate("communities", "name image")
         .lean()
-        .exec();
+        .exec() as UserDocument | null;
 
     if (!userDoc) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const user = {
+    const user: PublicUserResponse = {
       id: userDoc._id.toString(),
       username: userDoc.username,
       name: userDoc.name,
@@ -49,13 +65,13 @@ export async function GET(
       communityCount: userDoc.communities.length,
       joinedDate: userDoc.createdAt.toISOString(),
       isFollowing: false,
-    } satisfies PublicUserResponse;
+    };
 
     if (clerkUserId) {
-      const me = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+      const me = await User.findOne({ clerkId: clerkUserId }).lean().exec() as UserDocument | null;
       if (me) {
         user.isFollowing = me.following.some(
-            (id) => id.toString() === userDoc._id.toString()
+            (id: mongoose.Types.ObjectId) => id.toString() === userDoc._id.toString()
         );
       }
     }

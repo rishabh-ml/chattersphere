@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
+import mongoose from "mongoose";
 
 export async function POST(req: NextRequest, { params }: { params: { userId: string } }) {
   try {
@@ -28,15 +29,30 @@ export async function POST(req: NextRequest, { params }: { params: { userId: str
     if (alreadyFollowing) {
       // Unfollow
       currentUser.following = currentUser.following.filter(
-          (id) => !id.equals(targetUser._id)
+          (id: mongoose.Types.ObjectId) => !id.equals(targetUser._id)
       );
       targetUser.followers = targetUser.followers.filter(
-          (id) => !id.equals(currentUser._id)
+          (id: mongoose.Types.ObjectId) => !id.equals(currentUser._id)
       );
     } else {
       // Follow
       currentUser.following.push(targetUser._id);
       targetUser.followers.push(currentUser._id);
+
+      // Create notification for new follow
+      try {
+        const Notification = mongoose.model('Notification');
+        await Notification.create({
+          recipient: targetUser._id,
+          sender: currentUser._id,
+          type: 'follow',
+          message: `${currentUser.name} started following you`,
+          read: false
+        });
+      } catch (notifError) {
+        console.error("Error creating notification:", notifError);
+        // Continue even if notification creation fails
+      }
     }
 
     await currentUser.save();

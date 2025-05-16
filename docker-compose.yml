@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        - NEXT_PUBLIC_ENABLE_VOICE_CHANNELS=${NEXT_PUBLIC_ENABLE_VOICE_CHANNELS}
+        - NEXT_PUBLIC_ENABLE_DIRECT_MESSAGES=${NEXT_PUBLIC_ENABLE_DIRECT_MESSAGES}
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/chattersphere
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - CLERK_WEBHOOK_SECRET=${CLERK_WEBHOOK_SECRET}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - REDIS_URL=redis://redis:6379
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ORG=${SENTRY_ORG}
+      - SENTRY_PROJECT=${SENTRY_PROJECT}
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+    networks:
+      - chattersphere-network
+
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    restart: unless-stopped
+    networks:
+      - chattersphere-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - chattersphere-network
+
+  # Optional: MongoDB admin interface
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_EXPRESS_USERNAME:-admin}
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_EXPRESS_PASSWORD:-password}
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - chattersphere-network
+
+volumes:
+  mongodb-data:
+  redis-data:
+
+networks:
+  chattersphere-network:
+    driver: bridge

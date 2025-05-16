@@ -8,6 +8,7 @@ export interface IPost extends Document {
     upvotes: Types.ObjectId[];
     downvotes: Types.ObjectId[];
     comments: Types.ObjectId[];
+    mediaUrls: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -43,6 +44,10 @@ const PostSchema = new Schema<IPost>(
         comments: {
             type: [Schema.Types.ObjectId],
             ref: "Comment",
+            default: []
+        },
+        mediaUrls: {
+            type: [String],
             default: []
         }
     },

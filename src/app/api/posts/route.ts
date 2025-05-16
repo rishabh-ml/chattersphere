@@ -6,6 +6,9 @@ import User from "@/models/User";
 import Post from "@/models/Post";
 import Community from "@/models/Community";
 import { Types } from "mongoose";
+import { invalidateCache } from "@/lib/redis";
+import { z } from "zod";
+import { rateLimit } from "@/middleware/rateLimit";
 
 type RawPost = {
   _id: Types.ObjectId;
@@ -28,9 +31,33 @@ type RawPost = {
   upvotes: Types.ObjectId[];
   downvotes: Types.ObjectId[];
   comments: Types.ObjectId[];
+  mediaUrls: string[];
   createdAt: Date;
   updatedAt: Date;
 };
+
+// Type for a populated post document
+interface PopulatedPost {
+  _id: Types.ObjectId;
+  author: {
+    _id: Types.ObjectId;
+    username: string;
+    name: string;
+    image?: string;
+  };
+  community?: {
+    _id: Types.ObjectId;
+    name: string;
+    image?: string;
+  };
+  content: string;
+  upvotes: Types.ObjectId[];
+  downvotes: Types.ObjectId[];
+  comments: Types.ObjectId[];
+  mediaUrls: string[];
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -168,6 +195,9 @@ export async function GET(req: NextRequest) {
       const isUpvoted = meId ? upvotes.some((u) => u.equals(meId)) : false;
       const isDownvoted = meId ? downvotes.some((d) => d.equals(meId)) : false;
 
+      // Check if the post is saved by the user
+      const isSaved = meId && user ? user.savedPosts.some((id) => id.equals(p._id)) : false;
+
       return {
         id: p._id.toString(),
         author: authorInfo,
@@ -177,8 +207,10 @@ export async function GET(req: NextRequest) {
         downvoteCount: downvotes.length,
         voteCount: upvotes.length - downvotes.length,
         commentCount: comments.length,
+        mediaUrls: p.mediaUrls || [],
         isUpvoted,
         isDownvoted,
+        isSaved,
         createdAt: p.createdAt.toISOString(),
         updatedAt: p.updatedAt.toISOString(),
       };
@@ -202,7 +234,26 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// Define validation schema for post creation
+const postCreateSchema = z.object({
+  content: z.string().trim().min(1, "Post content is required").max(50000, "Post too long; max 50000 chars"),
+  communityId: z.string().optional(),
+  mediaUrls: z.array(z.string().url("Invalid media URL")).optional(),
+});
+
 export async function POST(req: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await rateLimit(req, {
+    maxRequests: 10,  // 10 posts per minute
+    windowMs: 60000,  // 1 minute
+    identifier: 'posts:create'
+  });
+
+  // If rate limit response is not 'next', return it
+  if (rateLimitResponse.status !== 200) {
+    return rateLimitResponse;
+  }
+
   try {
     console.log('[POST] Received post creation request');
 
@@ -216,27 +267,25 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     console.log('[POST] Connected to database');
 
-    const { content, communityId } = (await req.json()) as {
-      content: string;
-      communityId?: string;
-    };
+    // Parse and validate request body
+    const body = await req.json();
+    const validationResult = postCreateSchema.safeParse(body);
 
+    if (!validationResult.success) {
+      const errorMessage = validationResult.error.errors.map(err =>
+        `${err.path.join('.')}: ${err.message}`
+      ).join(', ');
+
+      return NextResponse.json(
+        { error: "Validation error", details: errorMessage },
+        { status: 400 }
+      );
+    }
+
+    const { content, communityId, mediaUrls = [] } = validationResult.data;
     console.log(`[POST] Received content (${content.length} chars)${communityId ? ` for community ${communityId}` : ''}`);
 
-
-    if (!content.trim()) {
-      return NextResponse.json(
-          { error: "Post content is required" },
-          { status: 400 }
-      );
-    }
-    if (content.length > 50000) {
-      return NextResponse.json(
-          { error: "Post too long; max 50000 chars" },
-          { status: 400 }
-      );
-    }
-
+    // Sanitize content to prevent XSS attacks
     const sanitized = content
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
         .replace(/on\w+="[^"]*"/g, "")
@@ -281,6 +330,7 @@ export async function POST(req: NextRequest) {
       upvotes: [],
       downvotes: [],
       comments: [],
+      mediaUrls: mediaUrls || [],
       community: communityId,
     });
 
@@ -306,22 +356,33 @@ export async function POST(req: NextRequest) {
       await newPost.populate("community", "name image");
     }
 
+    // Cast to populated post type
+    const populatedPost = newPost as unknown as PopulatedPost;
+
+    // Invalidate feed caches
+    await invalidateCache(`feed:${userId}:*`);
+
+    // If post is in a community, invalidate that community's cache too
+    if (communityId) {
+      await invalidateCache(`community:${communityId}:*`);
+    }
+
     return NextResponse.json(
         {
           post: {
-            id: newPost._id.toString(),
+            id: populatedPost._id.toString(),
             author: {
-              id: newPost.author._id.toString(),
-              username: newPost.author.username,
-              name: newPost.author.name,
-              image: newPost.author.image,
+              id: populatedPost.author._id.toString(),
+              username: populatedPost.author.username,
+              name: populatedPost.author.name,
+              image: populatedPost.author.image,
             },
-            content: newPost.content,
-            community: newPost.community
+            content: populatedPost.content,
+            community: populatedPost.community
                 ? {
-                  id: newPost.community._id.toString(),
-                  name: newPost.community.name,
-                  image: newPost.community.image,
+                  id: populatedPost.community._id.toString(),
+                  name: populatedPost.community.name,
+                  image: populatedPost.community.image,
                 }
                 : undefined,
             upvoteCount: 0,
@@ -330,6 +391,7 @@ export async function POST(req: NextRequest) {
             commentCount: 0,
             isUpvoted: false,
             isDownvoted: false,
+            mediaUrls: populatedPost.mediaUrls || [],
             createdAt: newPost.createdAt.toISOString(),
             updatedAt: newPost.updatedAt.toISOString(),
           },

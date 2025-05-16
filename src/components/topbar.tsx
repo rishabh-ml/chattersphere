@@ -1,15 +1,21 @@
 "use client"
 
-import { Search, Bell, PlusCircle, Menu, MessageSquare } from "lucide-react"
-import { UserButton } from "@clerk/nextjs"
+import { Search, PlusCircle, Menu, MessageSquare } from "lucide-react"
+import ProfileDropdown from "./ProfileDropdown"
+import { useUser } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
+import NotificationBell from "./notifications/NotificationBell"
+
 
 export function Topbar() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [searchFocused, setSearchFocused] = useState(false)
+    const router = useRouter()
+    const { user, isSignedIn } = useUser()
 
     // Handle scroll events for shadow effect
     useEffect(() => {
@@ -53,18 +59,8 @@ export function Topbar() {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
-                <div className="relative">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full text-gray-600 hover:text-[#00AEEF] hover:bg-blue-50 transition-colors"
-                        onClick={() => window.location.href = "/notifications"}
-                    >
-                        <Bell className="h-5 w-5" />
-                        <span className="sr-only">Notifications</span>
-                    </Button>
-                    <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-                </div>
+                {/* Notification Bell */}
+                <NotificationBell />
 
                 <div className="relative hidden md:block">
                     <Button
@@ -96,15 +92,8 @@ export function Topbar() {
                     <span className="sr-only">New Post</span>
                 </Button>
 
-                {/* Clerk UserButton to replace custom Avatar */}
-                <UserButton
-                    afterSignOutUrl="/"
-                    appearance={{
-                        elements: {
-                            userButtonAvatarBox: "h-9 w-9 border-2 border-white shadow-sm hover:border-[#00AEEF] transition-colors"
-                        }
-                    }}
-                />
+                {/* User Profile Dropdown */}
+                <ProfileDropdown />
             </div>
         </motion.div>
     )
