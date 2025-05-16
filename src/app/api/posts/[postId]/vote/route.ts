@@ -4,7 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Post from "@/models/Post";
-import type { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
+import { sanitizeInput } from "@/lib/security";
 
 export async function POST(
     req: NextRequest,
@@ -72,6 +73,29 @@ export async function POST(
     const isDownvoted = post.downvotes.some((id: Types.ObjectId) =>
         id.equals(me)
     );
+
+    // Create notification for upvote (only if this is a new upvote, not removing an upvote)
+    if (voteType === "upvote" && isUpvoted && !hasUpvoted) {
+      try {
+        const Notification = mongoose.model('Notification');
+        const postAuthor = await User.findById(post.author);
+
+        // Only create notification if the voter is not the post author
+        if (postAuthor && postAuthor._id.toString() !== me.toString()) {
+          await Notification.create({
+            recipient: post.author,
+            sender: me,
+            type: 'post_like',
+            message: `${currentUser.name} liked your post`,
+            read: false,
+            relatedPost: post._id
+          });
+        }
+      } catch (notifError) {
+        console.error("Error creating notification:", notifError);
+        // Continue even if notification creation fails
+      }
+    }
 
     return NextResponse.json(
         {

@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { Viewport } from "next";
 import React from "react";
 import { ClerkProvider } from "@clerk/nextjs";
+// We'll handle the EnableMock component in a client component instead
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const robotoMono = Roboto_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -70,8 +71,9 @@ export default function RootLayout({
     <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
       <html lang="en" className="scroll-smooth">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans bg-white text-gray-900`}
+          className={`${inter.variable} ${robotoMono.variable} antialiased font-sans bg-white text-gray-900`}
         >
+          {/* EnableMock component removed to fix SSR issues */}
           {children}
         </body>
       </html>

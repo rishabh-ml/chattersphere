@@ -1,16 +1,10 @@
 // Define common types used throughout the application
 
-export interface Post {
-  _id: string;
-  authorName: string;
-  content: string;
-  createdAt: string;
-  title?: string;
-  community?: string;
-  upvotes?: number;
-  comments?: number;
-  saved?: boolean;
-}
+// Import the Post type from PostContext to ensure consistency
+import { Post as PostContextType } from '@/context/PostContext';
+
+// Re-export the Post type from PostContext
+export type Post = PostContextType;
 
 export interface User {
   id: string;

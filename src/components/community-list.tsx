@@ -46,7 +46,7 @@ export default function CommunityList({
 
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore, fetchMoreCommunities, sortBy, observer.current]
+    [loading, hasMore, fetchMoreCommunities]
   );
 
   useEffect(() => {

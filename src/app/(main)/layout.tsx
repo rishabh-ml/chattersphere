@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { ToastProvider } from '@/components/providers/toast-provider';
+import { CreatePostModalProvider, useCreatePostModal } from '@/context/CreatePostModalContext';
 
-export default function HomeLayout({ children }: { children: React.ReactNode }) {
+function MainLayout({ children }: { children: React.ReactNode }) {
+    const { openModal } = useCreatePostModal();
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     // Handle scroll events for "back to top" button with SSR guard
@@ -71,6 +73,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
                     <Button
                         size="lg"
                         className="h-14 w-14 rounded-full shadow-lg bg-[#00AEEF] hover:bg-[#00AEEF]/90"
+                        onClick={openModal}
                     >
                         <Plus className="h-6 w-6 text-white" />
                         <span className="sr-only">Create new post</span>
@@ -101,5 +104,13 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
                 </AnimatePresence>
             </div>
         </ClerkProvider>
+    );
+}
+
+export default function HomeLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <CreatePostModalProvider>
+            <MainLayout>{children}</MainLayout>
+        </CreatePostModalProvider>
     );
 }

@@ -1,6 +1,7 @@
 "use client"
 
-import { Home, Compass, TrendingUp, Settings, HelpCircle, Bell, Bookmark, PlusCircle } from "lucide-react"
+import { Home, Compass, TrendingUp, Settings, HelpCircle, Bell, Bookmark, PlusCircle, User } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
 import {
     Sidebar as ShadcnSidebar,
     SidebarContent,
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils"
 
 export function Sidebar() {
     const pathname = usePathname()
+    const { user, isSignedIn } = useUser()
 
     const isActive = (path: string) => {
         return pathname === path
@@ -111,6 +113,35 @@ export function Sidebar() {
                                 <span>Saved</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
+
+                        {isSignedIn && user && (
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    className={cn(
+                                        "hover:bg-blue-50 hover:text-[#00AEEF] transition-colors",
+                                        pathname?.startsWith('/profile') && "bg-blue-50 text-[#00AEEF] font-medium"
+                                    )}
+                                    onClick={() => {
+                                        // Fetch the MongoDB user ID using the Clerk ID
+                                        fetch(`/api/users?clerkId=${user.id}`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                if (data.user && data.user.id) {
+                                                    window.location.href = `/profile/${data.user.id}`;
+                                                } else {
+                                                    console.error('Could not find user profile');
+                                                    // Show an error message to the user
+                                                    alert('Could not find your profile. Please try again later.');
+                                                }
+                                            })
+                                            .catch(err => console.error('Error fetching user profile:', err));
+                                    }}
+                                >
+                                    <User className="h-5 w-5 mr-3" />
+                                    <span>My Profile</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        )}
                     </SidebarMenu>
 
                     <SidebarSeparator className="my-4" />

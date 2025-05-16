@@ -1,4 +1,16 @@
 // User types
+export interface SocialLink {
+  platform: string;
+  url: string;
+}
+
+export interface PrivacySettings {
+  showEmail: boolean;
+  showActivity: boolean;
+  allowFollowers: boolean;
+  allowMessages: boolean;
+}
+
 export interface User {
   id: string;
   clerkId: string;
@@ -7,13 +19,21 @@ export interface User {
   email: string;
   bio?: string;
   image?: string;
+  pronouns?: string;
+  location?: string;
+  website?: string;
+  socialLinks?: SocialLink[];
+  interests?: string[];
   following: string[];
   followers: string[];
   communities: string[];
+  savedPosts?: string[];
+  privacySettings: PrivacySettings;
   followingCount: number;
   followerCount: number;
   communityCount: number;
   isFollowing: boolean;
+  lastSeen?: string;
   createdAt: string;
   updatedAt: string;
 }

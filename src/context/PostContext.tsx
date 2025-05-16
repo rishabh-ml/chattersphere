@@ -28,8 +28,10 @@ export interface Post {
     downvoteCount: number;
     voteCount: number;
     commentCount: number;
+    mediaUrls?: string[];
     isUpvoted: boolean;
     isDownvoted: boolean;
+    isSaved?: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -42,7 +44,8 @@ interface PostContextType {
     fetchMorePosts: () => Promise<void>;
     createPost: (
         content: string,
-        communityId?: string
+        communityId?: string,
+        mediaUrls?: string[]
     ) => Promise<Post | null>;
     votePost: (
         postId: string,
@@ -112,16 +115,16 @@ export const PostProvider: React.FC<{ children: ReactNode }> = ({
     const fetchMorePosts = useCallback(() => fetchPosts(false), [fetchPosts]);
 
     const createPost = useCallback(
-        async (content: string, communityId?: string): Promise<Post | null> => {
+        async (content: string, communityId?: string, mediaUrls?: string[]): Promise<Post | null> => {
             setLoading(true);
             setError(null);
             try {
-                console.log(`[PostContext] Creating post with content length: ${content.length}${communityId ? `, communityId: ${communityId}` : ''}`);
+                console.log(`[PostContext] Creating post with content length: ${content.length}${communityId ? `, communityId: ${communityId}` : ''}${mediaUrls?.length ? `, mediaUrls: ${mediaUrls.length}` : ''}`);
 
                 const res = await fetch("/api/posts", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ content, communityId }),
+                    body: JSON.stringify({ content, communityId, mediaUrls }),
                 });
 
                 const data = await res.json().catch((err) => {
