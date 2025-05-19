@@ -41,7 +41,12 @@ export async function GET(req: NextRequest) {
       async () => {
         const currentUser = await User.findOne({ clerkId: userId });
         if (!currentUser) {
-          throw new Error("User not found");
+          console.error(`User with clerkId ${userId} not found`);
+          // Return empty result instead of throwing
+          return {
+            posts: [],
+            pagination: { page, limit, totalPosts: 0, hasMore: false }
+          };
         }
 
         const queryCondition =
@@ -95,8 +100,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     console.error("Error fetching home feed:", err);
+
+    // Provide more detailed error message
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    console.error("Error details:", errorMessage);
+
     return NextResponse.json(
-        { error: "Failed to fetch home feed" },
+        {
+          error: "Failed to fetch home feed",
+          details: errorMessage,
+          timestamp: new Date().toISOString()
+        },
         { status: 500 }
     );
   }

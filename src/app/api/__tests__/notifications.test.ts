@@ -1,4 +1,26 @@
-import { NextRequest } from 'next/server';
+// Mock Next.js modules before importing them
+jest.mock('next/server', () => {
+  const originalModule = jest.requireActual('next/server');
+  return {
+    ...originalModule,
+    NextRequest: jest.fn().mockImplementation((url, init) => ({
+      url,
+      method: init?.method || 'GET',
+      headers: new Map(Object.entries(init?.headers || {})),
+      json: jest.fn().mockImplementation(() => Promise.resolve(init?.body ? JSON.parse(init.body) : {})),
+      nextUrl: { searchParams: new URLSearchParams() }
+    })),
+    NextResponse: {
+      json: jest.fn().mockImplementation((data, init) => ({
+        status: init?.status || 200,
+        json: () => Promise.resolve(data),
+        headers: new Map()
+      })),
+    },
+  };
+});
+
+import { NextRequest, NextResponse } from 'next/server';
 import { GET } from '../notifications/route';
 import { PUT as MarkAllRead } from '../notifications/read-all/route';
 import { PUT as MarkRead } from '../notifications/[notificationId]/read/route';
@@ -45,16 +67,16 @@ describe('Notifications API', () => {
     it('should return user notifications', async () => {
       // Mock auth
       (auth as jest.Mock).mockResolvedValue({ userId: 'clerk123' });
-      
+
       // Mock database connection
       (connectToDatabase as jest.Mock).mockResolvedValue(undefined);
-      
+
       // Mock User.findOne
-      (User.findOne as jest.Mock).mockResolvedValue({ 
+      (User.findOne as jest.Mock).mockResolvedValue({
         _id: 'user123',
         clerkId: 'clerk123',
       });
-      
+
       // Mock Notification.find
       (Notification.find as jest.Mock).mockReturnValue({
         sort: jest.fn().mockReturnThis(),
@@ -83,17 +105,17 @@ describe('Notifications API', () => {
           },
         ]),
       });
-      
+
       // Mock Notification.countDocuments
       (Notification.countDocuments as jest.Mock).mockResolvedValue(1);
-      
+
       // Create request
       const request = new NextRequest('http://localhost:3000/api/notifications');
-      
+
       // Call the handler
       const response = await GET(request);
       const data = await response.json();
-      
+
       // Assertions
       expect(response.status).toBe(200);
       expect(data.notifications).toBeDefined();
@@ -107,30 +129,30 @@ describe('Notifications API', () => {
     it('should mark all notifications as read', async () => {
       // Mock auth
       (auth as jest.Mock).mockResolvedValue({ userId: 'clerk123' });
-      
+
       // Mock database connection
       (connectToDatabase as jest.Mock).mockResolvedValue(undefined);
-      
+
       // Mock User.findOne
-      (User.findOne as jest.Mock).mockResolvedValue({ 
+      (User.findOne as jest.Mock).mockResolvedValue({
         _id: 'user123',
         clerkId: 'clerk123',
       });
-      
+
       // Mock Notification.updateMany
       (Notification.updateMany as jest.Mock).mockResolvedValue({
         modifiedCount: 5,
       });
-      
+
       // Create request
       const request = new NextRequest('http://localhost:3000/api/notifications/read-all', {
         method: 'PUT',
       });
-      
+
       // Call the handler
       const response = await MarkAllRead(request);
       const data = await response.json();
-      
+
       // Assertions
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
@@ -142,19 +164,19 @@ describe('Notifications API', () => {
     it('should mark a notification as read', async () => {
       // Mock auth
       (auth as jest.Mock).mockResolvedValue({ userId: 'clerk123' });
-      
+
       // Mock mongoose.Types.ObjectId.isValid
       (mongoose.Types.ObjectId.isValid as jest.Mock).mockReturnValue(true);
-      
+
       // Mock database connection
       (connectToDatabase as jest.Mock).mockResolvedValue(undefined);
-      
+
       // Mock User.findOne
-      (User.findOne as jest.Mock).mockResolvedValue({ 
+      (User.findOne as jest.Mock).mockResolvedValue({
         _id: 'user123',
         clerkId: 'clerk123',
       });
-      
+
       // Mock Notification.findById
       (Notification.findById as jest.Mock).mockResolvedValue({
         _id: 'notification1',
@@ -164,16 +186,16 @@ describe('Notifications API', () => {
         read: false,
         save: jest.fn().mockResolvedValue(true),
       });
-      
+
       // Create request
       const request = new NextRequest('http://localhost:3000/api/notifications/notification1/read', {
         method: 'PUT',
       });
-      
+
       // Call the handler
       const response = await MarkRead(request, { params: { notificationId: 'notification1' } });
       const data = await response.json();
-      
+
       // Assertions
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);

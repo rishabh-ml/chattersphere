@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import { z } from "zod";
 import { sanitizeInput } from "@/lib/security";
 import { rateLimit } from "@/middleware/rateLimit";
+import { VoteType } from "@/models/Vote";
 
 // Define validation schema for vote
 const voteSchema = z.object({
@@ -71,23 +72,47 @@ export async function POST(
 
     const { voteType } = validationResult.data;
 
-    // Check if user has already voted
-    const hasUpvoted = comment.upvotes.includes(user._id);
-    const hasDownvoted = comment.downvotes.includes(user._id);
+    // Get the Vote model
+    const Vote = mongoose.model('Vote');
 
-    // Handle voting logic
+    // Find existing vote
+    const existingVote = await Vote.findOne({
+      user: user._id,
+      target: comment._id,
+      targetType: 'Comment'
+    });
+
+    // Initialize vote status
+    let isUpvoted = false;
+    let isDownvoted = false;
+
+    // Handle vote logic
     if (voteType === "upvote") {
-      if (hasUpvoted) {
+      if (existingVote && existingVote.voteType === VoteType.UPVOTE) {
         // Remove upvote if already upvoted (toggle off)
-        await Comment.findByIdAndUpdate(sanitizedCommentId, {
-          $pull: { upvotes: user._id },
-        });
+        await Vote.deleteOne({ _id: existingVote._id });
+        // Decrement upvote count
+        comment.upvoteCount = Math.max(0, comment.upvoteCount - 1);
       } else {
-        // Add upvote and remove downvote if exists
-        await Comment.findByIdAndUpdate(sanitizedCommentId, {
-          $addToSet: { upvotes: user._id },
-          $pull: { downvotes: user._id },
-        });
+        if (existingVote) {
+          // Change from downvote to upvote
+          existingVote.voteType = VoteType.UPVOTE;
+          await existingVote.save();
+          // Update counts
+          comment.downvoteCount = Math.max(0, comment.downvoteCount - 1);
+          comment.upvoteCount += 1;
+        } else {
+          // Create new upvote
+          await Vote.create({
+            user: user._id,
+            target: comment._id,
+            targetType: 'Comment',
+            voteType: VoteType.UPVOTE
+          });
+          // Increment upvote count
+          comment.upvoteCount += 1;
+        }
+        isUpvoted = true;
 
         // Create notification for upvote (only for new upvotes)
         try {
@@ -114,37 +139,58 @@ export async function POST(
         }
       }
     } else if (voteType === "downvote") {
-      if (hasDownvoted) {
+      if (existingVote && existingVote.voteType === VoteType.DOWNVOTE) {
         // Remove downvote if already downvoted (toggle off)
-        await Comment.findByIdAndUpdate(sanitizedCommentId, {
-          $pull: { downvotes: user._id },
-        });
+        await Vote.deleteOne({ _id: existingVote._id });
+        // Decrement downvote count
+        comment.downvoteCount = Math.max(0, comment.downvoteCount - 1);
       } else {
-        // Add downvote and remove upvote if exists
-        await Comment.findByIdAndUpdate(sanitizedCommentId, {
-          $addToSet: { downvotes: user._id },
-          $pull: { upvotes: user._id },
-        });
+        if (existingVote) {
+          // Change from upvote to downvote
+          existingVote.voteType = VoteType.DOWNVOTE;
+          await existingVote.save();
+          // Update counts
+          comment.upvoteCount = Math.max(0, comment.upvoteCount - 1);
+          comment.downvoteCount += 1;
+        } else {
+          // Create new downvote
+          await Vote.create({
+            user: user._id,
+            target: comment._id,
+            targetType: 'Comment',
+            voteType: VoteType.DOWNVOTE
+          });
+          // Increment downvote count
+          comment.downvoteCount += 1;
+        }
+        isDownvoted = true;
       }
     }
 
-    // Get updated comment
-    const updatedComment = await Comment.findById(sanitizedCommentId);
-    if (!updatedComment) {
-      return NextResponse.json({ error: "Failed to update comment" }, { status: 500 });
-    }
+    // Save the updated comment
+    await comment.save();
 
-    // Check new vote status
-    const isUpvoted = updatedComment.upvotes.includes(user._id);
-    const isDownvoted = updatedComment.downvotes.includes(user._id);
+    // Check current vote status
+    if (!isUpvoted && !isDownvoted) {
+      const currentVote = await Vote.findOne({
+        user: user._id,
+        target: comment._id,
+        targetType: 'Comment'
+      });
+
+      if (currentVote) {
+        isUpvoted = currentVote.voteType === VoteType.UPVOTE;
+        isDownvoted = currentVote.voteType === VoteType.DOWNVOTE;
+      }
+    }
 
     return NextResponse.json(
       {
         success: true,
         voteStatus: {
-          upvoteCount: updatedComment.upvotes.length,
-          downvoteCount: updatedComment.downvotes.length,
-          voteCount: updatedComment.upvotes.length - updatedComment.downvotes.length,
+          upvoteCount: comment.upvoteCount,
+          downvoteCount: comment.downvoteCount,
+          voteCount: comment.upvoteCount - comment.downvoteCount,
           isUpvoted,
           isDownvoted,
         },

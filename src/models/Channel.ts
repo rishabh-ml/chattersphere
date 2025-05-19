@@ -25,10 +25,10 @@ const ChannelSchema = new Schema<IChannel>(
     name: { type: String, required: true },
     slug: { type: String, required: true, lowercase: true },
     description: { type: String },
-    type: { 
-      type: String, 
+    type: {
+      type: String,
       enum: Object.values(ChannelType),
-      default: ChannelType.TEXT 
+      default: ChannelType.TEXT
     },
     community: { type: Schema.Types.ObjectId, ref: 'Community', required: true },
     isPrivate: { type: Boolean, default: false },
@@ -42,6 +42,16 @@ const ChannelSchema = new Schema<IChannel>(
 // Create compound index for community and slug
 ChannelSchema.index({ community: 1, slug: 1 }, { unique: true });
 
+// Create index for channel type
+ChannelSchema.index({ community: 1, type: 1 });
+
+// Create index for private channels
+ChannelSchema.index({ community: 1, isPrivate: 1 });
+
+// Create index for allowed roles and users
+ChannelSchema.index({ allowedRoles: 1 });
+ChannelSchema.index({ allowedUsers: 1 });
+
 // Virtual for message count
 ChannelSchema.virtual('messageCount').get(function() {
   return this.messages.length;
@@ -54,19 +64,19 @@ ChannelSchema.methods.hasAccess = async function(
 ) {
   // If channel is not private, everyone has access
   if (!this.isPrivate) return true;
-  
+
   // Check if user is directly allowed
   if (this.allowedUsers.some(id => id.toString() === userId.toString())) {
     return true;
   }
-  
+
   // Check if user has an allowed role
   for (const roleId of userRoles) {
     if (this.allowedRoles.some(id => id.toString() === roleId.toString())) {
       return true;
     }
   }
-  
+
   return false;
 };
 

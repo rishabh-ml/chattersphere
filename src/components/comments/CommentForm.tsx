@@ -47,29 +47,77 @@ export default function CommentForm({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/posts/${postId}/comments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: content.trim(),
-          ...(parentCommentId && { parentCommentId }),
-        }),
-      });
+      // Create an AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort(new DOMException('Timeout exceeded', 'TimeoutError'));
+      }, 10000); // 10 second timeout
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to add comment");
+      try {
+        // Add a timestamp to prevent caching issues
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/posts/${postId}/comments?_=${timestamp}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+          },
+          body: JSON.stringify({
+            content: content.trim(),
+            ...(parentCommentId && { parentCommentId }),
+          }),
+          signal: controller.signal
+        });
+
+        // Clear the timeout as soon as the response is received
+        clearTimeout(timeoutId);
+
+        // Handle non-OK responses
+        if (!response.ok) {
+          let errorMessage = "Failed to add comment";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (parseError) {
+            console.error("Error parsing error response:", parseError);
+          }
+          throw new Error(errorMessage);
+        }
+
+        // Parse the response data
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          console.error("Error parsing success response:", parseError);
+          throw new Error("Invalid response from server");
+        }
+
+        // Check if the comment data is valid
+        if (!data || !data.comment) {
+          throw new Error("Invalid comment data received");
+        }
+
+        // Call the callback with the new comment
+        onCommentAdded(data.comment);
+        setContent("");
+        toast.success(isReply ? "Reply added successfully" : "Comment added successfully");
+      } finally {
+        // Ensure timeout is cleared
+        clearTimeout(timeoutId);
       }
-
-      const data = await response.json();
-      onCommentAdded(data.comment);
-      setContent("");
-      toast.success(isReply ? "Reply added successfully" : "Comment added successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding comment:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to add comment");
+
+      // Handle different types of errors
+      if (error instanceof DOMException && error.name === 'TimeoutError') {
+        toast.error("Request timed out. Please try again later.");
+      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+        toast.error("Network error. Please check your connection.");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Failed to add comment");
+      }
     } finally {
       setIsSubmitting(false);
     }

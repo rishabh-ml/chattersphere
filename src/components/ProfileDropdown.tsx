@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
   User,
@@ -51,7 +50,7 @@ export default function ProfileDropdown() {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     localStorage.setItem("darkMode", String(newMode));
-    
+
     if (newMode) {
       document.documentElement.classList.add("dark");
     } else {
@@ -84,8 +83,8 @@ export default function ProfileDropdown() {
   }
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
+    <DropdownMenu>
+      <DropdownMenuTrigger>
         <button
           className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-2 py-1.5 hover:bg-gray-50 transition-colors"
           aria-label="User menu"
@@ -106,30 +105,18 @@ export default function ProfileDropdown() {
           <ChevronDown className="h-4 w-4 text-gray-500" />
         </button>
       </DropdownMenuTrigger>
-      
-      <AnimatePresence>
-        {isOpen && (
-          <DropdownMenuContent
-            align="end"
-            className="w-56"
-            asChild
-            forceMount
-          >
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
+
+      <DropdownMenuContent className="w-56">
+
               <DropdownMenuLabel className="flex flex-col">
                 <div className="font-medium">{user?.fullName}</div>
                 <div className="text-xs text-gray-500 truncate">
                   {user?.primaryEmailAddress?.emailAddress}
                 </div>
               </DropdownMenuLabel>
-              
+
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuItem asChild>
                 <Link
                   href={`/profile/${user?.id}`}
@@ -139,7 +126,7 @@ export default function ProfileDropdown() {
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
-              
+
               <DropdownMenuItem asChild>
                 <Link
                   href="/notifications"
@@ -149,7 +136,7 @@ export default function ProfileDropdown() {
                   <span>Notifications</span>
                 </Link>
               </DropdownMenuItem>
-              
+
               <DropdownMenuItem asChild>
                 <Link
                   href="/saved"
@@ -159,7 +146,7 @@ export default function ProfileDropdown() {
                   <span>Saved Posts</span>
                 </Link>
               </DropdownMenuItem>
-              
+
               <DropdownMenuItem asChild>
                 <Link
                   href="/settings"
@@ -169,9 +156,9 @@ export default function ProfileDropdown() {
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
-              
+
               <div className="px-2 py-1.5 flex items-center justify-between">
                 <div className="flex items-center">
                   {isDarkMode ? (
@@ -186,7 +173,7 @@ export default function ProfileDropdown() {
                   onCheckedChange={toggleDarkMode}
                 />
               </div>
-              
+
               <DropdownMenuItem asChild>
                 <Link
                   href="/help"
@@ -196,9 +183,9 @@ export default function ProfileDropdown() {
                   <span>Help & Support</span>
                 </Link>
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
-              
+
               <DropdownMenuItem
                 onClick={handleSignOut}
                 className="text-red-600 focus:text-red-600 cursor-pointer"
@@ -206,10 +193,7 @@ export default function ProfileDropdown() {
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Sign Out</span>
               </DropdownMenuItem>
-            </motion.div>
-          </DropdownMenuContent>
-        )}
-      </AnimatePresence>
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }

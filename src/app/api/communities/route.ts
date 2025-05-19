@@ -5,10 +5,12 @@ import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Community from "@/models/Community";
 import type { Types } from "mongoose";
+import { generateUniqueSlug } from "@/lib/utils";
 
 interface RawCommunity {
   _id: Types.ObjectId;
   name: string;
+  slug: string;
   description: string;
   image?: string;
   creator:
@@ -38,18 +40,68 @@ export async function GET(request: NextRequest) {
     const sortBy = qp.get("sort") ?? "members";
     const skip = (page - 1) * limit;
 
-    const raw = await Community.find()
-        .populate("creator", "username name image")
-        .lean<RawCommunity[]>();
+    // Build sort configuration for database-level sorting
+    let sortConfig = {};
+    if (sortBy === "recent") {
+      sortConfig = { createdAt: -1 };
+    }
+    // Note: For posts and members counts, we'll use aggregation pipeline
+    // since these are arrays and we need to count their length
 
-    raw.sort((a, b) => {
-      if (sortBy === "recent") return b.createdAt.getTime() - a.createdAt.getTime();
-      if (sortBy === "posts") return b.posts.length - a.posts.length;
-      return b.members.length - a.members.length;
+    // Use aggregation pipeline for efficient database-level operations
+    let aggregationPipeline = [];
+
+    // Match stage (can add filters here in the future)
+    aggregationPipeline.push({ $match: {} });
+
+    // Add fields for counts
+    aggregationPipeline.push({
+      $addFields: {
+        memberCount: { $size: "$members" },
+        postCount: { $size: "$posts" }
+      }
     });
 
-    const total = raw.length;
-    const slice = raw.slice(skip, skip + limit);
+    // Sort based on user preference
+    if (sortBy === "recent") {
+      aggregationPipeline.push({ $sort: { createdAt: -1 } });
+    } else if (sortBy === "posts") {
+      aggregationPipeline.push({ $sort: { postCount: -1 } });
+    } else {
+      // Default sort by members
+      aggregationPipeline.push({ $sort: { memberCount: -1 } });
+    }
+
+    // Count total before pagination
+    const countPipeline = [...aggregationPipeline];
+    countPipeline.push({ $count: "total" });
+    const totalResult = await Community.aggregate(countPipeline);
+    const total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+    // Add pagination
+    aggregationPipeline.push({ $skip: skip });
+    aggregationPipeline.push({ $limit: limit });
+
+    // Lookup creator information
+    aggregationPipeline.push({
+      $lookup: {
+        from: "users",
+        localField: "creator",
+        foreignField: "_id",
+        as: "creatorInfo"
+      }
+    });
+
+    // Unwind creator info
+    aggregationPipeline.push({
+      $unwind: {
+        path: "$creatorInfo",
+        preserveNullAndEmptyArrays: true
+      }
+    });
+
+    // Execute the aggregation
+    const communitiesResult = await Community.aggregate(aggregationPipeline);
 
     let me: Types.ObjectId | null = null;
     if (userId) {
@@ -57,39 +109,32 @@ export async function GET(request: NextRequest) {
       if (cu) me = cu._id;
     }
 
-    const communities = slice.map((c) => {
-      let creatorInfo: { id: string; username: string; name: string; image?: string };
-      if (typeof c.creator === "object" && "username" in c.creator) {
-        creatorInfo = {
-          id: c.creator._id.toString(),
-          username: c.creator.username,
-          name: c.creator.name,
-          image: c.creator.image ?? "",
-        };
-      } else {
-        creatorInfo = {
-          id: (c.creator as Types.ObjectId).toString(),
-          username: "",
-          name: "",
-          image: "",
-        };
+    const communities = communitiesResult.map((c) => {
+      // Format creator info from the aggregation result
+      const creatorInfo = c.creatorInfo ? {
+        id: c.creatorInfo._id.toString(),
+        username: c.creatorInfo.username,
+        name: c.creatorInfo.name,
+        image: c.creatorInfo.image ?? "",
+      } : {
+        id: c.creator.toString(),
+        username: "",
+        name: "",
+        image: "",
       }
 
       return {
         id: c._id.toString(),
         name: c.name,
+        slug: c.slug,
         description: c.description,
         image: c.image ?? "",
         creator: creatorInfo,
-        memberCount: c.members.length,
-        postCount: c.posts.length,
+        memberCount: c.memberCount || 0,
+        postCount: c.postCount || 0,
         isMember: me ? c.members.some((m) => m.equals(me)) : false,
         isModerator: me ? c.moderators.some((m) => m.equals(me)) : false,
-        isCreator: me
-            ? typeof c.creator === "object"
-                ? c.creator._id.equals(me)
-                : (c.creator as Types.ObjectId).equals(me)
-            : false,
+        isCreator: me ? c.creator.toString() === me.toString() : false,
         createdAt: c.createdAt.toISOString(),
         updatedAt: c.updatedAt.toISOString(),
       };
@@ -141,8 +186,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Community name already exists" }, { status: 400 });
     }
 
+    // Generate a unique slug for the community
+    console.log(`[COMMUNITIES POST] Generating slug for community name: "${name}"`);
+    const slug = await generateUniqueSlug(name, Community);
+    console.log(`[COMMUNITIES POST] Generated unique slug: "${slug}"`);
+
     const community = await Community.create({
       name,
+      slug,
       description,
       image,
       creator: creator._id,
@@ -161,6 +212,7 @@ export async function POST(request: NextRequest) {
           community: {
             id: community._id.toString(),
             name: community.name,
+            slug: community.slug,
             description: community.description,
             image: community.image ?? "",
             creator: {

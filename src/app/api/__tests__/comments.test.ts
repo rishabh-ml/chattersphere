@@ -1,4 +1,26 @@
-import { NextRequest } from 'next/server';
+// Mock Next.js modules before importing them
+jest.mock('next/server', () => {
+  const originalModule = jest.requireActual('next/server');
+  return {
+    ...originalModule,
+    NextRequest: jest.fn().mockImplementation((url, init) => ({
+      url,
+      method: init?.method || 'GET',
+      headers: new Map(Object.entries(init?.headers || {})),
+      json: jest.fn().mockImplementation(() => Promise.resolve(init?.body ? JSON.parse(init.body) : {})),
+      nextUrl: { searchParams: new URLSearchParams() }
+    })),
+    NextResponse: {
+      json: jest.fn().mockImplementation((data, init) => ({
+        status: init?.status || 200,
+        json: () => Promise.resolve(data),
+        headers: new Map()
+      })),
+    },
+  };
+});
+
+import { NextRequest, NextResponse } from 'next/server';
 import { GET, POST } from '../posts/[postId]/comments/route';
 import { auth } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/dbConnect';
@@ -52,19 +74,19 @@ describe('Comments API', () => {
     it('should return comments for a post', async () => {
       // Mock auth
       (auth as jest.Mock).mockResolvedValue({ userId: 'clerk123' });
-      
+
       // Mock mongoose.Types.ObjectId.isValid
       (mongoose.Types.ObjectId.isValid as jest.Mock).mockReturnValue(true);
-      
+
       // Mock database connection
       (connectToDatabase as jest.Mock).mockResolvedValue(undefined);
-      
+
       // Mock Post.findById
       (Post.findById as jest.Mock).mockResolvedValue({ _id: 'post123' });
-      
+
       // Mock User.findOne
       (User.findOne as jest.Mock).mockResolvedValue({ _id: 'user123' });
-      
+
       // Mock Comment.find
       (Comment.find as jest.Mock).mockReturnValue({
         sort: jest.fn().mockReturnThis(),
@@ -88,17 +110,17 @@ describe('Comments API', () => {
           },
         ]),
       });
-      
+
       // Mock Comment.countDocuments
       (Comment.countDocuments as jest.Mock).mockResolvedValue(1);
-      
+
       // Create request
       const request = new NextRequest('http://localhost:3000/api/posts/post123/comments');
-      
+
       // Call the handler
       const response = await GET(request, { params: { postId: 'post123' } });
       const data = await response.json();
-      
+
       // Assertions
       expect(response.status).toBe(200);
       expect(data.comments).toBeDefined();
@@ -111,19 +133,19 @@ describe('Comments API', () => {
     it('should create a new comment', async () => {
       // Mock auth
       (auth as jest.Mock).mockResolvedValue({ userId: 'clerk123' });
-      
+
       // Mock mongoose.Types.ObjectId.isValid
       (mongoose.Types.ObjectId.isValid as jest.Mock).mockReturnValue(true);
-      
+
       // Mock database connection
       (connectToDatabase as jest.Mock).mockResolvedValue(undefined);
-      
+
       // Mock Post.findById
       (Post.findById as jest.Mock).mockResolvedValue({ _id: 'post123' });
-      
+
       // Mock User.findOne
       (User.findOne as jest.Mock).mockResolvedValue({ _id: 'user123' });
-      
+
       // Mock Comment.create
       (Comment.create as jest.Mock).mockResolvedValue({
         _id: 'comment123',
@@ -135,7 +157,7 @@ describe('Comments API', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      
+
       // Mock Comment.findById
       (Comment.findById as jest.Mock).mockReturnValue({
         populate: jest.fn().mockReturnThis(),
@@ -155,17 +177,17 @@ describe('Comments API', () => {
           updatedAt: new Date(),
         }),
       });
-      
+
       // Create request
       const request = new NextRequest('http://localhost:3000/api/posts/post123/comments', {
         method: 'POST',
         body: JSON.stringify({ content: 'Test comment' }),
       });
-      
+
       // Call the handler
       const response = await POST(request, { params: { postId: 'post123' } });
       const data = await response.json();
-      
+
       // Assertions
       expect(response.status).toBe(201);
       expect(data.comment).toBeDefined();

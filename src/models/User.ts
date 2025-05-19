@@ -72,8 +72,23 @@ const UserSchema = new Schema<IUser>(
     privacySettings: { type: PrivacySettingsSchema, default: () => ({}) },
     lastSeen: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+// Virtual for follower count
+UserSchema.virtual('followerCount').get(function() {
+  return this.followers?.length || 0;
+});
+
+// Virtual for following count
+UserSchema.virtual('followingCount').get(function() {
+  return this.following?.length || 0;
+});
+
+// Virtual for community count
+UserSchema.virtual('communityCount').get(function() {
+  return this.communities?.length || 0;
+});
 
 // Indexes are already defined with unique: true in the schema
 

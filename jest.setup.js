@@ -18,6 +18,24 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+// Mock Next.js server
+jest.mock('next/server', () => ({
+  NextRequest: jest.fn().mockImplementation((url, init) => ({
+    url,
+    method: init?.method || 'GET',
+    headers: new Map(Object.entries(init?.headers || {})),
+    json: jest.fn().mockImplementation(() => Promise.resolve(init?.body ? JSON.parse(init.body) : {})),
+    nextUrl: { searchParams: new URLSearchParams() }
+  })),
+  NextResponse: {
+    json: jest.fn().mockImplementation((data, init) => ({
+      status: init?.status || 200,
+      json: () => Promise.resolve(data),
+      headers: new Map()
+    })),
+  },
+}));
+
 // Mock Clerk authentication
 jest.mock('@clerk/nextjs', () => ({
   auth: jest.fn(() => ({ userId: 'test-user-id' })),
@@ -49,6 +67,29 @@ jest.mock('@clerk/nextjs', () => ({
   SignUp: () => <div>Sign Up</div>,
 }));
 
+// Mock Clerk server
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: jest.fn().mockResolvedValue({ userId: 'test-user-id' }),
+  clerkClient: {
+    users: {
+      getUser: jest.fn().mockResolvedValue({
+        id: 'test-user-id',
+        firstName: 'Test',
+        lastName: 'User',
+        imageUrl: 'https://example.com/avatar.jpg',
+        emailAddresses: [{ emailAddress: 'test@example.com' }],
+      }),
+    },
+  },
+}));
+
+// Mock framer-motion
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }) => <div {...props}>{children}</div>,
+  },
+}));
+
 // Mock SWR
 jest.mock('swr', () => ({
   __esModule: true,
@@ -60,6 +101,76 @@ jest.mock('swr', () => ({
     mutate: jest.fn(),
   })),
   SWRConfig: ({ children }) => children,
+}));
+
+// Mock database connection
+jest.mock('@/lib/dbConnect', () => jest.fn().mockResolvedValue(undefined));
+
+// Mock Mongoose models
+jest.mock('@/models/User', () => ({
+  findOne: jest.fn(),
+  findById: jest.fn(),
+  create: jest.fn(),
+  findByIdAndUpdate: jest.fn(),
+}));
+
+jest.mock('@/models/Community', () => ({
+  findOne: jest.fn(),
+  findById: jest.fn(),
+  find: jest.fn(),
+  create: jest.fn(),
+  countDocuments: jest.fn(),
+}));
+
+jest.mock('@/models/Membership', () => ({
+  findOne: jest.fn(),
+  find: jest.fn(),
+  create: jest.fn(),
+  deleteOne: jest.fn(),
+  countDocuments: jest.fn(),
+}));
+
+jest.mock('@/models/Post', () => ({
+  findOne: jest.fn(),
+  findById: jest.fn(),
+  find: jest.fn(),
+  create: jest.fn(),
+  countDocuments: jest.fn(),
+}));
+
+jest.mock('@/models/Comment', () => ({
+  findOne: jest.fn(),
+  findById: jest.fn(),
+  find: jest.fn(),
+  create: jest.fn(),
+  countDocuments: jest.fn(),
+}));
+
+jest.mock('@/models/Notification', () => ({
+  findOne: jest.fn(),
+  findById: jest.fn(),
+  find: jest.fn(),
+  create: jest.fn(),
+  updateMany: jest.fn(),
+  countDocuments: jest.fn(),
+}));
+
+// Mock mongoose
+jest.mock('mongoose', () => ({
+  connect: jest.fn(),
+  connection: {
+    on: jest.fn(),
+    once: jest.fn(),
+  },
+  Schema: jest.fn().mockImplementation(() => ({
+    index: jest.fn().mockReturnThis(),
+  })),
+  model: jest.fn(),
+  Types: {
+    ObjectId: {
+      isValid: jest.fn().mockReturnValue(true),
+    },
+  },
 }));
 
 // Mock Redis

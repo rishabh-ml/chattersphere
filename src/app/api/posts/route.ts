@@ -6,9 +6,10 @@ import User from "@/models/User";
 import Post from "@/models/Post";
 import Community from "@/models/Community";
 import { Types } from "mongoose";
-import { invalidateCache } from "@/lib/redis";
+import { invalidateCache, withCache } from "@/lib/redis";
 import { z } from "zod";
-import { rateLimit } from "@/middleware/rateLimit";
+import { readOptions, getPaginationOptions, formatPaginationMetadata, buildPaginatedAggregation } from "@/lib/mongooseUtils";
+import { withApiMiddleware } from "@/lib/apiUtils";
 
 type RawPost = {
   _id: Types.ObjectId;
@@ -28,9 +29,9 @@ type RawPost = {
     image?: string;
   };
   content: string;
-  upvotes: Types.ObjectId[];
-  downvotes: Types.ObjectId[];
-  comments: Types.ObjectId[];
+  upvoteCount: number;
+  downvoteCount: number;
+  commentCount: number;
   mediaUrls: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -51,15 +52,16 @@ interface PopulatedPost {
     image?: string;
   };
   content: string;
-  upvotes: Types.ObjectId[];
-  downvotes: Types.ObjectId[];
-  comments: Types.ObjectId[];
+  upvoteCount: number;
+  downvoteCount: number;
+  commentCount: number;
   mediaUrls: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-export async function GET(req: NextRequest) {
+// Define the handler function
+async function getPostsHandler(req: NextRequest) {
   try {
     console.log('[GET] Received request to fetch posts');
 
@@ -74,64 +76,85 @@ export async function GET(req: NextRequest) {
     const page = parseInt(url.searchParams.get("page") ?? "1", 10);
     const limit = parseInt(url.searchParams.get("limit") ?? "10", 10);
     const communityIdParam = url.searchParams.get("communityId") ?? undefined;
-    const skip = (page - 1) * limit;
 
-    console.log(`[GET] Fetching posts: page=${page}, limit=${limit}${communityIdParam ? `, communityId=${communityIdParam}` : ''}`);
+    // Use pagination utility
+    const { skip, limit: validLimit } = getPaginationOptions(page, limit);
 
+    console.log(`[GET] Fetching posts: page=${page}, limit=${validLimit}${communityIdParam ? `, communityId=${communityIdParam}` : ''}`);
 
-    const filter: Record<string, unknown> = {};
+    // Create a cache key based on the request parameters
+    const cacheKey = `posts:${communityIdParam || 'all'}:page:${page}:limit:${validLimit}${userId ? `:user:${userId}` : ''}`;
 
-    if (communityIdParam) {
-      filter.community = new Types.ObjectId(communityIdParam);
-    } else if (userId) {
-      const me = await User.findOne({ clerkId: userId }).select("_id");
-      if (me) {
-        const joined = await Community.find({ members: me._id }).select("_id");
-        const joinedIds = joined.map((c: { _id: Types.ObjectId }) => c._id);
-        filter.community = { $in: joinedIds };
-      }
-    }
+    // Use cache wrapper with a TTL of 2 minutes
+    const result = await withCache(
+      cacheKey,
+      async () => {
+        const matchStage: Record<string, unknown> = {};
 
-    // Fetch posts with error handling
-    let rawPosts;
-    try {
-      rawPosts = await Post.find(filter)
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .populate("author", "username name image")
-          .populate("community", "name image")
-          .lean<RawPost[]>();
+        if (communityIdParam) {
+          matchStage.community = new Types.ObjectId(communityIdParam);
+        } else if (userId) {
+          const me = await User.findOne({ clerkId: userId }).select("_id").lean(true);
+          if (me) {
+            const joined = await Community.find({ members: me._id }).select("_id").lean(true);
+            const joinedIds = joined.map((c: { _id: Types.ObjectId }) => c._id);
+            if (joinedIds.length > 0) {
+              matchStage.community = { $in: joinedIds };
+            }
+          }
+        }
 
-      console.log(`[GET] Successfully fetched ${rawPosts.length} posts`);
-    } catch (fetchError) {
-      console.error('[GET] Error fetching posts:', fetchError);
-      return NextResponse.json({
-        error: "Failed to fetch posts",
-        details: fetchError instanceof Error ? fetchError.message : 'Unknown error'
-      }, { status: 500 });
-    }
+        // Define lookup stages for populating references
+        const lookupStages = [
+          // Lookup author information
+          { $lookup: {
+            from: "users",
+            localField: "author",
+            foreignField: "_id",
+            as: "authorInfo"
+          }},
+          { $unwind: "$authorInfo" },
 
-    // Count total posts
-    let total;
-    try {
-      total = await Post.countDocuments(filter);
-      console.log(`[GET] Total posts count: ${total}`);
-    } catch (countError) {
-      console.error('[GET] Error counting posts:', countError);
-      return NextResponse.json({
-        error: "Failed to count posts",
-        details: countError instanceof Error ? countError.message : 'Unknown error'
-      }, { status: 500 });
-    }
+          // Lookup community information if present
+          { $lookup: {
+            from: "communities",
+            localField: "community",
+            foreignField: "_id",
+            as: "communityInfo"
+          }},
+          { $unwind: { path: "$communityInfo", preserveNullAndEmptyArrays: true } }
+        ];
 
-    let meId: Types.ObjectId | null = null;
-    if (userId) {
-      const me = await User.findOne({ clerkId: userId }).select("_id");
-      if (me) meId = me._id;
-    }
+        // Build and execute the aggregation pipeline
+        const pipeline = buildPaginatedAggregation(
+          matchStage,
+          { createdAt: -1 },
+          page,
+          validLimit,
+          lookupStages
+        );
 
-    const posts = rawPosts.map((p) => {
+        const [result] = await Post.aggregate(pipeline);
+
+        const total = result.metadata.length > 0 ? result.metadata[0].total : 0;
+        const posts = result.data;
+
+        // Get current user for determining vote status
+        let meId: Types.ObjectId | null = null;
+        if (userId) {
+          const me = await User.findOne({ clerkId: userId }).select("_id").lean(true);
+          if (me) meId = me._id;
+        }
+
+        return { posts, total, meId };
+      },
+      120 // 2 minutes TTL
+    );
+
+    const { posts: rawPosts, total, meId } = result;
+
+    // Use async map to handle async operations inside
+    const postsPromises = rawPosts.map(async (p) => {
       // Author
       let authorInfo: {
         id: string;
@@ -188,12 +211,32 @@ export async function GET(req: NextRequest) {
         communityInfo = undefined;
       }
 
-      const upvotes = p.upvotes ?? [];
-      const downvotes = p.downvotes ?? [];
-      const comments = p.comments ?? [];
+      // Get vote status if user is logged in
+      let isUpvoted = false;
+      let isDownvoted = false;
 
-      const isUpvoted = meId ? upvotes.some((u) => u.equals(meId)) : false;
-      const isDownvoted = meId ? downvotes.some((d) => d.equals(meId)) : false;
+      if (meId) {
+        try {
+          // Check if Vote model exists
+          const Vote = mongoose.models.Vote;
+          if (Vote) {
+            // Use a synchronous approach to check vote status
+            const userVote = await Vote.findOne({
+              user: meId,
+              target: p._id,
+              targetType: 'Post'
+            }).exec();
+
+            if (userVote) {
+              isUpvoted = userVote.voteType === 'UPVOTE';
+              isDownvoted = userVote.voteType === 'DOWNVOTE';
+            }
+          }
+        } catch (error) {
+          console.error('[GET] Error checking vote status:', error);
+          // No fallback needed as we've already set defaults
+        }
+      }
 
       // Check if the post is saved by the user
       const isSaved = meId && user ? user.savedPosts.some((id) => id.equals(p._id)) : false;
@@ -203,10 +246,10 @@ export async function GET(req: NextRequest) {
         author: authorInfo,
         content: p.content,
         community: communityInfo,
-        upvoteCount: upvotes.length,
-        downvoteCount: downvotes.length,
-        voteCount: upvotes.length - downvotes.length,
-        commentCount: comments.length,
+        upvoteCount: p.upvoteCount || 0,
+        downvoteCount: p.downvoteCount || 0,
+        voteCount: (p.upvoteCount || 0) - (p.downvoteCount || 0),
+        commentCount: p.commentCount || 0,
         mediaUrls: p.mediaUrls || [],
         isUpvoted,
         isDownvoted,
@@ -216,15 +259,13 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    // Resolve all promises
+    const posts = await Promise.all(postsPromises);
+
     return NextResponse.json(
         {
           posts,
-          pagination: {
-            page,
-            limit,
-            totalPosts: total,
-            hasMore: total > skip + posts.length,
-          },
+          pagination: formatPaginationMetadata(page, validLimit, total),
         },
         { status: 200 }
     );
@@ -241,7 +282,8 @@ const postCreateSchema = z.object({
   mediaUrls: z.array(z.string().url("Invalid media URL")).optional(),
 });
 
-export async function POST(req: NextRequest) {
+// Define the handler function
+async function createPostHandler(req: NextRequest) {
   // Apply rate limiting
   const rateLimitResponse = await rateLimit(req, {
     maxRequests: 10,  // 10 posts per minute
@@ -324,16 +366,7 @@ export async function POST(req: NextRequest) {
       console.log(`[POST] Found user: ${user.username} (${user._id})`);
     }
 
-    const newPost = await Post.create({
-      author: user._id,
-      content: sanitized,
-      upvotes: [],
-      downvotes: [],
-      comments: [],
-      mediaUrls: mediaUrls || [],
-      community: communityId,
-    });
-
+    // Check community membership first if posting to a community
     if (communityId) {
       const com = await Community.findById(communityId);
       if (!com) {
@@ -342,14 +375,34 @@ export async function POST(req: NextRequest) {
             { status: 404 }
         );
       }
-      if (!com.members.some((m: Types.ObjectId) => m.equals(user._id))) {
+
+      // Check if user is a member using the new Membership model
+      const Membership = mongoose.models.Membership;
+      const isMember = await Membership.findOne({
+        user: user._id,
+        community: communityId,
+        status: 'ACTIVE'
+      });
+
+      // Fallback to the old method if Membership check fails
+      if (!isMember && !com.members.some((m: Types.ObjectId) => m.equals(user._id))) {
         return NextResponse.json(
             { error: "Must join community first" },
             { status: 403 }
         );
       }
-      await com.updateOne({ $push: { posts: newPost._id } });
     }
+
+    // Create the post with the new schema
+    const newPost = await Post.create({
+      author: user._id,
+      content: sanitized,
+      upvoteCount: 0,
+      downvoteCount: 0,
+      commentCount: 0,
+      mediaUrls: mediaUrls || [],
+      community: communityId,
+    });
 
     await newPost.populate("author", "username name image");
     if (communityId) {
@@ -406,3 +459,18 @@ export async function POST(req: NextRequest) {
     }, { status: 500 });
   }
 }
+
+// Export the handler functions with middleware
+export const GET = withApiMiddleware(getPostsHandler, {
+  enableRateLimit: true,
+  maxRequests: 100,
+  windowMs: 60000, // 1 minute
+  identifier: 'posts:get'
+});
+
+export const POST = withApiMiddleware(createPostHandler, {
+  enableRateLimit: true,
+  maxRequests: 10,
+  windowMs: 60000, // 1 minute
+  identifier: 'posts:post'
+});

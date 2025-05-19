@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Community from "@/models/Community";
+import Membership, { MembershipStatus } from "@/models/Membership";
 import mongoose, { Types } from "mongoose";
 import { sanitizeInput } from "@/lib/security";
 
@@ -54,8 +55,16 @@ export async function POST(
       return NextResponse.json({ error: "Community not found" }, { status: 404 });
     }
 
-    // Check membership status
-    const isMember = community.members.some((memberId) =>
+    // Check membership status using Membership model
+    const Membership = mongoose.model('Membership');
+    const membership = await Membership.findOne({
+      user: me,
+      community: community._id,
+      status: MembershipStatus.ACTIVE
+    });
+
+    // Fallback to the deprecated array if Membership model fails
+    const isMember = membership ? true : community.members.some((memberId) =>
       memberId.toString() === me.toString()
     );
 
@@ -87,24 +96,132 @@ export async function POST(
 
     // Perform join/leave
     if (action === "join") {
-      await Community.findByIdAndUpdate(sanitizedCommunityId, {
-        $addToSet: { members: me },
-      });
-      await User.findByIdAndUpdate(me, {
-        $addToSet: { communities: community._id },
-      });
+      // Check if the community requires approval for new members
+      if (community.requiresApproval) {
+        // Check if a membership request already exists
+        const Membership = mongoose.model('Membership');
+        const existingRequest = await Membership.findOne({
+          user: me,
+          community: community._id
+        });
+
+        if (existingRequest) {
+          if (existingRequest.status === MembershipStatus.PENDING) {
+            return NextResponse.json({
+              error: "You already have a pending request to join this community"
+            }, { status: 400 });
+          } else if (existingRequest.status === MembershipStatus.ACTIVE) {
+            return NextResponse.json({
+              error: "You are already a member of this community"
+            }, { status: 400 });
+          } else if (existingRequest.status === MembershipStatus.REJECTED) {
+            // Update the existing rejected request to pending
+            existingRequest.status = MembershipStatus.PENDING;
+            await existingRequest.save();
+          }
+        } else {
+          // Create a new membership request with PENDING status
+          await Membership.create({
+            user: me,
+            community: community._id,
+            status: MembershipStatus.PENDING,
+            joinedAt: new Date()
+          });
+        }
+
+        // Notify community moderators and creator about the join request
+        try {
+          const Notification = mongoose.model('Notification');
+
+          // Notify the community creator
+          await Notification.create({
+            recipient: community.creator,
+            sender: me,
+            type: 'community_join',
+            message: `${currentUser.name} requested to join your community ${community.name}`,
+            read: false,
+            relatedCommunity: community._id
+          });
+
+          // Notify all moderators (except the creator to avoid duplicate notifications)
+          for (const modId of community.moderators) {
+            if (modId.toString() !== community.creator.toString()) {
+              await Notification.create({
+                recipient: modId,
+                sender: me,
+                type: 'community_join',
+                message: `${currentUser.name} requested to join community ${community.name}`,
+                read: false,
+                relatedCommunity: community._id
+              });
+            }
+          }
+        } catch (notifError) {
+          console.error("Error creating notification:", notifError);
+          // Continue even if notification creation fails
+        }
+
+        // Return success with pending status
+        return NextResponse.json(
+          {
+            success: true,
+            action: "request",
+            memberCount: await Membership.countDocuments({
+              community: community._id,
+              status: MembershipStatus.ACTIVE
+            }),
+            isMember: false,
+            status: MembershipStatus.PENDING
+          },
+          { status: 202 }
+        );
+      } else {
+        // Community doesn't require approval, add user directly
+        await Community.findByIdAndUpdate(sanitizedCommunityId, {
+          $addToSet: { members: me },
+        });
+        await User.findByIdAndUpdate(me, {
+          $addToSet: { communities: community._id },
+        });
+
+        // Create or update membership record
+        const Membership = mongoose.model('Membership');
+        await Membership.findOneAndUpdate(
+          { user: me, community: community._id },
+          {
+            status: MembershipStatus.ACTIVE,
+            joinedAt: new Date()
+          },
+          { upsert: true }
+        );
+      }
     } else {
+      // Handle leave action
       await Community.findByIdAndUpdate(sanitizedCommunityId, {
         $pull: { members: me, moderators: me },
       });
       await User.findByIdAndUpdate(me, {
         $pull: { communities: community._id },
       });
+
+      // Update membership status if exists
+      try {
+        const Membership = mongoose.model('Membership');
+        await Membership.findOneAndDelete({
+          user: me,
+          community: community._id
+        });
+      } catch (membershipError) {
+        console.error("Error updating membership:", membershipError);
+        // Continue even if membership update fails
+      }
     }
 
-    // Fetch updated member count
-    const updated = await Community.findById(sanitizedCommunityId);
-    const memberCount = updated ? updated.members.length : 0;
+    // Fetch updated member count using Membership model
+    const memberCount = await Membership.countDocuments({
+      community: community._id,
+      status: MembershipStatus.ACTIVE
+    });
 
     // Create notification for join (if applicable)
     if (action === "join") {

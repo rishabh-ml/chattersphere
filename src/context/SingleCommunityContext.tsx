@@ -112,34 +112,43 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch community data
+  // Fetch community data with optimized loading
   const fetchCommunity = useCallback(async (slug: string) => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`/api/communities/slug/${slug}`);
+      // Use AbortController to cancel requests if needed
+      const controller = new AbortController();
+      const signal = controller.signal;
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to fetch community');
-      }
+      // Set a timeout to abort the request if it takes too long
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
-      const data = await res.json();
-      setCommunity(data.community);
+      try {
+        // Fetch community data
+        const res = await fetch(`/api/communities/slug/${slug}`, { signal });
 
-      // Fetch channels for this community
-      if (data.community) {
-        // Use a local function to avoid dependency cycle
-        const loadChannels = async (communityId: string) => {
-          try {
-            const channelsRes = await fetch(`/api/communities/${communityId}/channels`);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Failed to fetch community');
+        }
 
-            if (!channelsRes.ok) {
-              const errorData = await channelsRes.json();
-              throw new Error(errorData.error || 'Failed to fetch channels');
-            }
+        const data = await res.json();
+        setCommunity(data.community);
 
+        // If we have community data, fetch channels in parallel
+        if (data.community) {
+          const communityId = data.community.id;
+
+          // Fetch channels, members, and roles in parallel
+          const [channelsRes, membersRes] = await Promise.all([
+            fetch(`/api/communities/${communityId}/channels`, { signal }),
+            fetch(`/api/communities/${communityId}/members?limit=20`, { signal }),
+          ]);
+
+          // Process channels response
+          if (channelsRes.ok) {
             const channelsData = await channelsRes.json();
             setChannels(channelsData.channels);
 
@@ -147,22 +156,34 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
             if (channelsData.channels.length > 0) {
               setSelectedChannel(current => current || channelsData.channels[0]);
             }
-          } catch (err) {
-            console.error('Error fetching channels:', err);
-            toast.error('Failed to load channels');
+          } else {
+            console.error('Error fetching channels:', await channelsRes.json());
           }
-        };
 
-        await loadChannels(data.community.id);
+          // Process members response
+          if (membersRes.ok) {
+            const membersData = await membersRes.json();
+            setMembers(membersData.members);
+          } else {
+            console.error('Error fetching members:', await membersRes.json());
+          }
+        }
+      } finally {
+        clearTimeout(timeout);
       }
     } catch (err) {
       console.error('Error fetching community:', err);
-      setError((err as Error).message);
-      toast.error((err as Error).message);
+      if (err.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+        toast.error('Request timed out. Please try again.');
+      } else {
+        setError((err as Error).message);
+        toast.error((err as Error).message);
+      }
     } finally {
       setLoading(false);
     }
-  }, []); // No dependency on fetchChannels anymore
+  }, []);
 
   // Fetch channels for a community
   const fetchChannels = useCallback(async (communityId: string) => {

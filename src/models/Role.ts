@@ -6,19 +6,19 @@ export interface Permission {
   MANAGE_CHANNELS: boolean;
   MANAGE_ROLES: boolean;
   MANAGE_COMMUNITY: boolean;
-  
+
   // Member permissions
   KICK_MEMBERS: boolean;
   BAN_MEMBERS: boolean;
   INVITE_MEMBERS: boolean;
-  
+
   // Message permissions
   SEND_MESSAGES: boolean;
   EMBED_LINKS: boolean;
   ATTACH_FILES: boolean;
   ADD_REACTIONS: boolean;
   MANAGE_MESSAGES: boolean;
-  
+
   // Voice permissions
   CONNECT: boolean;
   SPEAK: boolean;
@@ -44,17 +44,17 @@ const defaultPermissions: Permission = {
   MANAGE_CHANNELS: false,
   MANAGE_ROLES: false,
   MANAGE_COMMUNITY: false,
-  
+
   KICK_MEMBERS: false,
   BAN_MEMBERS: false,
   INVITE_MEMBERS: false,
-  
+
   SEND_MESSAGES: true,
   EMBED_LINKS: true,
   ATTACH_FILES: true,
   ADD_REACTIONS: true,
   MANAGE_MESSAGES: false,
-  
+
   CONNECT: true,
   SPEAK: true,
   STREAM: true,
@@ -69,17 +69,17 @@ const PermissionSchema = new Schema<Permission>(
     MANAGE_CHANNELS: { type: Boolean, default: false },
     MANAGE_ROLES: { type: Boolean, default: false },
     MANAGE_COMMUNITY: { type: Boolean, default: false },
-    
+
     KICK_MEMBERS: { type: Boolean, default: false },
     BAN_MEMBERS: { type: Boolean, default: false },
     INVITE_MEMBERS: { type: Boolean, default: false },
-    
+
     SEND_MESSAGES: { type: Boolean, default: true },
     EMBED_LINKS: { type: Boolean, default: true },
     ATTACH_FILES: { type: Boolean, default: true },
     ADD_REACTIONS: { type: Boolean, default: true },
     MANAGE_MESSAGES: { type: Boolean, default: false },
-    
+
     CONNECT: { type: Boolean, default: true },
     SPEAK: { type: Boolean, default: true },
     STREAM: { type: Boolean, default: true },
@@ -96,9 +96,9 @@ const RoleSchema = new Schema<IRole>(
     color: { type: String, default: '#99AAB5' },
     community: { type: Schema.Types.ObjectId, ref: 'Community', required: true },
     position: { type: Number, default: 0 },
-    permissions: { 
-      type: PermissionSchema, 
-      default: () => defaultPermissions 
+    permissions: {
+      type: PermissionSchema,
+      default: () => defaultPermissions
     },
     isDefault: { type: Boolean, default: false },
   },
@@ -110,6 +110,14 @@ RoleSchema.index({ community: 1, name: 1 }, { unique: true });
 
 // Create index for position for sorting
 RoleSchema.index({ community: 1, position: 1 });
+
+// Create index for default roles
+RoleSchema.index({ community: 1, isDefault: 1 });
+
+// Create index for finding roles with specific permissions
+RoleSchema.index({ community: 1, 'permissions.MANAGE_COMMUNITY': 1 });
+RoleSchema.index({ community: 1, 'permissions.MANAGE_CHANNELS': 1 });
+RoleSchema.index({ community: 1, 'permissions.MANAGE_ROLES': 1 });
 
 // Static method to create default roles for a new community
 RoleSchema.statics.createDefaultRoles = async function(communityId: mongoose.Types.ObjectId) {
@@ -126,7 +134,7 @@ RoleSchema.statics.createDefaultRoles = async function(communityId: mongoose.Typ
     DEAFEN_MEMBERS: true,
     MOVE_MEMBERS: true,
   };
-  
+
   const moderatorPermissions: Permission = {
     ...defaultPermissions,
     KICK_MEMBERS: true,
@@ -134,7 +142,7 @@ RoleSchema.statics.createDefaultRoles = async function(communityId: mongoose.Typ
     MANAGE_MESSAGES: true,
     MUTE_MEMBERS: true,
   };
-  
+
   await this.create([
     {
       name: 'Admin',

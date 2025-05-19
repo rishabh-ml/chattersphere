@@ -46,6 +46,33 @@ export default function ProfilePage() {
         }
     }, [profileData]);
 
+    // Log profile view for analytics
+    useEffect(() => {
+        // Only log if we have both the viewer and profile owner IDs
+        if (user && clerkUser && user.id !== clerkUser.id) {
+            const logProfileView = async () => {
+                try {
+                    await fetch(`/api/analytics/profile-view`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            profileId: user.id
+                        })
+                    });
+                    // We don't need to do anything with the response
+                    // This is just for analytics purposes
+                } catch (err) {
+                    // Silently fail - analytics should not affect user experience
+                    console.error('Failed to log profile view:', err);
+                }
+            };
+
+            logProfileView();
+        }
+    }, [user, clerkUser]);
+
     // Use userState instead of directly accessing profileData
     const user = userState;
     const error = fetchError?.message || (!sanitizedUserId ? "Invalid or missing userId" : null);

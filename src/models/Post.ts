@@ -5,9 +5,9 @@ export interface IPost extends Document {
     author: Types.ObjectId;
     content: string;
     community?: Types.ObjectId | null;
-    upvotes: Types.ObjectId[];
-    downvotes: Types.ObjectId[];
-    comments: Types.ObjectId[];
+    upvoteCount: number;
+    downvoteCount: number;
+    commentCount: number;
     mediaUrls: string[];
     createdAt: Date;
     updatedAt: Date;
@@ -31,20 +31,17 @@ const PostSchema = new Schema<IPost>(
             ref: "Community",
             default: null,
         },
-        upvotes: {
-            type: [Schema.Types.ObjectId],
-            ref: "User",
-            default: []
+        upvoteCount: {
+            type: Number,
+            default: 0
         },
-        downvotes: {
-            type: [Schema.Types.ObjectId],
-            ref: "User",
-            default: []
+        downvoteCount: {
+            type: Number,
+            default: 0
         },
-        comments: {
-            type: [Schema.Types.ObjectId],
-            ref: "Comment",
-            default: []
+        commentCount: {
+            type: Number,
+            default: 0
         },
         mediaUrls: {
             type: [String],
@@ -63,14 +60,33 @@ PostSchema.index({ author: 1, createdAt: -1 });
 PostSchema.index({ community: 1, createdAt: -1 });
 PostSchema.index({ createdAt: -1 });
 
+// Additional indexes for optimized queries
+PostSchema.index({ upvoteCount: -1, createdAt: -1 }); // For popular posts
+PostSchema.index({ downvoteCount: -1, createdAt: -1 }); // For controversial posts
+PostSchema.index({ commentCount: -1, createdAt: -1 }); // For most discussed posts
+
+// Compound index for community and popularity metrics
+PostSchema.index({ community: 1, upvoteCount: -1, createdAt: -1 }); // For popular posts in a community
+PostSchema.index({ community: 1, commentCount: -1, createdAt: -1 }); // For most discussed posts in a community
+
 // Virtual for vote count
 PostSchema.virtual("voteCount").get(function (this: IPost) {
-    return (this.upvotes?.length || 0) - (this.downvotes?.length || 0);
+    return this.upvoteCount - this.downvoteCount;
 });
 
-// Virtual for comment count
-PostSchema.virtual("commentCount").get(function (this: IPost) {
-    return this.comments?.length || 0;
+// Virtual for comments
+PostSchema.virtual('comments', {
+    ref: 'Comment',
+    localField: '_id',
+    foreignField: 'post'
+});
+
+// Virtual for votes
+PostSchema.virtual('votes', {
+    ref: 'Vote',
+    localField: '_id',
+    foreignField: 'target',
+    match: { targetType: 'Post' }
 });
 
 const Post: Model<IPost> = models.Post || model<IPost>("Post", PostSchema);

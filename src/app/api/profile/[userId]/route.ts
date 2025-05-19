@@ -6,10 +6,13 @@ import mongoose from "mongoose";
 import { ApiError } from "@/lib/api-error";
 import { sanitizeInput } from "@/lib/security";
 import { profileUpdateSchema } from "@/lib/validations/profile";
+import { withCache } from "@/lib/redis";
+import { readOptions, getPaginationOptions, formatPaginationMetadata } from "@/lib/mongooseUtils";
+import { withApiMiddleware } from "@/lib/apiUtils";
 
 // GET /api/profile/[userId] - Get user profile data
-export async function GET(
-  _req: NextRequest,
+async function getUserProfileHandler(
+  req: NextRequest,
   { params }: { params: { userId: string } }
 ) {
   try {
@@ -28,54 +31,109 @@ export async function GET(
 
     await connectToDatabase();
 
-    // Find the user and populate necessary fields
-    const userDoc = await User.findById(sanitizedUserId)
-      .select("-email") // Don't expose email by default
-      .populate("communities", "name image")
-      .lean()
-      .exec();
+    // Create a cache key based on the user ID and requesting user
+    const cacheKey = `profile:${sanitizedUserId}${clerkUserId ? `:${clerkUserId}` : ''}`;
 
-    if (!userDoc) {
-      return ApiError.notFound("User not found");
-    }
+    // Use cache wrapper with a TTL of 5 minutes
+    const profile = await withCache(
+      cacheKey,
+      async () => {
+        // Use aggregation pipeline for efficient querying
+        const pipeline = [
+          { $match: { _id: new mongoose.Types.ObjectId(sanitizedUserId) } },
+          // Add computed fields for counts
+          { $addFields: {
+            followingCount: { $size: { $ifNull: ["$following", []] } },
+            followerCount: { $size: { $ifNull: ["$followers", []] } },
+            communityCount: { $size: { $ifNull: ["$communities", []] } },
+          }},
+          // Lookup communities
+          { $lookup: {
+            from: "communities",
+            localField: "communities",
+            foreignField: "_id",
+            as: "communitiesInfo",
+            pipeline: [
+              { $project: { name: 1, image: 1 } }
+            ]
+          }},
+          // Project only the fields we need
+          { $project: {
+            _id: 1,
+            clerkId: 1,
+            username: 1,
+            name: 1,
+            email: 1,
+            bio: 1,
+            image: 1,
+            pronouns: 1,
+            location: 1,
+            website: 1,
+            socialLinks: 1,
+            interests: 1,
+            followingCount: 1,
+            followerCount: 1,
+            communityCount: 1,
+            communitiesInfo: 1,
+            privacySettings: 1,
+            createdAt: 1,
+            updatedAt: 1,
+          }}
+        ];
 
-    // Check if the requesting user is the profile owner
-    const isOwner = clerkUserId && userDoc.clerkId === clerkUserId;
+        const [userDoc] = await User.aggregate(pipeline);
 
-    // Prepare the response based on ownership and privacy settings
-    const profile = {
-      id: userDoc._id.toString(),
-      username: userDoc.username,
-      name: userDoc.name,
-      bio: userDoc.bio || "",
-      image: userDoc.image || "",
-      pronouns: userDoc.pronouns || "",
-      location: userDoc.location || "",
-      website: userDoc.website || "",
-      socialLinks: userDoc.socialLinks || [],
-      interests: userDoc.interests || [],
-      followingCount: userDoc.following?.length || 0,
-      followerCount: userDoc.followers?.length || 0,
-      communityCount: userDoc.communities?.length || 0,
-      isFollowing: false,
-      createdAt: userDoc.createdAt.toISOString(),
-      updatedAt: userDoc.updatedAt.toISOString(),
-    };
+        if (!userDoc) {
+          throw new Error("User not found");
+        }
 
-    // Add email only if the user is the owner or if showEmail is true
-    if (isOwner || (userDoc.privacySettings?.showEmail)) {
-      profile.email = userDoc.email;
-    }
+        // Check if the requesting user is the profile owner
+        const isOwner = clerkUserId && userDoc.clerkId === clerkUserId;
 
-    // Check if the current user is following this profile
-    if (clerkUserId && !isOwner) {
-      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
-      if (currentUser) {
-        profile.isFollowing = currentUser.following.some(
-          (id: mongoose.Types.ObjectId) => id.toString() === userDoc._id.toString()
-        );
-      }
-    }
+        // Prepare the response based on ownership and privacy settings
+        const profile = {
+          id: userDoc._id.toString(),
+          username: userDoc.username,
+          name: userDoc.name,
+          bio: userDoc.bio || "",
+          image: userDoc.image || "",
+          pronouns: userDoc.pronouns || "",
+          location: userDoc.location || "",
+          website: userDoc.website || "",
+          socialLinks: userDoc.socialLinks || [],
+          interests: userDoc.interests || [],
+          followingCount: userDoc.followingCount,
+          followerCount: userDoc.followerCount,
+          communityCount: userDoc.communityCount,
+          communities: userDoc.communitiesInfo?.map(c => ({
+            id: c._id.toString(),
+            name: c.name,
+            image: c.image || ""
+          })) || [],
+          isFollowing: false,
+          createdAt: userDoc.createdAt.toISOString(),
+          updatedAt: userDoc.updatedAt.toISOString(),
+        };
+
+        // Add email only if the user is the owner or if showEmail is true
+        if (isOwner || (userDoc.privacySettings?.showEmail)) {
+          profile.email = userDoc.email;
+        }
+
+        // Check if the current user is following this profile
+        if (clerkUserId && !isOwner) {
+          const currentUser = await User.findOne({ clerkId: clerkUserId }).select("following").lean(true);
+          if (currentUser) {
+            profile.isFollowing = currentUser.following.some(
+              (id: mongoose.Types.ObjectId) => id.toString() === userDoc._id.toString()
+            );
+          }
+        }
+
+        return profile;
+      },
+      300 // 5 minutes TTL
+    );
 
     return NextResponse.json({ profile }, { status: 200 });
   } catch (err) {
@@ -85,7 +143,7 @@ export async function GET(
 }
 
 // PUT /api/profile/[userId] - Update user profile
-export async function PUT(
+async function updateUserProfileHandler(
   req: NextRequest,
   { params }: { params: { userId: string } }
 ) {
@@ -170,3 +228,24 @@ export async function PUT(
     return ApiError.internalServerError("Failed to update profile");
   }
 }
+
+// Export the handler functions with middleware
+export const GET = withApiMiddleware(
+  (req: NextRequest) => getUserProfileHandler(req, { params: { userId: req.nextUrl.pathname.split('/')[3] } }),
+  {
+    enableRateLimit: true,
+    maxRequests: 100,
+    windowMs: 60000, // 1 minute
+    identifier: 'profile:get'
+  }
+);
+
+export const PUT = withApiMiddleware(
+  (req: NextRequest) => updateUserProfileHandler(req, { params: { userId: req.nextUrl.pathname.split('/')[3] } }),
+  {
+    enableRateLimit: true,
+    maxRequests: 20,
+    windowMs: 60000, // 1 minute
+    identifier: 'profile:put'
+  }
+);

@@ -1,13 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
 import AboutTab from '../AboutTab';
 import { toast } from 'sonner';
 
 // Mock dependencies
-vi.mock('sonner', () => ({
+jest.mock('sonner', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: jest.fn(),
+    error: jest.fn(),
   },
 }));
 
@@ -33,26 +32,26 @@ describe('AboutTab', () => {
   const mockProps = {
     user: mockUser,
     isOwner: false,
-    onProfileUpdate: vi.fn(),
+    onProfileUpdate: jest.fn(),
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('renders user information in view mode', () => {
     render(<AboutTab {...mockProps} />);
-    
+
     expect(screen.getByText('Profile Info')).toBeInTheDocument();
     expect(screen.getByText(mockUser.bio)).toBeInTheDocument();
     expect(screen.getByText(mockUser.pronouns)).toBeInTheDocument();
     expect(screen.getByText(mockUser.location)).toBeInTheDocument();
     expect(screen.getByText(mockUser.website)).toBeInTheDocument();
-    
+
     // Check social links
     expect(screen.getByText('Twitter:')).toBeInTheDocument();
     expect(screen.getByText('GitHub:')).toBeInTheDocument();
-    
+
     // Check interests
     mockUser.interests.forEach(interest => {
       expect(screen.getByText(interest)).toBeInTheDocument();
@@ -61,17 +60,17 @@ describe('AboutTab', () => {
 
   it('shows Edit button when isOwner is true', () => {
     render(<AboutTab {...mockProps} isOwner={true} />);
-    
+
     const editButton = screen.getByRole('button', { name: /edit/i });
     expect(editButton).toBeInTheDocument();
   });
 
   it('switches to edit mode when Edit button is clicked', () => {
     render(<AboutTab {...mockProps} isOwner={true} />);
-    
+
     // Click Edit button
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-    
+
     // Check if edit form is displayed
     expect(screen.getByText('Edit Profile')).toBeInTheDocument();
     expect(screen.getByLabelText(/bio/i)).toBeInTheDocument();
@@ -82,10 +81,10 @@ describe('AboutTab', () => {
 
   it('pre-fills form fields with user data in edit mode', () => {
     render(<AboutTab {...mockProps} isOwner={true} />);
-    
+
     // Click Edit button
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-    
+
     // Check if form fields are pre-filled
     expect(screen.getByLabelText(/bio/i)).toHaveValue(mockUser.bio);
     expect(screen.getByLabelText(/pronouns/i)).toHaveValue(mockUser.pronouns);
@@ -95,16 +94,16 @@ describe('AboutTab', () => {
 
   it('submits form data when Save button is clicked', async () => {
     render(<AboutTab {...mockProps} isOwner={true} />);
-    
+
     // Click Edit button
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-    
+
     // Modify form fields
     fireEvent.change(screen.getByLabelText(/bio/i), { target: { value: 'Updated bio' } });
-    
+
     // Submit form
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
-    
+
     // Check if onProfileUpdate was called with updated data
     await waitFor(() => {
       expect(mockProps.onProfileUpdate).toHaveBeenCalledWith(expect.objectContaining({
@@ -118,66 +117,66 @@ describe('AboutTab', () => {
 
   it('allows adding and removing interests', () => {
     render(<AboutTab {...mockProps} isOwner={true} />);
-    
+
     // Click Edit button
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-    
+
     // Add a new interest
     fireEvent.change(screen.getByPlaceholderText(/add an interest/i), { target: { value: 'gaming' } });
     fireEvent.click(screen.getByRole('button', { name: '' })); // The Add button has no accessible name
-    
+
     // Check if the new interest is added
     expect(screen.getByText('gaming')).toBeInTheDocument();
-    
+
     // Remove an interest
     const removeButtons = screen.getAllByRole('button', { name: '' }); // The remove buttons have no accessible name
     fireEvent.click(removeButtons[0]); // Remove the first interest
-    
+
     // Check if the interest was removed
     expect(screen.queryByText('coding')).not.toBeInTheDocument();
   });
 
   it('allows adding and removing social links', () => {
     render(<AboutTab {...mockProps} isOwner={true} />);
-    
+
     // Click Edit button
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-    
+
     // Add a new social link
     fireEvent.change(screen.getByPlaceholderText(/platform/i), { target: { value: 'LinkedIn' } });
     fireEvent.change(screen.getByPlaceholderText(/url/i), { target: { value: 'https://linkedin.com/in/testuser' } });
     const addButtons = screen.getAllByRole('button', { name: '' }); // The Add button has no accessible name
     fireEvent.click(addButtons[addButtons.length - 1]); // The last button should be the Add button for social links
-    
+
     // Check if the new social link is added
     expect(screen.getByText('LinkedIn:')).toBeInTheDocument();
-    
+
     // Remove a social link
     const removeButtons = screen.getAllByRole('button', { 'aria-label': undefined });
     const trashButtons = removeButtons.filter(button => button.classList.contains('text-red-500'));
     fireEvent.click(trashButtons[0]); // Remove the first social link
-    
+
     // Check if the social link was removed
     expect(screen.queryByText('Twitter:')).not.toBeInTheDocument();
   });
 
   it('validates form data before submission', async () => {
     render(<AboutTab {...mockProps} isOwner={true} />);
-    
+
     // Click Edit button
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
-    
+
     // Enter invalid website URL
     fireEvent.change(screen.getByLabelText(/website/i), { target: { value: 'invalid-url' } });
-    
+
     // Submit form
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
-    
+
     // Check if validation error is shown
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalled();
     });
-    
+
     // onProfileUpdate should not be called
     expect(mockProps.onProfileUpdate).not.toHaveBeenCalled();
   });

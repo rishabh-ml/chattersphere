@@ -1,68 +1,58 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Loader2, Users, Settings, Shield, Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
-import PostCard from "@/components/post-card";
-import { toast } from "sonner";
-import { useUser } from "@clerk/nextjs";
-import { Post } from "@/context/PostContext";
+import { useEffect } from "react";
+import { useParams } from "next/navigation";
+import { useNavigation, routes } from "@/lib/navigation";
+import { Loader2 } from "lucide-react";
 
-interface Community {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  image?: string;
-  banner?: string;
-  isPrivate: boolean;
-  requiresApproval: boolean;
-  memberCount: number;
-  postCount: number;
-  channelCount: number;
-  createdAt: string;
-  updatedAt: string;
-  isMember: boolean;
-  isModerator: boolean;
-  isCreator: boolean;
-}
+export default function CommunityRedirectPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const navigation = useNavigation();
 
-export default function CommunityPage() {
-  const { slug } = useParams();
-  const router = useRouter();
-  const { isSignedIn } = useUser();
-  
-  const [community, setCommunity] = useState<Community | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("posts");
-  const [joiningCommunity, setJoiningCommunity] = useState(false);
-
-  // Fetch community data
   useEffect(() => {
-    const fetchCommunity = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/communities/slug/${slug}`);
-        
+    // Redirect to the new community path
+    if (slug) {
+      navigation.goToCommunity(slug as string);
+    }
+  }, [slug, navigation]);
+
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[#00AEEF]" />
+        <p className="text-gray-500">Redirecting to updated community page...</p>
+      </div>
+    </div>
+  );
+
         if (!response.ok) {
-          throw new Error("Failed to fetch community");
+          const errorText = await response.text();
+          console.error(`API response not OK: ${response.status} ${response.statusText}`, errorText);
+          throw new Error(`Failed to fetch community: ${response.status} ${response.statusText}`);
         }
-        
+
         const data = await response.json();
+        console.log('Community data received:', data);
+
+        if (!data.community) {
+          throw new Error('Community data is missing in the response');
+        }
+
         setCommunity(data.community);
-        
+
+        // Set initial membership status
+        setMembershipStatus(data.community.isMember ? 'member' : 'none');
+
         // Fetch community posts
         await fetchCommunityPosts(data.community.id);
+
+        // Fetch membership requests if moderator/creator
+        if (data.community.isModerator || data.community.isCreator) {
+          await fetchMembershipRequests(data.community.id);
+        }
       } catch (error) {
         console.error("Error fetching community:", error);
-        setError("Failed to load community. Please try again later.");
+        setError(error instanceof Error ? error.message : "Failed to load community. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -73,15 +63,75 @@ export default function CommunityPage() {
     }
   }, [slug]);
 
+  // Fetch membership requests (for moderators/creators)
+  const fetchMembershipRequests = async (communityId: string) => {
+    if (!community?.isModerator && !community?.isCreator) return;
+
+    try {
+      setLoadingRequests(true);
+      const response = await fetch(`/api/communities/${communityId}/membership-requests`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch membership requests");
+      }
+
+      const data = await response.json();
+      setMembershipRequests(data.requests || []);
+    } catch (error) {
+      console.error("Error fetching membership requests:", error);
+      toast.error("Failed to load membership requests");
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  // Handle membership request approval/rejection
+  const handleMembershipRequest = async (userId: string, action: 'approve' | 'reject') => {
+    if (!community) return;
+
+    try {
+      const response = await fetch(`/api/communities/${community.id}/membership/${userId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${action} membership request`);
+      }
+
+      // Remove the request from the list
+      setMembershipRequests(prev => prev.filter(request => request.user.id !== userId));
+
+      // Update member count if approved
+      if (action === 'approve') {
+        setCommunity(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            memberCount: prev.memberCount + 1,
+          };
+        });
+      }
+
+      toast.success(`Membership request ${action === 'approve' ? 'approved' : 'rejected'}`);
+    } catch (error) {
+      console.error(`Error ${action}ing membership request:`, error);
+      toast.error(`Failed to ${action} membership request`);
+    }
+  };
+
   // Fetch community posts
   const fetchCommunityPosts = async (communityId: string) => {
     try {
       const response = await fetch(`/api/communities/${communityId}/posts`);
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch community posts");
       }
-      
+
       const data = await response.json();
       setPosts(data.posts);
     } catch (error) {
@@ -114,19 +164,30 @@ export default function CommunityPage() {
       }
 
       const data = await response.json();
-      
-      // Update local state
-      setCommunity(prev => {
-        if (!prev) return null;
-        
-        return {
-          ...prev,
-          isMember: data.isMember,
-          memberCount: data.isMember ? prev.memberCount + 1 : prev.memberCount - 1,
-        };
-      });
 
-      toast.success(data.isMember ? "Joined community successfully" : "Left community successfully");
+      // Handle different response types
+      if (data.action === "request") {
+        // Membership request submitted (requires approval)
+        toast.success("Join request submitted for approval");
+        // Update membership status to pending
+        setMembershipStatus('pending');
+      } else {
+        // Regular join/leave action
+        // Update local state
+        setCommunity(prev => {
+          if (!prev) return null;
+
+          return {
+            ...prev,
+            isMember: data.isMember,
+            memberCount: data.isMember ? prev.memberCount + 1 : prev.memberCount - 1,
+          };
+        });
+
+        // Update membership status
+        setMembershipStatus(data.isMember ? 'member' : 'none');
+        toast.success(data.isMember ? "Joined community successfully" : "Left community successfully");
+      }
     } catch (error) {
       console.error("Error updating membership:", error);
       toast.error("Failed to update community membership");
@@ -151,7 +212,7 @@ export default function CommunityPage() {
       }
 
       const data = await response.json();
-      
+
       // Update local state
       setPosts(prev =>
         prev.map(post =>
@@ -211,7 +272,7 @@ export default function CommunityPage() {
             />
           </div>
         )}
-        
+
         <div className="p-6">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             <div className="flex items-center gap-4">
@@ -229,7 +290,7 @@ export default function CommunityPage() {
                   </div>
                 )}
               </Avatar>
-              
+
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-bold text-gray-800">{community.name}</h1>
@@ -242,22 +303,28 @@ export default function CommunityPage() {
                 <p className="text-sm text-gray-500">r/{community.slug}</p>
               </div>
             </div>
-            
+
             <div className="md:ml-auto flex items-center gap-3 mt-4 md:mt-0">
               <Button
-                variant={community.isMember ? "outline" : "default"}
-                className={community.isMember ? "border-red-300 text-red-600 hover:bg-red-50" : ""}
+                variant={community.isMember || membershipStatus === 'pending' ? "outline" : "default"}
+                className={(() => {
+                  if (community.isMember) return "border-red-300 text-red-600 hover:bg-red-50";
+                  if (membershipStatus === 'pending') return "border-yellow-300 text-yellow-600 hover:bg-yellow-50";
+                  return "";
+                })()}
                 onClick={handleMembershipToggle}
-                disabled={joiningCommunity}
+                disabled={joiningCommunity || membershipStatus === 'pending'}
               >
                 {joiningCommunity ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : membershipStatus === 'pending' ? (
+                  <Loader2 className="h-4 w-4 mr-2" />
                 ) : (
                   <Users className="h-4 w-4 mr-2" />
                 )}
-                {community.isMember ? "Leave" : "Join"}
+                {community.isMember ? "Leave" : membershipStatus === 'pending' ? "Pending Approval" : "Join"}
               </Button>
-              
+
               {(community.isCreator || community.isModerator) && (
                 <Button variant="outline">
                   <Settings className="h-4 w-4 mr-2" />
@@ -266,20 +333,20 @@ export default function CommunityPage() {
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
             <div className="flex items-center">
               <Users className="h-4 w-4 mr-1" />
               <span>{community.memberCount} {community.memberCount === 1 ? "member" : "members"}</span>
             </div>
-            
+
             {community.isCreator && (
               <div className="flex items-center">
                 <Shield className="h-4 w-4 mr-1 text-indigo-600" />
                 <span className="text-indigo-600">Creator</span>
               </div>
             )}
-            
+
             {community.isModerator && !community.isCreator && (
               <div className="flex items-center">
                 <Shield className="h-4 w-4 mr-1 text-green-600" />
@@ -289,15 +356,25 @@ export default function CommunityPage() {
           </div>
         </div>
       </motion.div>
-      
+
       {/* Community Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="posts">Posts</TabsTrigger>
           <TabsTrigger value="about">About</TabsTrigger>
           <TabsTrigger value="members">Members</TabsTrigger>
+          {(community.isCreator || community.isModerator) && (
+            <TabsTrigger value="requests">
+              Requests
+              {membershipRequests.length > 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  {membershipRequests.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          )}
         </TabsList>
-        
+
         <TabsContent value="posts" className="space-y-6">
           {posts.length === 0 ? (
             <div className="bg-white rounded-lg border border-gray-100 p-8 text-center">
@@ -310,16 +387,16 @@ export default function CommunityPage() {
             ))
           )}
         </TabsContent>
-        
+
         <TabsContent value="about">
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <h2 className="text-lg font-semibold mb-4 flex items-center">
               <Info className="h-5 w-5 mr-2 text-indigo-600" />
               About {community.name}
             </h2>
-            
+
             <p className="text-gray-700 whitespace-pre-wrap">{community.description}</p>
-            
+
             <div className="mt-6 pt-6 border-t border-gray-100">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -328,17 +405,17 @@ export default function CommunityPage() {
                     {new Date(community.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                
+
                 <div>
                   <p className="text-sm text-gray-500">Posts</p>
                   <p className="text-sm font-medium">{community.postCount}</p>
                 </div>
-                
+
                 <div>
                   <p className="text-sm text-gray-500">Members</p>
                   <p className="text-sm font-medium">{community.memberCount}</p>
                 </div>
-                
+
                 <div>
                   <p className="text-sm text-gray-500">Channels</p>
                   <p className="text-sm font-medium">{community.channelCount}</p>
@@ -347,16 +424,76 @@ export default function CommunityPage() {
             </div>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="members">
           <div className="bg-white rounded-lg border border-gray-100 p-6">
             <h2 className="text-lg font-semibold mb-4">Members</h2>
-            
+
             <p className="text-gray-500">
               This feature is coming soon. Check back later to see the members of this community.
             </p>
           </div>
         </TabsContent>
+
+        {(community.isCreator || community.isModerator) && (
+          <TabsContent value="requests">
+            <div className="bg-white rounded-lg border border-gray-100 p-6">
+              <h2 className="text-lg font-semibold mb-4">Membership Requests</h2>
+
+              {loadingRequests ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                </div>
+              ) : membershipRequests.length === 0 ? (
+                <p className="text-gray-500 py-4">No pending membership requests.</p>
+              ) : (
+                <div className="space-y-4">
+                  {membershipRequests.map((request) => (
+                    <div key={request.id} className="flex items-center justify-between border-b border-gray-100 pb-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          {request.user.image ? (
+                            <img
+                              src={request.user.image}
+                              alt={request.user.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-indigo-100 text-indigo-600 text-sm font-semibold">
+                              {request.user.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{request.user.name}</p>
+                          <p className="text-sm text-gray-500">@{request.user.username}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-green-300 text-green-600 hover:bg-green-50"
+                          onClick={() => handleMembershipRequest(request.user.id, 'approve')}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                          onClick={() => handleMembershipRequest(request.user.id, 'reject')}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

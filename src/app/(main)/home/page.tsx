@@ -7,17 +7,20 @@ import { motion } from "framer-motion"
 import { PostProvider } from "@/context/PostContext"
 import { PopularPostProvider } from "@/context/PopularPostContext"
 import { CommunityProvider } from "@/context/CommunityContext"
-import PostFeed from "@/components/post-feed"
+import { HomeFeedProvider } from "@/context/HomeFeedContext"
+import HomeFeed from "@/components/home-feed"
 import PopularPostFeed from "@/components/popular-post-feed"
 import CommunityList from "@/components/community-list"
 import CreatePostForm from "@/components/create-post-form"
+import { StandardPageWrapper } from "@/components/layouts/StandardPageWrapper"
 
 export default function Home() {
   const { isSignedIn, user } = useUser()
   const [activeTab, setActiveTab] = useState("feed")
 
   return (
-    <div className="space-y-6">
+    <StandardPageWrapper>
+      <div className="space-y-6">
       {/* Header with welcome message if signed in */}
       <div className="mb-6">
         {isSignedIn ? (
@@ -60,12 +63,9 @@ export default function Home() {
 
       {/* Tab Content */}
       {activeTab === "feed" && (
-        <PostProvider>
-          <PostFeed emptyMessage={isSignedIn ?
-            "Your feed is empty. Follow users or join community to see posts here!" :
-            "Sign in to see posts from users you follow!"}
-          />
-        </PostProvider>
+        <HomeFeedProvider>
+          <HomeFeed />
+        </HomeFeedProvider>
       )}
 
       {activeTab === "popular" && (
@@ -80,5 +80,6 @@ export default function Home() {
         </CommunityProvider>
       )}
     </div>
+    </StandardPageWrapper>
   )
 }

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useNavigation, routes } from "@/lib/navigation";
 import PostCard from "@/components/post-card";
 import CommentList from "@/components/comments/CommentList";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ import { Post } from "@/context/PostContext";
 
 export default function PostDetailPage() {
   const { postId } = useParams();
+  const navigation = useNavigation();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,11 +22,11 @@ export default function PostDetailPage() {
     const fetchPost = async () => {
       try {
         const response = await fetch(`/api/posts/${postId}`);
-        
+
         if (!response.ok) {
           throw new Error("Failed to fetch post");
         }
-        
+
         const data = await response.json();
         setPost(data.post);
       } catch (error) {
@@ -55,10 +57,10 @@ export default function PostDetailPage() {
       }
 
       const data = await response.json();
-      
+
       setPost(prev => {
         if (!prev) return null;
-        
+
         return {
           ...prev,
           upvoteCount: data.voteStatus.upvoteCount,
@@ -87,7 +89,7 @@ export default function PostDetailPage() {
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-red-600 my-6">
         <p>{error || "Post not found"}</p>
         <Button asChild variant="outline" className="mt-4">
-          <Link href="/home">
+          <Link href={routes.home()} onClick={(e) => navigation.goToHome(e)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
@@ -100,17 +102,17 @@ export default function PostDetailPage() {
     <div className="max-w-3xl mx-auto">
       <div className="mb-4">
         <Button asChild variant="ghost" size="sm" className="text-gray-600">
-          <Link href="/home">
+          <Link href={routes.home()} onClick={(e) => navigation.goToHome(e)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Link>
         </Button>
       </div>
-      
+
       <div className="mb-6">
         <PostCard post={post} onVote={handleVote} />
       </div>
-      
+
       <CommentList postId={post.id} />
     </div>
   );

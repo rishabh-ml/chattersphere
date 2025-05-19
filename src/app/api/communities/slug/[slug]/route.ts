@@ -12,24 +12,42 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
+    console.log(`[GET /api/communities/slug/[slug]] Fetching community with slug: ${params?.slug}`);
     const { userId: clerkUserId } = await auth();
-    
+
     // Sanitize and validate slug
     if (!params?.slug) {
+      console.log('[GET /api/communities/slug/[slug]] Missing slug parameter');
       return ApiError.badRequest("Missing slug parameter");
     }
-    
+
     const sanitizedSlug = sanitizeInput(params.slug);
-    
-    await connectToDatabase();
+    console.log(`[GET /api/communities/slug/[slug]] Sanitized slug: ${sanitizedSlug}`);
+
+    try {
+      await connectToDatabase();
+      console.log('[GET /api/communities/slug/[slug]] Connected to database');
+    } catch (dbError) {
+      console.error('[GET /api/communities/slug/[slug]] Database connection error:', dbError);
+      return ApiError.internalServerError("Database connection failed");
+    }
 
     // Find the community by slug
-    const community = await Community.findOne({ slug: sanitizedSlug })
-      .populate("creator", "username name image")
-      .lean()
-      .exec();
+    let community;
+    try {
+      community = await Community.findOne({ slug: sanitizedSlug })
+        .populate("creator", "username name image")
+        .lean()
+        .exec();
+
+      console.log(`[GET /api/communities/slug/[slug]] Community found: ${community ? 'Yes' : 'No'}`);
+    } catch (findError) {
+      console.error('[GET /api/communities/slug/[slug]] Error finding community:', findError);
+      return ApiError.internalServerError("Failed to query community");
+    }
 
     if (!community) {
+      console.log(`[GET /api/communities/slug/[slug]] Community not found with slug: ${sanitizedSlug}`);
       return ApiError.notFound("Community not found");
     }
 
@@ -39,52 +57,80 @@ export async function GET(
     let isCreator = false;
 
     if (clerkUserId) {
-      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
-      
-      if (currentUser) {
-        const currentUserId = currentUser._id.toString();
-        
-        isMember = community.members.some(
-          (id: any) => id.toString() === currentUserId
-        );
-        
-        isModerator = community.moderators.some(
-          (id: any) => id.toString() === currentUserId
-        );
-        
-        isCreator = community.creator._id.toString() === currentUserId;
+      try {
+        console.log(`[GET /api/communities/slug/[slug]] Looking up user with clerkId: ${clerkUserId}`);
+        const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+
+        if (currentUser) {
+          console.log(`[GET /api/communities/slug/[slug]] Found user: ${currentUser.username}`);
+          const currentUserId = currentUser._id.toString();
+
+          // Check if arrays exist before using .some()
+          if (Array.isArray(community.members)) {
+            isMember = community.members.some(
+              (id: any) => id && id.toString() === currentUserId
+            );
+          } else {
+            console.warn('[GET /api/communities/slug/[slug]] Community members array is missing or invalid');
+          }
+
+          if (Array.isArray(community.moderators)) {
+            isModerator = community.moderators.some(
+              (id: any) => id && id.toString() === currentUserId
+            );
+          } else {
+            console.warn('[GET /api/communities/slug/[slug]] Community moderators array is missing or invalid');
+          }
+
+          isCreator = community.creator &&
+                     community.creator._id &&
+                     community.creator._id.toString() === currentUserId;
+        } else {
+          console.log(`[GET /api/communities/slug/[slug]] User with clerkId ${clerkUserId} not found`);
+        }
+      } catch (userError) {
+        console.error('[GET /api/communities/slug/[slug]] Error finding user:', userError);
+        // Continue without user data rather than failing the request
       }
     }
 
     // Format the response
-    const formattedCommunity = {
-      id: community._id.toString(),
-      name: community.name,
-      slug: community.slug,
-      description: community.description,
-      image: community.image,
-      banner: community.banner,
-      isPrivate: community.isPrivate || false,
-      requiresApproval: community.requiresApproval || false,
-      creator: {
-        id: community.creator._id.toString(),
-        username: community.creator.username,
-        name: community.creator.name,
-        image: community.creator.image,
-      },
-      memberCount: community.members?.length || 0,
-      postCount: community.posts?.length || 0,
-      channelCount: community.channels?.length || 0,
-      isMember,
-      isModerator,
-      isCreator,
-      createdAt: community.createdAt.toISOString(),
-      updatedAt: community.updatedAt.toISOString(),
-    };
+    try {
+      console.log('[GET /api/communities/slug/[slug]] Formatting community response');
+      const formattedCommunity = {
+        id: community._id.toString(),
+        name: community.name,
+        slug: community.slug,
+        description: community.description,
+        image: community.image,
+        banner: community.banner,
+        isPrivate: community.isPrivate || false,
+        requiresApproval: community.requiresApproval || false,
+        creator: {
+          id: community.creator && community.creator._id ? community.creator._id.toString() : 'unknown',
+          username: community.creator ? community.creator.username : 'unknown',
+          name: community.creator ? community.creator.name : 'Unknown User',
+          image: community.creator ? community.creator.image : null,
+        },
+        memberCount: Array.isArray(community.members) ? community.members.length : 0,
+        postCount: Array.isArray(community.posts) ? community.posts.length : 0,
+        channelCount: Array.isArray(community.channels) ? community.channels.length : 0,
+        isMember,
+        isModerator,
+        isCreator,
+        createdAt: community.createdAt ? community.createdAt.toISOString() : new Date().toISOString(),
+        updatedAt: community.updatedAt ? community.updatedAt.toISOString() : new Date().toISOString(),
+      };
 
-    return NextResponse.json({ community: formattedCommunity }, { status: 200 });
+      console.log('[GET /api/communities/slug/[slug]] Successfully formatted community data');
+      return NextResponse.json({ community: formattedCommunity }, { status: 200 });
+    } catch (formatError) {
+      console.error('[GET /api/communities/slug/[slug]] Error formatting community data:', formatError);
+      return ApiError.internalServerError("Failed to format community data");
+    }
   } catch (err) {
-    console.error("[GET /api/communities/slug/[slug]] Error:", err);
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error(`[GET /api/communities/slug/[slug]] Error: ${errorMessage}`, err);
     return ApiError.internalServerError("Failed to fetch community");
   }
 }

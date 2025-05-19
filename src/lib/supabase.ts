@@ -3,8 +3,9 @@ import { env } from '@/lib/env';
 import { v4 as uuidv4 } from 'uuid';
 
 // Determine if we should use the mock implementation
+// Always use mock implementation by default in development since the Supabase instance is not accessible
 const USE_MOCK = process.env.NODE_ENV === 'development' &&
-  (typeof window !== 'undefined' ? localStorage.getItem('USE_SUPABASE_MOCK') === 'true' : false);
+  (typeof window !== 'undefined' ? localStorage.getItem('USE_SUPABASE_MOCK') !== 'false' : true);
 
 // Function to check if Supabase is available
 const checkSupabaseAvailability = async (): Promise<boolean> => {

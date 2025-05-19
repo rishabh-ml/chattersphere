@@ -1,4 +1,26 @@
-import { NextRequest } from 'next/server';
+// Mock Next.js modules before importing them
+jest.mock('next/server', () => {
+  const originalModule = jest.requireActual('next/server');
+  return {
+    ...originalModule,
+    NextRequest: jest.fn().mockImplementation((url, init) => ({
+      url,
+      method: init?.method || 'GET',
+      headers: new Map(Object.entries(init?.headers || {})),
+      json: jest.fn().mockImplementation(() => Promise.resolve(init?.body ? JSON.parse(init.body) : {})),
+      nextUrl: { searchParams: new URLSearchParams() }
+    })),
+    NextResponse: {
+      json: jest.fn().mockImplementation((data, init) => ({
+        status: init?.status || 200,
+        json: () => Promise.resolve(data),
+        headers: new Map()
+      })),
+    },
+  };
+});
+
+import { NextRequest, NextResponse } from 'next/server';
 import { GET } from '../communities/[communityId]/route';
 import { GET as GetBySlug } from '../communities/slug/[slug]/route';
 import { auth } from '@clerk/nextjs/server';
@@ -42,19 +64,19 @@ describe('Community API', () => {
     it('should return a community by ID', async () => {
       // Mock auth
       (auth as jest.Mock).mockResolvedValue({ userId: 'clerk123' });
-      
+
       // Mock mongoose.Types.ObjectId.isValid
       (mongoose.Types.ObjectId.isValid as jest.Mock).mockReturnValue(true);
-      
+
       // Mock database connection
       (connectToDatabase as jest.Mock).mockResolvedValue(undefined);
-      
+
       // Mock User.findOne
-      (User.findOne as jest.Mock).mockResolvedValue({ 
+      (User.findOne as jest.Mock).mockResolvedValue({
         _id: 'user123',
         clerkId: 'clerk123',
       });
-      
+
       // Mock Community.findById
       (Community.findById as jest.Mock).mockReturnValue({
         populate: jest.fn().mockReturnThis(),
@@ -81,14 +103,14 @@ describe('Community API', () => {
           updatedAt: new Date(),
         }),
       });
-      
+
       // Create request
       const request = new NextRequest('http://localhost:3000/api/communities/community123');
-      
+
       // Call the handler
       const response = await GET(request, { params: { communityId: 'community123' } });
       const data = await response.json();
-      
+
       // Assertions
       expect(response.status).toBe(200);
       expect(data.community).toBeDefined();
@@ -104,16 +126,16 @@ describe('Community API', () => {
     it('should return a community by slug', async () => {
       // Mock auth
       (auth as jest.Mock).mockResolvedValue({ userId: 'clerk123' });
-      
+
       // Mock database connection
       (connectToDatabase as jest.Mock).mockResolvedValue(undefined);
-      
+
       // Mock User.findOne
-      (User.findOne as jest.Mock).mockResolvedValue({ 
+      (User.findOne as jest.Mock).mockResolvedValue({
         _id: 'user123',
         clerkId: 'clerk123',
       });
-      
+
       // Mock Community.findOne
       (Community.findOne as jest.Mock).mockReturnValue({
         populate: jest.fn().mockReturnThis(),
@@ -140,14 +162,14 @@ describe('Community API', () => {
           updatedAt: new Date(),
         }),
       });
-      
+
       // Create request
       const request = new NextRequest('http://localhost:3000/api/communities/slug/test-community');
-      
+
       // Call the handler
       const response = await GetBySlug(request, { params: { slug: 'test-community' } });
       const data = await response.json();
-      
+
       // Assertions
       expect(response.status).toBe(200);
       expect(data.community).toBeDefined();

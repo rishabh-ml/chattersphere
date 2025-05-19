@@ -8,9 +8,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, X, ChevronLeft, ChevronRight, Users } from "lucide-react";
 
-export default function CommunityMembersSidebar() {
+interface CommunityMembersSidebarProps {
+  onClose?: () => void;
+}
+
+export default function CommunityMembersSidebar({ onClose }: CommunityMembersSidebarProps) {
   const {
     community,
     members,
@@ -31,16 +35,16 @@ export default function CommunityMembersSidebar() {
     }, { position: -1, name: "", color: "" });
 
     const roleGroup = highestRole.name || "Members";
-    
+
     if (!acc[roleGroup]) {
       acc[roleGroup] = [];
     }
-    
+
     acc[roleGroup].push({
       ...member,
       highestRole,
     });
-    
+
     return acc;
   }, {} as Record<string, any[]>);
 
@@ -78,20 +82,7 @@ export default function CommunityMembersSidebar() {
     }
   }, [community, fetchMembers]);
 
-  if (!isExpanded) {
-    return (
-      <div className="w-10 bg-gray-100 border-l border-gray-200 flex flex-col items-center py-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-gray-500 hover:text-gray-700 hover:bg-gray-200"
-          onClick={() => setIsExpanded(true)}
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-      </div>
-    );
-  }
+  // Removed the collapsed view as we're handling this at the layout level
 
   if (loading) {
     return (
@@ -121,24 +112,26 @@ export default function CommunityMembersSidebar() {
   }
 
   return (
-    <div className="w-60 bg-gray-100 border-l border-gray-200 flex flex-col">
+    <div className="w-full md:w-60 bg-gray-100 border-l border-gray-200 flex flex-col fixed md:relative inset-0 z-40 md:z-0">
       <div className="p-3 border-b border-gray-200 flex items-center justify-between">
         <h2 className="font-semibold text-gray-700">Members</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-gray-200"
-          onClick={() => setIsExpanded(false)}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-gray-200 md:hidden"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
-      
+
       <div className="p-3 border-b border-gray-200">
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search members"
+            placeholder="Search by username..."
             className="pl-8 h-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -155,12 +148,43 @@ export default function CommunityMembersSidebar() {
           )}
         </div>
       </div>
-      
+
       <ScrollArea className="flex-1">
         <div className="p-2">
           {members.length === 0 ? (
-            <div className="text-center py-4 text-gray-500 text-sm">
-              No members found
+            <div className="text-center py-8 px-4">
+              <div className="flex justify-center mb-3">
+                <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                  <Users className="h-6 w-6" />
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-700 mb-1">No members yet</h3>
+              {community.creatorId && (
+                <div className="mt-4 border rounded-lg p-3 bg-gray-50">
+                  <div className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-2">
+                      {community.creatorImage ? (
+                        <AvatarImage src={community.creatorImage} alt={community.creatorName || 'Creator'} />
+                      ) : (
+                        <AvatarFallback className="bg-indigo-600 text-white">
+                          {community.creatorName?.charAt(0) || 'C'}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-medium text-gray-700 flex items-center">
+                        {community.creatorName || 'Creator'}
+                        <Badge variant="outline" className="ml-2 bg-amber-50 text-amber-700 text-xs border-amber-200">
+                          Admin
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Community Creator
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : filteredMembers.length === 0 ? (
             <div className="text-center py-4 text-gray-500 text-sm">
@@ -172,7 +196,7 @@ export default function CommunityMembersSidebar() {
                 <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
                   {roleName} — {roleMembers.length}
                 </div>
-                
+
                 <div className="mt-1 space-y-0.5">
                   {roleMembers.map((member) => (
                     <div
@@ -191,7 +215,7 @@ export default function CommunityMembersSidebar() {
                         </Avatar>
                         <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-gray-100" />
                       </div>
-                      
+
                       <div className="ml-2 overflow-hidden">
                         <div className="text-sm font-medium text-gray-700 truncate">
                           {member.displayName || member.user.name}

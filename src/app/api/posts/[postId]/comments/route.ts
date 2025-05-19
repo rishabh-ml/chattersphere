@@ -4,10 +4,14 @@ import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Post from "@/models/Post";
 import Comment from "@/models/Comment";
+import Membership, { MembershipStatus } from "@/models/Membership";
 import mongoose, { Types } from "mongoose";
 import { z } from "zod";
 import { rateLimit } from "@/middleware/rateLimit";
 import { sanitizeInput } from "@/lib/security";
+import { withCache, invalidateCache } from "@/lib/redis";
+import { readOptions, getPaginationOptions, formatPaginationMetadata, buildPaginatedAggregation } from "@/lib/mongooseUtils";
+import { withApiMiddleware } from "@/lib/apiUtils";
 
 // Define validation schema for comment creation
 const commentCreateSchema = z.object({
@@ -34,7 +38,7 @@ interface PopulatedComment {
 }
 
 // GET /api/posts/[postId]/comments - Get comments for a post
-export async function GET(
+async function getCommentsHandler(
   req: NextRequest,
   { params }: { params: { postId: string } }
 ) {
@@ -55,9 +59,54 @@ export async function GET(
     await connectToDatabase();
 
     // Check if post exists
-    const post = await Post.findById(sanitizedPostId);
+    const post = await Post.findById(sanitizedPostId).populate('community');
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    // Check if the post belongs to a private community
+    if (post.community) {
+      // Fetch the community to check if it's private
+      const Community = mongoose.model('Community');
+      const community = await Community.findById(post.community);
+
+      if (community && community.isPrivate) {
+        // If private, user must be authenticated
+        if (!userId) {
+          console.log(`[COMMENTS GET] Unauthorized access attempt to comments for post ${sanitizedPostId} in private community: ${post.community}`);
+          return NextResponse.json({
+            error: "You must be signed in to view comments in this private community"
+          }, { status: 401 });
+        }
+
+        // Get the user's MongoDB ID
+        const user = await User.findOne({ clerkId: userId });
+        if (!user) {
+          console.log(`[COMMENTS GET] User not found for clerkId: ${userId}`);
+          return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        // Check if the user is a member of the community using Membership model
+        const membership = await Membership.findOne({
+          user: user._id,
+          community: post.community,
+          status: 'ACTIVE'
+        });
+
+        // Fallback to the deprecated array if Membership model check fails
+        const isMember = membership || community.members.some(memberId =>
+          memberId.toString() === user._id.toString()
+        );
+
+        if (!isMember) {
+          console.log(`[COMMENTS GET] Forbidden access attempt by user ${user._id} to comments for post ${sanitizedPostId} in private community: ${post.community}`);
+          return NextResponse.json({
+            error: "You are not authorized to view comments in this private community"
+          }, { status: 403 });
+        }
+
+        console.log(`[COMMENTS GET] Authorized access to comments for post ${sanitizedPostId} in private community ${post.community} by member ${user._id}`);
+      }
     }
 
     // Parse query parameters
@@ -65,38 +114,74 @@ export async function GET(
     const page = parseInt(url.searchParams.get("page") ?? "1", 10);
     const limit = parseInt(url.searchParams.get("limit") ?? "20", 10);
     const parentCommentId = url.searchParams.get("parentCommentId") ?? undefined;
-    const skip = (page - 1) * limit;
 
-    // Build query
-    const query: any = { post: sanitizedPostId };
+    // Use pagination utility
+    const { skip, limit: validLimit } = getPaginationOptions(page, limit);
 
-    // If parentCommentId is provided, fetch replies to that comment
-    // If parentCommentId is null, fetch top-level comments
-    if (parentCommentId) {
-      if (!mongoose.Types.ObjectId.isValid(parentCommentId)) {
-        return NextResponse.json({ error: "Invalid parentCommentId format" }, { status: 400 });
-      }
-      query.parentComment = parentCommentId;
-    } else {
-      query.parentComment = { $exists: false };
-    }
+    // Create a cache key based on the request parameters
+    const cacheKey = `post:${sanitizedPostId}:comments:${parentCommentId || 'top'}:page:${page}:limit:${validLimit}${userId ? `:user:${userId}` : ''}`;
 
-    // Fetch comments
-    const comments = await Comment.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate("author", "username name image")
-      .lean<PopulatedComment[]>();
+    // Use cache wrapper with a TTL of 2 minutes
+    const result = await withCache(
+      cacheKey,
+      async () => {
+        // Build match stage for aggregation
+        const matchStage: any = { post: new mongoose.Types.ObjectId(sanitizedPostId) };
 
-    // Count total comments matching the query
-    const total = await Comment.countDocuments(query);
+        // If parentCommentId is provided, fetch replies to that comment
+        // If parentCommentId is null, fetch top-level comments
+        if (parentCommentId) {
+          if (!mongoose.Types.ObjectId.isValid(parentCommentId)) {
+            throw new Error("Invalid parentCommentId format");
+          }
+          matchStage.parentComment = new mongoose.Types.ObjectId(parentCommentId);
+        } else {
+          matchStage.parentComment = { $exists: false };
+        }
 
-    // Get current user for vote status
-    let currentUser = null;
-    if (userId) {
-      currentUser = await User.findOne({ clerkId: userId });
-    }
+        // Define lookup stages for populating references
+        const lookupStages = [
+          // Add computed fields for counts
+          { $addFields: {
+            upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
+            downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
+          }},
+          // Lookup author information
+          { $lookup: {
+            from: "users",
+            localField: "author",
+            foreignField: "_id",
+            as: "authorInfo"
+          }},
+          { $unwind: "$authorInfo" }
+        ];
+
+        // Build and execute the aggregation pipeline
+        const pipeline = buildPaginatedAggregation(
+          matchStage,
+          { createdAt: -1 },
+          page,
+          validLimit,
+          lookupStages
+        );
+
+        const [aggregateResult] = await Comment.aggregate(pipeline);
+
+        const total = aggregateResult.metadata.length > 0 ? aggregateResult.metadata[0].total : 0;
+        const comments = aggregateResult.data;
+
+        // Get current user for vote status
+        let currentUser = null;
+        if (userId) {
+          currentUser = await User.findOne({ clerkId: userId }).lean(true);
+        }
+
+        return { comments, total, currentUser };
+      },
+      120 // 2 minutes TTL
+    );
+
+    const { comments, total, currentUser } = result;
 
     // Format comments for response
     const formattedComments = comments.map(comment => {
@@ -144,19 +229,11 @@ export async function GET(
 }
 
 // POST /api/posts/[postId]/comments - Create a new comment
-export async function POST(
+async function createCommentHandler(
   req: NextRequest,
   { params }: { params: { postId: string } }
 ) {
   try {
-    // Rate limiting
-    const rateLimitResult = await rateLimit.check(req, 10, "1m");
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: "Rate limit exceeded. Please try again later." },
-        { status: 429 }
-      );
-    }
 
     const { userId } = await auth();
     if (!userId) {
@@ -232,6 +309,8 @@ export async function POST(
       content: sanitizedContent,
       upvotes: [],
       downvotes: [],
+      upvoteCount: 0,
+      downvoteCount: 0,
       ...(parentCommentId && { parentComment: parentCommentId }),
     });
 
@@ -318,3 +397,24 @@ export async function POST(
     return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
   }
 }
+
+// Export the handler functions with middleware
+export const GET = withApiMiddleware(
+  (req: NextRequest) => getCommentsHandler(req, { params: { postId: req.nextUrl.pathname.split('/')[3] } }),
+  {
+    enableRateLimit: true,
+    maxRequests: 100,
+    windowMs: 60000, // 1 minute
+    identifier: 'comments:get'
+  }
+);
+
+export const POST = withApiMiddleware(
+  (req: NextRequest) => createCommentHandler(req, { params: { postId: req.nextUrl.pathname.split('/')[3] } }),
+  {
+    enableRateLimit: true,
+    maxRequests: 10,
+    windowMs: 60000, // 1 minute
+    identifier: 'comments:post'
+  }
+);

@@ -153,26 +153,15 @@ export async function uploadFile(
     console.log(`[Mock Supabase] Uploading file to ${bucket}/${path}`);
 
     // Generate a unique filename
-    const fileExt = file.name.split('.').pop();
+    const fileExt = file.name.split('.').pop() || 'jpg';
     const fileName = `${path}/${Date.now()}_${uuidv4()}.${fileExt}`;
 
-    // Upload the file
-    const { data, error } = await supabaseAdmin.storage
-      .from(bucket)
-      .upload(fileName, file);
+    // In mock mode, we don't actually upload the file
+    // Instead, we just generate a mock URL
+    const mockUrl = `http://localhost:3000/mock-storage/${bucket}/${fileName}`;
 
-    if (error) {
-      console.error('[Mock Supabase] Error uploading file:', error);
-      return null;
-    }
-
-    // Get the public URL
-    const { data: urlData } = supabaseAdmin.storage
-      .from(bucket)
-      .getPublicUrl(data.path);
-
-    console.log(`[Mock Supabase] File uploaded successfully: ${urlData.publicUrl}`);
-    return urlData.publicUrl;
+    console.log(`[Mock Supabase] File uploaded successfully: ${mockUrl}`);
+    return mockUrl;
   } catch (error) {
     console.error('[Mock Supabase] Error in uploadFile:', error);
     return null;

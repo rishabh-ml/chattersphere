@@ -24,21 +24,22 @@ export async function GET(req: NextRequest) {
     const communities = await Community.find({
       _id: { $in: user.communities }
     })
-    .select("name description image creator members posts")
+    .select("name slug description image creator members posts")
     .populate("creator", "username name image")
     .lean();
 
     // Transform the data for the frontend
     const transformedCommunities = communities.map(community => {
-      const { _id, name, description, image, creator, members, posts } = community;
-      
+      const { _id, name, slug, description, image, creator, members, posts } = community;
+
       return {
         id: _id.toString(),
         name,
+        slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
         description,
         image,
         creator: creator ? {
-          _id: creator._id.toString(),
+          id: creator._id.toString(),
           username: creator.username,
           name: creator.name,
           image: creator.image

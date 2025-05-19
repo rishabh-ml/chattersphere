@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigation, routes } from "@/lib/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,7 +28,7 @@ export default function ProfileHeader({
   onFollowToggle,
   followLoading,
 }: ProfileHeaderProps) {
-  const router = useRouter();
+  const navigation = useNavigation();
   const { isSignedIn } = useUser();
   const [isUploading, setIsUploading] = useState(false);
 
@@ -89,10 +89,10 @@ export default function ProfileHeader({
 
       {/* Profile Header */}
       <div className="relative px-4 md:px-6">
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }} 
-          animate={{ y: 0, opacity: 1 }} 
-          transition={{ delay: 0.2 }} 
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
           className="relative mt-[-64px]"
         >
           <div className="relative group">
@@ -105,24 +105,24 @@ export default function ProfileHeader({
                 </AvatarFallback>
               )}
             </Avatar>
-            
+
             {isOwner && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                 <label htmlFor="avatar-upload" className="cursor-pointer flex items-center justify-center w-full h-full">
                   <Upload className="h-6 w-6 text-white" />
                   <span className="sr-only">Upload avatar</span>
                 </label>
-                <input 
-                  id="avatar-upload" 
-                  type="file" 
-                  accept="image/jpeg,image/png,image/webp,image/gif" 
-                  className="hidden" 
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
                   onChange={handleAvatarChange}
                   disabled={isUploading}
                 />
               </div>
             )}
-            
+
             {isUploading && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
                 <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full" />
@@ -131,10 +131,10 @@ export default function ProfileHeader({
           </div>
         </motion.div>
 
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }} 
-          animate={{ y: 0, opacity: 1 }} 
-          transition={{ delay: 0.3 }} 
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
           className="mt-4"
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -148,7 +148,7 @@ export default function ProfileHeader({
                   Joined {user.createdAt ? format(new Date(user.createdAt), 'MMM yyyy') : 'recently'}
                 </span>
               </p>
-              
+
               {/* Location and Website */}
               <div className="flex flex-wrap gap-4 mt-2 text-sm text-gray-500">
                 {user.location && (
@@ -157,14 +157,14 @@ export default function ProfileHeader({
                     <span>{user.location}</span>
                   </div>
                 )}
-                
+
                 {user.website && (
                   <div className="flex items-center gap-1">
                     <Globe className="h-3.5 w-3.5" />
-                    <a 
-                      href={user.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                    <a
+                      href={user.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="text-indigo-600 hover:underline"
                     >
                       {new URL(user.website).hostname}
@@ -178,9 +178,9 @@ export default function ProfileHeader({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
+                    <Button
+                      variant="outline"
+                      size="icon"
                       className="rounded-full"
                       onClick={handleShareProfile}
                     >
@@ -206,8 +206,8 @@ export default function ProfileHeader({
                 <Button
                   disabled={followLoading}
                   onClick={onFollowToggle}
-                  className={user.isFollowing 
-                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300" 
+                  className={user.isFollowing
+                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
                     : "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
                   }
                 >
@@ -229,14 +229,24 @@ export default function ProfileHeader({
 
           {/* Stats */}
           <div className="flex flex-wrap gap-3 md:gap-6 mt-6">
-            <Badge variant="secondary" className="px-4 py-2 rounded-full">
+            <Button
+              variant="ghost"
+              className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200"
+              onClick={() => navigation.goToFollowers(user.id)}
+            >
               <User className="h-3.5 w-3.5 mr-1 text-indigo-500" />
-              <span className="font-semibold text-indigo-700">{user.followerCount}</span> Followers
-            </Badge>
-            <Badge variant="secondary" className="px-4 py-2 rounded-full">
+              <span className="font-semibold text-indigo-700">{user.followerCount}</span>
+              <span className="ml-1">Followers</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200"
+              onClick={() => navigation.goToFollowing(user.id)}
+            >
               <User className="h-3.5 w-3.5 mr-1 text-indigo-500" />
-              <span className="font-semibold text-indigo-700">{user.followingCount}</span> Following
-            </Badge>
+              <span className="font-semibold text-indigo-700">{user.followingCount}</span>
+              <span className="ml-1">Following</span>
+            </Button>
             <Badge variant="secondary" className="px-4 py-2 rounded-full">
               <Users className="h-3.5 w-3.5 mr-1 text-indigo-500" />
               <span className="font-semibold text-indigo-700">{user.communityCount}</span> Communities
