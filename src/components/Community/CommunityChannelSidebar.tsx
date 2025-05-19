@@ -35,10 +35,15 @@ import {
   Lock,
   ChevronDown,
   ChevronRight,
+  SidebarClose,
 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function CommunityChannelSidebar() {
+interface CommunityChannelSidebarProps {
+  onClose?: () => void;
+}
+
+export default function CommunityChannelSidebar({ onClose }: CommunityChannelSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const {
@@ -179,9 +184,20 @@ export default function CommunityChannelSidebar() {
   }
 
   return (
-    <div className="w-60 bg-gray-100 border-r border-gray-200 flex flex-col">
+    <div className="w-full md:w-60 bg-gray-100 border-r border-gray-200 flex flex-col fixed md:relative inset-0 z-40 md:z-0">
       <div className="p-3 border-b border-gray-200 flex items-center justify-between">
         <h2 className="font-semibold text-gray-700">Channels</h2>
+
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-gray-500 hover:text-gray-700 hover:bg-gray-200 md:hidden"
+            onClick={onClose}
+          >
+            <SidebarClose className="h-4 w-4" />
+          </Button>
+        )}
 
         {(community.isCreator || community.isModerator) && (
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -278,10 +294,25 @@ export default function CommunityChannelSidebar() {
       <ScrollArea className="flex-1">
         <div className="p-2">
           {Object.keys(groupedChannels).length === 0 ? (
-            <div className="text-center py-4 text-gray-500 text-sm">
-              No channels found
-              {(community.isCreator || community.isModerator) && (
-                <p className="mt-1">Click the + button to create one</p>
+            <div className="text-center py-10 px-4 border rounded-lg my-4 bg-gray-50">
+              <div className="flex justify-center mb-3">
+                <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                  <Hash className="h-6 w-6" />
+                </div>
+              </div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">No channels have been created in this community.</h3>
+              {(community.isCreator || community.isModerator) ? (
+                <Button
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  variant="outline"
+                  className="mt-3"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Create Channel
+                </Button>
+              ) : (
+                <p className="text-xs text-gray-500 mt-1">Check back later for new channels.</p>
               )}
             </div>
           ) : (

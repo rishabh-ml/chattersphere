@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import { Plus, Users, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import Link from "next/link"
+import { useNavigation, routes } from "@/lib/navigation";
 import Image from "next/image";
 import { Community } from "@/context/CommunityContext";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ export default function CommunityCard({
   onJoinLeave,
   onSelect
 }: CommunityCardProps) {
+  const navigation = useNavigation();
   const handleJoinLeave = async () => {
     if (!onJoinLeave) return;
 
@@ -80,9 +82,16 @@ export default function CommunityCard({
 
         <div className="flex justify-between items-center">
           <Link
-            href={`/community/${community.id}`}
+            href={routes.community(community.slug, community.id)}
             className="text-sm text-[#00AEEF] hover:underline"
-            onClick={() => onSelect && onSelect(community)}
+            onClick={(e) => {
+              if (onSelect) {
+                e.preventDefault();
+                onSelect(community);
+              } else {
+                navigation.goToCommunity(community.slug, community.id, e);
+              }
+            }}
           >
             View Community
           </Link>

@@ -23,10 +23,10 @@ const MembershipSchema = new Schema<IMembership>(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     community: { type: Schema.Types.ObjectId, ref: 'Community', required: true },
     roles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
-    status: { 
-      type: String, 
+    status: {
+      type: String,
       enum: Object.values(MembershipStatus),
-      default: MembershipStatus.ACTIVE 
+      default: MembershipStatus.ACTIVE
     },
     displayName: { type: String },
     joinedAt: { type: Date, default: Date.now },
@@ -41,6 +41,15 @@ MembershipSchema.index({ user: 1, community: 1 }, { unique: true });
 // Create index for community to find all members
 MembershipSchema.index({ community: 1, status: 1 });
 
+// Create index for user to find all memberships
+MembershipSchema.index({ user: 1, status: 1 });
+
+// Create index for roles to find members with specific roles
+MembershipSchema.index({ community: 1, roles: 1, status: 1 });
+
+// Create index for lastActive to find recently active members
+MembershipSchema.index({ community: 1, lastActive: -1 });
+
 // Method to check if user has a specific role
 MembershipSchema.methods.hasRole = function(roleId: mongoose.Types.ObjectId | string) {
   return this.roles.some(id => id.toString() === roleId.toString());
@@ -49,13 +58,13 @@ MembershipSchema.methods.hasRole = function(roleId: mongoose.Types.ObjectId | st
 // Method to add a role
 MembershipSchema.methods.addRole = async function(roleId: mongoose.Types.ObjectId | string) {
   const roleIdStr = roleId.toString();
-  
+
   // Check if role already exists
   if (!this.roles.some(id => id.toString() === roleIdStr)) {
     this.roles.push(roleId);
     return this.save();
   }
-  
+
   return this;
 };
 
@@ -63,12 +72,12 @@ MembershipSchema.methods.addRole = async function(roleId: mongoose.Types.ObjectI
 MembershipSchema.methods.removeRole = async function(roleId: mongoose.Types.ObjectId | string) {
   const roleIdStr = roleId.toString();
   const roleIndex = this.roles.findIndex(id => id.toString() === roleIdStr);
-  
+
   if (roleIndex !== -1) {
     this.roles.splice(roleIndex, 1);
     return this.save();
   }
-  
+
   return this;
 };
 
@@ -82,7 +91,7 @@ MembershipSchema.statics.getUserRoles = async function(
     community: communityId,
     status: MembershipStatus.ACTIVE,
   }).populate('roles');
-  
+
   return membership ? membership.roles : [];
 };
 

@@ -6,12 +6,14 @@ import { PostProvider } from "@/context/PostContext"
 import PopularPostFeed from "@/components/popular-post-feed"
 import CreatePostForm from "@/components/create-post-form"
 import { useUser } from "@clerk/nextjs"
+import { StandardPageWrapper } from "@/components/layouts/StandardPageWrapper"
 
 export default function PopularPage() {
   const { isSignedIn } = useUser()
 
   return (
-    <div className="space-y-6">
+    <StandardPageWrapper>
+      <div className="space-y-6">
       <motion.h1
         className="text-2xl font-semibold text-gray-800 mb-6"
         initial={{ opacity: 0, y: -10 }}
@@ -32,5 +34,6 @@ export default function PopularPage() {
         <PopularPostFeed />
       </PopularPostProvider>
     </div>
+    </StandardPageWrapper>
   )
 }

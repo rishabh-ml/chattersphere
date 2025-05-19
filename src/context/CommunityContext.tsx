@@ -6,6 +6,7 @@
   export interface Community {
     id: string;
     name: string;
+    slug: string;
     description: string;
     image?: string;
     creator?: {

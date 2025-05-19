@@ -5,9 +5,10 @@ import User from "@/models/User";
 import Notification from "@/models/Notification";
 import mongoose from "mongoose";
 import { sanitizeInput } from "@/lib/security";
+import { withApiMiddleware } from "@/lib/apiUtils";
 
-// PUT /api/notifications/[notificationId]/read - Mark a notification as read
-export async function PUT(
+// Handler function for PUT /api/notifications/[notificationId]/read
+async function markNotificationReadHandler(
   _req: NextRequest,
   { params }: { params: { notificationId: string } }
 ) {
@@ -21,9 +22,9 @@ export async function PUT(
     if (!params?.notificationId) {
       return NextResponse.json({ error: "Missing notificationId parameter" }, { status: 400 });
     }
-    
+
     const sanitizedNotificationId = sanitizeInput(params.notificationId);
-    
+
     if (!mongoose.Types.ObjectId.isValid(sanitizedNotificationId)) {
       return NextResponse.json({ error: "Invalid notificationId format" }, { status: 400 });
     }
@@ -63,3 +64,14 @@ export async function PUT(
     return NextResponse.json({ error: "Failed to mark notification as read" }, { status: 500 });
   }
 }
+
+// Export the handler with middleware
+export const PUT = withApiMiddleware(
+  (req: NextRequest) => markNotificationReadHandler(req, { params: { notificationId: req.nextUrl.pathname.split('/')[3] } }),
+  {
+    enableRateLimit: true,
+    maxRequests: 50,
+    windowMs: 60000, // 1 minute
+    identifier: 'notifications:read:put'
+  }
+);

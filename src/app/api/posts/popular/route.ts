@@ -20,9 +20,9 @@ interface CachedPost {
   community?:
       | Types.ObjectId
       | { _id: Types.ObjectId; name: string; image?: string };
-  upvotes: Types.ObjectId[];
-  downvotes: Types.ObjectId[];
-  comments: Types.ObjectId[];
+  upvoteCount: number;
+  downvoteCount: number;
+  commentCount: number;
   createdAt: Date;
   updatedAt: Date;
   score: number;
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
     const timeRange = qp.get("timeRange") ?? "day";
     const skip = (page - 1) * limit;
 
-    // compute time threshold
+    // Compute time threshold
     const threshold = new Date();
     switch (timeRange) {
       case "day":
@@ -74,160 +74,140 @@ export async function GET(req: NextRequest) {
         break;
     }
 
-    const now = Date.now();
-    const cacheKey = `${timeRange}-${page}-${limit}`;
-    const useCache =
-        page === 1 &&
-        cachedPosts?.cacheKey === cacheKey &&
-        now - lastCacheTime < CACHE_TTL;
-
-    let raw: unknown[];
-    if (useCache) {
-      console.log("[POPULAR] using cache");
-      raw = cachedPosts!.posts;
-    } else {
-      console.log("[POPULAR] fetching fresh");
-      raw = (await Post.find({ createdAt: { $gte: threshold } })
-          .populate("author", "username name image")
-          .populate("community", "name image")
-          .lean()) as unknown[];
-      if (page === 1) {
-        // build and cache scored posts
-        const buildCache = (raw as unknown[]).map((p) => {
-          const post = p as CachedPost;
-          return {
-            ...post,
-            score: calculateScore(
-                post.upvotes.length,
-                post.downvotes.length,
-                post.createdAt
-            ),
-          };
-        });
-        cachedPosts = { posts: buildCache, cacheKey };
-        lastCacheTime = now;
-      }
-    }
-
-    // ensure we have scores
-    const scored = (raw as CachedPost[]).map((post) => ({
-      ...post,
-      score:
-          typeof post.score === "number"
-              ? post.score
-              : calculateScore(
-                  post.upvotes.length,
-                  post.downvotes.length,
-                  post.createdAt
-              ),
-    }));
-
-    // sort by score desc
-    scored.sort((a, b) => b.score - a.score);
-
-    const pagePosts = scored.slice(skip, skip + limit);
-
-    // load user for vote flags and saved posts
-    let me: Types.ObjectId | null = null;
-    let user = null;
+    // Get current user for vote status and saved status
+    let currentUser = null;
     if (userId) {
-      user = await User.findOne({ clerkId: userId });
-      if (user) me = user._id as Types.ObjectId;
+      currentUser = await User.findOne({ clerkId: userId }).lean();
     }
 
-    // transform for API
-    const transformed = pagePosts.map((post) => {
-      const {
-        _id,
-        author,
-        community,
-        upvotes,
-        downvotes,
-        comments,
-        createdAt,
-        updatedAt,
-        score,
-        content,
-      } = post;
+    // Use MongoDB aggregation pipeline for efficient database-level operations
+    const now = Date.now();
 
-      // flatten author
-      let authorInfo: {
-        id: string;
-        username?: string;
-        name?: string;
-        image?: string;
-      };
-      if (typeof author === "object" && "username" in author) {
-        authorInfo = {
-          id: author._id.toString(),
-          username: author.username,
-          name: author.name,
-          image: author.image,
-        };
-      } else {
-        authorInfo = { id: author.toString() };
-      }
+    // Build the aggregation pipeline
+    const aggregationPipeline = [
+      // Match posts within the time range
+      { $match: { createdAt: { $gte: threshold } } },
 
-      // flatten community
-      let communityInfo: { id: string; name?: string; image?: string } | undefined;
-      if (community) {
-        if (typeof community === "object" && "name" in community) {
-          communityInfo = {
-            id: community._id.toString(),
-            name: community.name,
-            image: community.image,
-          };
-        } else {
-          communityInfo = { id: community.toString() };
+      // Add computed fields
+      { $addFields: {
+        upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
+        downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
+        commentCount: { $size: { $ifNull: ["$comments", []] } },
+        voteCount: { $subtract: [{ $size: { $ifNull: ["$upvotes", []] } }, { $size: { $ifNull: ["$downvotes", []] } }] },
+        ageMs: { $subtract: [now, { $toLong: "$createdAt" }] }
+      }},
+
+      // Calculate popularity score
+      { $addFields: {
+        score: {
+          $divide: [
+            "$voteCount",
+            { $pow: [
+              { $add: [1, { $divide: ["$ageMs", DECAY_FACTOR] }] },
+              1.5
+            ]}
+          ]
         }
-      }
+      }},
 
-      const isUp = me
-          ? upvotes.some((id) => id.equals(me))
-          : false;
-      const isDown = me
-          ? downvotes.some((id) => id.equals(me))
-          : false;
+      // Sort by score (descending)
+      { $sort: { score: -1 } },
 
-      // Check if the post is saved by the user
-      const isSaved = me && user ? user.savedPosts.some((id) => id.equals(_id)) : false;
+      // Count total before pagination
+      { $facet: {
+        totalCount: [{ $count: "count" }],
+        paginatedResults: [
+          { $skip: skip },
+          { $limit: limit },
+          // Lookup author information
+          { $lookup: {
+            from: "users",
+            localField: "author",
+            foreignField: "_id",
+            as: "authorInfo"
+          }},
+          { $unwind: "$authorInfo" },
+
+          // Lookup community information
+          { $lookup: {
+            from: "communities",
+            localField: "community",
+            foreignField: "_id",
+            as: "communityInfo"
+          }},
+          { $unwind: { path: "$communityInfo", preserveNullAndEmptyArrays: true } }
+        ]
+      }}
+    ];
+
+    // Execute the aggregation pipeline
+    const [result] = await Post.aggregate(aggregationPipeline);
+
+    const totalPosts = result.totalCount.length > 0 ? result.totalCount[0].count : 0;
+    const posts = result.paginatedResults;
+
+    // Transform the results for the API response
+    const transformed = posts.map(post => {
+      // Check if the post is upvoted by the current user
+      const isUpvoted = currentUser ?
+        post.upvotes?.some(id => id.toString() === currentUser._id.toString()) || false :
+        false;
+
+      // Check if the post is downvoted by the current user
+      const isDownvoted = currentUser ?
+        post.downvotes?.some(id => id.toString() === currentUser._id.toString()) || false :
+        false;
+
+      // Check if the post is saved by the current user
+      const isSaved = currentUser ?
+        currentUser.savedPosts?.some(id => id.toString() === post._id.toString()) || false :
+        false;
 
       return {
-        id: _id.toString(),
-        author: authorInfo,
-        community: communityInfo,
-        content,
-        upvoteCount: upvotes.length,
-        downvoteCount: downvotes.length,
-        voteCount: upvotes.length - downvotes.length,
-        commentCount: comments.length,
-        isUpvoted: isUp,
-        isDownvoted: isDown,
+        id: post._id.toString(),
+        author: {
+          id: post.authorInfo._id.toString(),
+          username: post.authorInfo.username,
+          name: post.authorInfo.name,
+          image: post.authorInfo.image,
+        },
+        community: post.communityInfo ? {
+          id: post.communityInfo._id.toString(),
+          name: post.communityInfo.name,
+          image: post.communityInfo.image,
+        } : undefined,
+        content: post.content,
+        upvoteCount: post.upvoteCount,
+        downvoteCount: post.downvoteCount,
+        voteCount: post.voteCount,
+        commentCount: post.commentCount,
+        isUpvoted,
+        isDownvoted,
         isSaved,
-        createdAt: createdAt.toISOString(),
-        updatedAt: updatedAt.toISOString(),
-        popularityScore: score.toFixed(2),
+        createdAt: post.createdAt.toISOString(),
+        updatedAt: post.updatedAt.toISOString(),
+        popularityScore: post.score.toFixed(2),
       };
     });
 
     return NextResponse.json(
-        {
-          posts: transformed,
-          pagination: {
-            page,
-            limit,
-            totalPosts: scored.length,
-            hasMore: scored.length > skip + limit,
-          },
-          timeRange,
+      {
+        posts: transformed,
+        pagination: {
+          page,
+          limit,
+          totalPosts,
+          hasMore: totalPosts > skip + limit,
         },
-        { status: 200 }
+        timeRange,
+      },
+      { status: 200 }
     );
   } catch (err) {
     console.error("[POPULAR] error:", err);
     return NextResponse.json(
-        { error: "Failed to fetch popular posts" },
-        { status: 500 }
+      { error: "Failed to fetch popular posts" },
+      { status: 500 }
     );
   }
 }

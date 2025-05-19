@@ -2,9 +2,21 @@ import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { Viewport } from "next";
-import React from "react";
+import React, { useEffect } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
+import Providers from "./providers";
+import { Analytics } from "./analytics";
 // We'll handle the EnableMock component in a client component instead
+
+// Initialize monitoring in production using dynamic import to avoid ESM/CJS conflicts
+if (process.env.NODE_ENV === 'production') {
+  // Use dynamic import to avoid ESM/CJS conflicts during build time
+  import("@/lib/monitoring").then(({ initMonitoring }) => {
+    initMonitoring();
+  }).catch(error => {
+    console.warn("Failed to initialize monitoring:", error);
+  });
+}
 
 const inter = Inter({
   variable: "--font-sans",
@@ -74,7 +86,10 @@ export default function RootLayout({
           className={`${inter.variable} ${robotoMono.variable} antialiased font-sans bg-white text-gray-900`}
         >
           {/* EnableMock component removed to fix SSR issues */}
-          {children}
+          <Providers>
+            {children}
+            <Analytics />
+          </Providers>
         </body>
       </html>
     </ClerkProvider>

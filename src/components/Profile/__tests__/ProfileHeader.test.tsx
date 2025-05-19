@@ -1,25 +1,24 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
 import ProfileHeader from '../ProfileHeader';
 import { toast } from 'sonner';
 
 // Mock dependencies
-vi.mock('next/navigation', () => ({
+jest.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: jest.fn(),
   }),
 }));
 
-vi.mock('@clerk/nextjs', () => ({
+jest.mock('@clerk/nextjs', () => ({
   useUser: () => ({
     isSignedIn: true,
   }),
 }));
 
-vi.mock('sonner', () => ({
+jest.mock('sonner', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: jest.fn(),
+    error: jest.fn(),
   },
 }));
 
@@ -44,18 +43,18 @@ describe('ProfileHeader', () => {
   const mockProps = {
     user: mockUser,
     isOwner: false,
-    onAvatarUpload: vi.fn(),
-    onFollowToggle: vi.fn(),
+    onAvatarUpload: jest.fn(),
+    onFollowToggle: jest.fn(),
     followLoading: false,
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('renders user information correctly', () => {
     render(<ProfileHeader {...mockProps} />);
-    
+
     expect(screen.getByText(mockUser.name)).toBeInTheDocument();
     expect(screen.getByText(`@${mockUser.username}`)).toBeInTheDocument();
     expect(screen.getByText(mockUser.bio)).toBeInTheDocument();
@@ -68,10 +67,10 @@ describe('ProfileHeader', () => {
 
   it('shows Follow button when not owner and not following', () => {
     render(<ProfileHeader {...mockProps} />);
-    
+
     const followButton = screen.getByRole('button', { name: /follow/i });
     expect(followButton).toBeInTheDocument();
-    
+
     fireEvent.click(followButton);
     expect(mockProps.onFollowToggle).toHaveBeenCalledTimes(1);
   });
@@ -79,33 +78,33 @@ describe('ProfileHeader', () => {
   it('shows Unfollow button when not owner and following', () => {
     const followingUser = { ...mockUser, isFollowing: true };
     render(<ProfileHeader {...mockProps} user={followingUser} />);
-    
+
     const unfollowButton = screen.getByRole('button', { name: /unfollow/i });
     expect(unfollowButton).toBeInTheDocument();
-    
+
     fireEvent.click(unfollowButton);
     expect(mockProps.onFollowToggle).toHaveBeenCalledTimes(1);
   });
 
   it('shows Edit Profile button when owner', () => {
     render(<ProfileHeader {...mockProps} isOwner={true} />);
-    
+
     const editButton = screen.getByRole('button', { name: /edit profile/i });
     expect(editButton).toBeInTheDocument();
   });
 
   it('allows avatar upload when owner', async () => {
     render(<ProfileHeader {...mockProps} isOwner={true} />);
-    
+
     const file = new File(['test'], 'test.png', { type: 'image/png' });
     const input = screen.getByLabelText(/upload avatar/i);
-    
+
     Object.defineProperty(input, 'files', {
       value: [file],
     });
-    
+
     fireEvent.change(input);
-    
+
     await waitFor(() => {
       expect(mockProps.onAvatarUpload).toHaveBeenCalledWith(file);
     });
@@ -113,16 +112,16 @@ describe('ProfileHeader', () => {
 
   it('validates file type during avatar upload', async () => {
     render(<ProfileHeader {...mockProps} isOwner={true} />);
-    
+
     const file = new File(['test'], 'test.txt', { type: 'text/plain' });
     const input = screen.getByLabelText(/upload avatar/i);
-    
+
     Object.defineProperty(input, 'files', {
       value: [file],
     });
-    
+
     fireEvent.change(input);
-    
+
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Invalid file type'));
       expect(mockProps.onAvatarUpload).not.toHaveBeenCalled();
@@ -131,17 +130,17 @@ describe('ProfileHeader', () => {
 
   it('validates file size during avatar upload', async () => {
     render(<ProfileHeader {...mockProps} isOwner={true} />);
-    
+
     // Create a file that's larger than 5MB
     const largeFile = new File([new ArrayBuffer(6 * 1024 * 1024)], 'large.png', { type: 'image/png' });
     const input = screen.getByLabelText(/upload avatar/i);
-    
+
     Object.defineProperty(input, 'files', {
       value: [largeFile],
     });
-    
+
     fireEvent.change(input);
-    
+
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('File too large'));
       expect(mockProps.onAvatarUpload).not.toHaveBeenCalled();

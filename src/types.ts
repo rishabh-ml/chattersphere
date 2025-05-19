@@ -51,6 +51,7 @@ export interface Post {
   community?: {
     _id: string;
     name: string;
+    slug: string;
     image?: string;
   };
   upvoteCount: number;
@@ -86,6 +87,7 @@ export interface Comment {
 export interface Community {
   id: string;
   name: string;
+  slug: string;
   description: string;
   image?: string;
   creator: {

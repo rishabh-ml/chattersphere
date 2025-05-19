@@ -11,6 +11,9 @@ const analyzeBundles = withBundleAnalyzer({
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  poweredByHeader: false,
+  compress: true,
+  optimizeFonts: true,
   images: {
     domains: [
       "img.clerk.com",
@@ -52,6 +55,9 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
   },
   eslint: {
     // Only ignore during builds in CI, not in development
@@ -68,6 +74,43 @@ const nextConfig: NextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["mongoose"],
   },
+  // Add webpack configuration for Sentry and OpenTelemetry
+  webpack: (config, { isServer }) => {
+    // Handle ESM/CJS compatibility issues
+    config.experiments = {
+      ...config.experiments,
+      topLevelAwait: true,
+    };
+
+    // Resolve OpenTelemetry module conflicts
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      // Add polyfills for Node.js core modules
+      "async_hooks": false,
+      "fs": false,
+      "perf_hooks": false,
+    };
+
+    // Fix for OpenTelemetry ESM/CJS conflicts
+    if (isServer) {
+      config.externals = [...(config.externals || []),
+        '@opentelemetry/api',
+        '@opentelemetry/core',
+        '@opentelemetry/semantic-conventions',
+        '@opentelemetry/resources',
+        '@opentelemetry/sdk-trace-base',
+      ];
+    }
+
+    return config;
+  },
+  // Transpile specific modules that might cause issues
+  transpilePackages: [
+    '@sentry/nextjs',
+    '@opentelemetry/api',
+    '@opentelemetry/core',
+    '@opentelemetry/semantic-conventions',
+  ],
   // Disable static site generation completely
   output: 'standalone',
   distDir: '.next',
@@ -141,6 +184,11 @@ const sentryWebpackPluginOptions = {
   silent: process.env.NODE_ENV === "development",
   org: process.env.SENTRY_ORG || "",
   project: process.env.SENTRY_PROJECT || "",
+  // Disable automatic instrumentation to avoid OpenTelemetry conflicts
+  autoInstrumentServerFunctions: false,
+  // Disable automatic source maps upload to avoid conflicts
+  disableServerWebpackPlugin: false,
+  disableClientWebpackPlugin: false,
 };
 
 export default process.env.SENTRY_DSN

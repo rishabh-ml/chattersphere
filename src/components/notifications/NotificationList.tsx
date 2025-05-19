@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, Bell, User, MessageSquare, Heart, Users } from "lucide-react";
+import { Loader2, Bell, User, MessageSquare, Heart, Users, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useNavigation, routes } from "@/lib/navigation";
 import { NotificationType } from "@/models/Notification";
+import { useUser } from "@clerk/nextjs";
 
 interface Notification {
   id: string;
@@ -52,43 +53,73 @@ export default function NotificationList({
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const router = useRouter();
+  const navigation = useNavigation();
+  const { isSignedIn, isLoaded } = useUser();
 
   // Fetch notifications
   const fetchNotifications = async (pageNum: number = 1) => {
+    // Don't fetch if user is not signed in
+    if (isLoaded && !isSignedIn) {
+      setLoading(false);
+      setError("You must be signed in to view notifications");
+      return;
+    }
+
+    // Don't fetch if Clerk is still loading
+    if (!isLoaded) {
+      return;
+    }
+
     try {
       setLoading(true);
+      setError(null);
+
+      // Add a timestamp to prevent caching
+      const timestamp = new Date().getTime();
       const response = await fetch(
-        `/api/notifications?page=${pageNum}&limit=${limit}`
+        `/api/notifications?page=${pageNum}&limit=${limit}&_=${timestamp}`,
+        {
+          headers: {
+            'Cache-Control': 'no-cache',
+          },
+        }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch notifications");
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || "Failed to fetch notifications";
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      
+
+      // Check if the response has the expected structure
+      if (!data || !Array.isArray(data.notifications)) {
+        throw new Error("Invalid response format from server");
+      }
+
       if (pageNum === 1) {
         setNotifications(data.notifications);
       } else {
         setNotifications(prev => [...prev, ...data.notifications]);
       }
-      
-      setHasMore(data.pagination.hasMore);
+
+      setHasMore(data.pagination?.hasMore || false);
       setPage(pageNum);
-      setError(null);
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      setError("Failed to load notifications");
+      setError(error instanceof Error ? error.message : "Failed to load notifications");
     } finally {
       setLoading(false);
     }
   };
 
-  // Initial load
+  // Initial load - fetch when user is loaded and signed in
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    if (isLoaded) {
+      fetchNotifications();
+    }
+  }, [isLoaded, isSignedIn]);
 
   // Mark a notification as read
   const markAsRead = async (notificationId: string) => {
@@ -133,18 +164,21 @@ export default function NotificationList({
       case "post_like":
       case "comment_like":
         if (notification.relatedPost) {
-          router.push(`/posts/${notification.relatedPost.id}`);
+          navigation.goToPost(notification.relatedPost.id);
         }
         break;
       case "follow":
         if (notification.sender) {
-          router.push(`/profile/${notification.sender.id}`);
+          navigation.goToProfile(notification.sender.id);
         }
         break;
       case "community_invite":
       case "community_join":
         if (notification.relatedCommunity) {
-          router.push(`/community/${notification.relatedCommunity.id}`);
+          navigation.goToCommunity(
+            notification.relatedCommunity.slug,
+            notification.relatedCommunity.id
+          );
         }
         break;
       default:
@@ -182,7 +216,20 @@ export default function NotificationList({
   if (error && notifications.length === 0) {
     return (
       <div className="p-4 text-center text-red-500">
-        <p>{error}</p>
+        <div className="flex flex-col items-center justify-center gap-2">
+          <AlertCircle className="h-5 w-5" />
+          <p>{error}</p>
+          {error.includes("Failed to fetch") && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchNotifications()}
+              className="mt-2"
+            >
+              Try Again
+            </Button>
+          )}
+        </div>
       </div>
     );
   }
@@ -201,7 +248,7 @@ export default function NotificationList({
       <div className={isDropdown ? "px-4 py-2 font-medium border-b" : "mb-4 text-lg font-semibold"}>
         Notifications
       </div>
-      
+
       <div className={isDropdown ? "max-h-[400px] overflow-y-auto" : ""}>
         {notifications.map(notification => (
           <div
@@ -227,7 +274,7 @@ export default function NotificationList({
                   </div>
                 )}
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-800 mb-1">
                   {notification.message}
@@ -242,7 +289,7 @@ export default function NotificationList({
           </div>
         ))}
       </div>
-      
+
       {hasMore && !isDropdown && (
         <div className="mt-4 text-center">
           <Button
@@ -262,7 +309,7 @@ export default function NotificationList({
           </Button>
         </div>
       )}
-      
+
       {isDropdown && (
         <div className="p-2 border-t text-center">
           <Button

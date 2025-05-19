@@ -23,9 +23,21 @@ import {
   LogOut,
   UserPlus,
   Shield,
+  Menu,
+  SidebarClose,
 } from "lucide-react";
 
-export default function CommunityHeader() {
+interface CommunityHeaderProps {
+  onToggleChannels?: () => void;
+  onToggleMembers?: () => void;
+  isMobile?: boolean;
+}
+
+export default function CommunityHeader({
+  onToggleChannels,
+  onToggleMembers,
+  isMobile = false
+}: CommunityHeaderProps) {
   const router = useRouter();
   const {
     community,
@@ -84,25 +96,36 @@ export default function CommunityHeader() {
   return (
     <header className="h-14 border-b border-gray-200 bg-white flex items-center px-4 justify-between">
       <div className="flex items-center gap-3">
+        {isMobile && onToggleChannels && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-gray-500 hover:text-gray-700 md:hidden"
+            onClick={onToggleChannels}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
+
         <Link href="/communities" className="text-gray-500 hover:text-gray-700">
           <Home className="h-5 w-5" />
         </Link>
-        
+
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             {community.image ? (
-              <AvatarImage src={community.image} alt={community.name} />
+              <AvatarImage src={community.image} alt={community.name} loading="eager" />
             ) : (
               <AvatarFallback className="bg-indigo-600 text-white">
                 {community.name.charAt(0)}
               </AvatarFallback>
             )}
           </Avatar>
-          
-          <h1 className="font-semibold text-lg">{community.name}</h1>
+
+          <h1 className="font-semibold text-lg truncate max-w-[150px] sm:max-w-xs">{community.name}</h1>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-2">
         {community.isMember ? (
           <>
@@ -114,29 +137,41 @@ export default function CommunityHeader() {
             >
               <Bell className="h-5 w-5" />
             </Button>
-            
+
             {(community.isCreator || community.isModerator) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-gray-700 border-gray-300 hover:bg-gray-100"
+                onClick={() => router.push(`/communities/${community.slug}/settings`)}
+              >
+                <Settings className="h-4 w-4 mr-1" />
+                Community Settings
+              </Button>
+            )}
+
+            {onToggleMembers ? (
               <Button
                 variant="ghost"
                 size="icon"
                 className="text-gray-500 hover:text-gray-700"
-                title="Community Settings"
-                onClick={() => router.push(`/communities/${community.slug}/settings`)}
+                title="Toggle Members"
+                onClick={onToggleMembers}
               >
-                <Settings className="h-5 w-5" />
+                <Users className="h-5 w-5" />
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-gray-500 hover:text-gray-700"
+                title="Members"
+                onClick={() => router.push(`/communities/${community.slug}/members`)}
+              >
+                <Users className="h-5 w-5" />
               </Button>
             )}
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-500 hover:text-gray-700"
-              title="Members"
-              onClick={() => router.push(`/communities/${community.slug}/members`)}
-            >
-              <Users className="h-5 w-5" />
-            </Button>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -155,7 +190,7 @@ export default function CommunityHeader() {
                   <UserPlus className="h-4 w-4 mr-2" />
                   Invite People
                 </DropdownMenuItem>
-                
+
                 {(community.isCreator || community.isModerator) && (
                   <>
                     <DropdownMenuItem
@@ -165,11 +200,11 @@ export default function CommunityHeader() {
                       <Shield className="h-4 w-4 mr-2" />
                       Roles
                     </DropdownMenuItem>
-                    
+
                     <DropdownMenuSeparator />
                   </>
                 )}
-                
+
                 <DropdownMenuItem
                   onClick={handleLeaveCommunity}
                   className="cursor-pointer text-red-500 hover:text-red-600 hover:bg-red-50"

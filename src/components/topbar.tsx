@@ -9,6 +9,7 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import NotificationBell from "./notifications/NotificationBell"
+import { useCreatePostModal } from "@/context/CreatePostModalContext"
 
 
 export function Topbar() {
@@ -16,6 +17,7 @@ export function Topbar() {
     const [searchFocused, setSearchFocused] = useState(false)
     const router = useRouter()
     const { user, isSignedIn } = useUser()
+    const { openModal } = useCreatePostModal()
 
     // Handle scroll events for shadow effect
     useEffect(() => {
@@ -78,6 +80,7 @@ export function Topbar() {
                     variant="ghost"
                     size="sm"
                     className="hidden md:flex items-center gap-1 text-gray-600 hover:text-[#00AEEF] hover:bg-blue-50 transition-colors"
+                    onClick={openModal}
                 >
                     <PlusCircle className="h-4 w-4" />
                     <span>New Post</span>
@@ -87,6 +90,7 @@ export function Topbar() {
                     variant="ghost"
                     size="icon"
                     className="md:hidden rounded-full text-gray-600 hover:text-[#00AEEF] hover:bg-blue-50 transition-colors"
+                    onClick={openModal}
                 >
                     <PlusCircle className="h-5 w-5" />
                     <span className="sr-only">New Post</span>

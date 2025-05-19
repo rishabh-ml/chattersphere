@@ -1,7 +1,10 @@
 "use client"
 
-import { Home, Compass, TrendingUp, Settings, HelpCircle, Bell, Bookmark, PlusCircle, User } from "lucide-react"
+import { Home, Compass, TrendingUp, Settings, HelpCircle, Bell, Bookmark, PlusCircle, User, MessageSquare } from "lucide-react"
+import MyCommunities from "@/components/my-communities-list"
+import MessageNotificationBadge from "@/components/messages/MessageNotificationBadge"
 import { useUser } from "@clerk/nextjs"
+import { toast } from "sonner"
 import {
     Sidebar as ShadcnSidebar,
     SidebarContent,
@@ -15,11 +18,13 @@ import {
     SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation"
+import { useNavigation, routes } from "@/lib/navigation"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 export function Sidebar() {
     const pathname = usePathname()
+    const navigation = useNavigation()
     const { user, isSignedIn } = useUser()
 
     const isActive = (path: string) => {
@@ -55,7 +60,7 @@ export function Sidebar() {
                                     "hover:bg-blue-50 hover:text-[#00AEEF] transition-colors",
                                     isActive("/home") && "bg-blue-50 text-[#00AEEF] font-medium"
                                 )}
-                                onClick={() => window.location.href = "/home"}
+                                onClick={() => navigation.goToHome()}
                             >
                                 <Home className="h-5 w-5 mr-3" />
                                 <span>Home</span>
@@ -68,7 +73,7 @@ export function Sidebar() {
                                     "hover:bg-blue-50 hover:text-[#00AEEF] transition-colors",
                                     isActive("/popular") && "bg-blue-50 text-[#00AEEF] font-medium"
                                 )}
-                                onClick={() => window.location.href = "/popular"}
+                                onClick={() => navigation.goToPopular()}
                             >
                                 <TrendingUp className="h-5 w-5 mr-3" />
                                 <span>Popular</span>
@@ -81,7 +86,7 @@ export function Sidebar() {
                                     "hover:bg-blue-50 hover:text-[#00AEEF] transition-colors",
                                     isActive("/explore") && "bg-blue-50 text-[#00AEEF] font-medium"
                                 )}
-                                onClick={() => window.location.href = "/explore"}
+                                onClick={() => navigation.goToExplore()}
                             >
                                 <Compass className="h-5 w-5 mr-3" />
                                 <span>Explore</span>
@@ -94,7 +99,7 @@ export function Sidebar() {
                                     "hover:bg-blue-50 hover:text-[#00AEEF] transition-colors",
                                     isActive("/notifications") && "bg-blue-50 text-[#00AEEF] font-medium"
                                 )}
-                                onClick={() => window.location.href = "/notifications"}
+                                onClick={() => navigation.goToNotifications()}
                             >
                                 <Bell className="h-5 w-5 mr-3" />
                                 <span>Notifications</span>
@@ -105,9 +110,25 @@ export function Sidebar() {
                             <SidebarMenuButton
                                 className={cn(
                                     "hover:bg-blue-50 hover:text-[#00AEEF] transition-colors",
+                                    pathname?.startsWith('/messages') && "bg-blue-50 text-[#00AEEF] font-medium"
+                                )}
+                                onClick={() => navigation.goToMessages()}
+                            >
+                                <div className="relative">
+                                    <MessageSquare className="h-5 w-5 mr-3" />
+                                    <MessageNotificationBadge className="absolute -top-2 -right-1" />
+                                </div>
+                                <span>Messages</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                className={cn(
+                                    "hover:bg-blue-50 hover:text-[#00AEEF] transition-colors",
                                     isActive("/saved") && "bg-blue-50 text-[#00AEEF] font-medium"
                                 )}
-                                onClick={() => window.location.href = "/saved"}
+                                onClick={() => navigation.goToSaved()}
                             >
                                 <Bookmark className="h-5 w-5 mr-3" />
                                 <span>Saved</span>
@@ -127,11 +148,11 @@ export function Sidebar() {
                                             .then(res => res.json())
                                             .then(data => {
                                                 if (data.user && data.user.id) {
-                                                    window.location.href = `/profile/${data.user.id}`;
+                                                    navigation.goToProfile(data.user.id);
                                                 } else {
                                                     console.error('Could not find user profile');
                                                     // Show an error message to the user
-                                                    alert('Could not find your profile. Please try again later.');
+                                                    toast.error('Could not find your profile. Please try again later.');
                                                 }
                                             })
                                             .catch(err => console.error('Error fetching user profile:', err));
@@ -148,38 +169,16 @@ export function Sidebar() {
 
                     <div className="px-4 mb-2 flex items-center justify-between">
                         <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider">My Communities</h3>
-                        <button className="text-[#00AEEF] hover:text-[#00AEEF]/80 transition-colors">
+                        <button
+                            className="text-[#00AEEF] hover:text-[#00AEEF]/80 transition-colors"
+                            onClick={() => navigation.goToCreateCommunity()}
+                        >
                             <PlusCircle className="h-4 w-4" />
                         </button>
                     </div>
 
                     <SidebarMenu>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton className="hover:bg-blue-50 hover:text-[#00AEEF] transition-colors">
-                                <div className="h-5 w-5 rounded-full bg-blue-500 flex items-center justify-center mr-3">
-                                    <span className="text-white text-xs font-bold">W</span>
-                                </div>
-                                <span>WebDev</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-
-                        <SidebarMenuItem>
-                            <SidebarMenuButton className="hover:bg-blue-50 hover:text-[#00AEEF] transition-colors">
-                                <div className="h-5 w-5 rounded-full bg-purple-500 flex items-center justify-center mr-3">
-                                    <span className="text-white text-xs font-bold">T</span>
-                                </div>
-                                <span>TechTalk</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-
-                        <SidebarMenuItem>
-                            <SidebarMenuButton className="hover:bg-blue-50 hover:text-[#00AEEF] transition-colors">
-                                <div className="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center mr-3">
-                                    <span className="text-white text-xs font-bold">R</span>
-                                </div>
-                                <span>RemoteWork</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        <MyCommunities />
                     </SidebarMenu>
                 </SidebarContent>
 

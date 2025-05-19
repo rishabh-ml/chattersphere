@@ -39,7 +39,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <ClerkProvider>
+        <>
             <ToastProvider />
             <div className="relative min-h-screen bg-[#f8fafc]">
                 {/* Sidebar */}
@@ -51,11 +51,10 @@ function MainLayout({ children }: { children: React.ReactNode }) {
                     <Topbar />
 
                     <div className="flex flex-1 overflow-x-hidden">
-                        {/* Main Feed content */}
+                        {/* Main content area */}
                         <main className="flex-1 overflow-y-auto p-4 md:p-6">
-                            <div className="max-w-3xl mx-auto">
-                                {children}
-                            </div>
+                            {/* Only apply max-width container for standard pages, not for nested layouts */}
+                            {children}
                         </main>
 
                         {/* Right Sidebar */}
@@ -103,7 +102,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
                     )}
                 </AnimatePresence>
             </div>
-        </ClerkProvider>
+        </>
     );
 }
 

@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Notification from "@/models/Notification";
+import { withApiMiddleware } from "@/lib/apiUtils";
 import mongoose from "mongoose";
 
 // HEAD /api/notifications/read-all - Check if the endpoint is available
@@ -10,8 +11,8 @@ export async function HEAD() {
   return new Response(null, { status: 200 });
 }
 
-// PUT /api/notifications/read-all - Mark all notifications as read
-export async function PUT(req: NextRequest) {
+// Handler function for PUT /api/notifications/read-all
+async function markAllNotificationsReadHandler(req: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -77,3 +78,11 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Failed to mark notifications as read" }, { status: 500 });
   }
 }
+
+// Export the handler with middleware
+export const PUT = withApiMiddleware(markAllNotificationsReadHandler, {
+  enableRateLimit: true,
+  maxRequests: 10,
+  windowMs: 60000, // 1 minute
+  identifier: 'notifications:read-all:put'
+});

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
@@ -31,13 +31,30 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
       const fetchCommunities = async () => {
         try {
           setLoading(true);
-          const response = await fetch('/api/communities/my-communities');
-          if (response.ok) {
-            const data = await response.json();
+          // First try to fetch from my-communities endpoint
+          try {
+            const response = await fetch('/api/communities/my-communities');
+            if (response.ok) {
+              const data = await response.json();
+              setCommunities(data.communities || []);
+              return;
+            }
+          } catch (error) {
+            console.warn('Error fetching from my-communities endpoint, falling back to main communities endpoint');
+          }
+
+          // Fallback to the main communities endpoint
+          const fallbackResponse = await fetch('/api/communities?limit=50');
+          if (fallbackResponse.ok) {
+            const data = await fallbackResponse.json();
             setCommunities(data.communities || []);
+          } else {
+            // If both fail, set empty array
+            setCommunities([]);
           }
         } catch (error) {
           console.error('Error fetching communities:', error);
+          setCommunities([]);
         } finally {
           setLoading(false);
         }
@@ -65,9 +82,10 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             </div>
           ) : (
             <PostProvider>
-              <CreatePostForm 
-                communities={communities} 
-                onSuccess={handleSuccess} 
+              <CreatePostForm
+                communities={communities}
+                onSuccess={handleSuccess}
+                startExpanded={true}
               />
             </PostProvider>
           )}

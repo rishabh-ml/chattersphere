@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useNavigation, routes } from "@/lib/navigation";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import CommentForm from "./CommentForm";
@@ -54,8 +55,9 @@ export default function CommentItem({
   const [isUpvoted, setIsUpvoted] = useState(comment.isUpvoted);
   const [isDownvoted, setIsDownvoted] = useState(comment.isDownvoted);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   const { user, isSignedIn } = useUser();
+  const navigation = useNavigation();
   const isAuthor = isSignedIn && user?.id === comment.author.id;
 
   const handleVote = async (voteType: 'upvote' | 'downvote') => {
@@ -78,7 +80,7 @@ export default function CommentItem({
       }
 
       const data = await response.json();
-      
+
       setUpvoteCount(data.voteStatus.upvoteCount);
       setDownvoteCount(data.voteStatus.downvoteCount);
       setVoteCount(data.voteStatus.voteCount);
@@ -98,7 +100,7 @@ export default function CommentItem({
 
     if (window.confirm("Are you sure you want to delete this comment?")) {
       setIsDeleting(true);
-      
+
       try {
         const response = await fetch(`/api/comments/${comment.id}`, {
           method: "DELETE",
@@ -141,7 +143,7 @@ export default function CommentItem({
             <ArrowUp className="h-4 w-4" />
             <span className="sr-only">Upvote</span>
           </Button>
-          
+
           <span className={cn(
             "text-xs font-medium",
             voteCount > 0 && "text-indigo-600",
@@ -149,7 +151,7 @@ export default function CommentItem({
           )}>
             {voteCount}
           </span>
-          
+
           <Button
             variant="ghost"
             size="icon"
@@ -163,11 +165,11 @@ export default function CommentItem({
             <span className="sr-only">Downvote</span>
           </Button>
         </div>
-        
+
         {/* Comment content */}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <Link href={`/profile/${comment.author.id}`}>
+            <Link href={routes.profile(comment.author.id)} onClick={(e) => navigation.goToProfile(comment.author.id, e)}>
               <Avatar className="h-6 w-6">
                 {comment.author.image ? (
                   <img
@@ -182,11 +184,12 @@ export default function CommentItem({
                 )}
               </Avatar>
             </Link>
-            
+
             <div className="flex items-center gap-2">
-              <Link 
-                href={`/profile/${comment.author.id}`}
+              <Link
+                href={routes.profile(comment.author.id)}
                 className="text-sm font-medium hover:underline"
+                onClick={(e) => navigation.goToProfile(comment.author.id, e)}
               >
                 {comment.author.name}
               </Link>
@@ -195,11 +198,11 @@ export default function CommentItem({
               </span>
             </div>
           </div>
-          
+
           <div className="text-sm text-gray-800 whitespace-pre-wrap">
             {comment.content}
           </div>
-          
+
           <div className="mt-2 flex items-center gap-4">
             <Button
               variant="ghost"
@@ -210,7 +213,7 @@ export default function CommentItem({
               <Reply className="h-3.5 w-3.5 mr-1" />
               Reply
             </Button>
-            
+
             {isAuthor && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -225,7 +228,7 @@ export default function CommentItem({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="text-red-600 focus:text-red-600 cursor-pointer"
                     onClick={handleDelete}
                   >
@@ -236,7 +239,7 @@ export default function CommentItem({
               </DropdownMenu>
             )}
           </div>
-          
+
           {isReplying && (
             <CommentForm
               postId={postId}

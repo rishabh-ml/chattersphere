@@ -14,6 +14,7 @@ import { formatDistanceToNow } from "date-fns";
 import DOMPurify from "isomorphic-dompurify";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
+import { useNavigation, routes } from "@/lib/navigation";
 
 interface PostCardProps {
     post: Post;
@@ -28,6 +29,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
     const [isDownvoted, setIsDownvoted] = useState(post.isDownvoted);
     const [saved, setSaved] = useState(post.isSaved || false);
     const { isSignedIn } = useUser();
+    const navigation = useNavigation();
 
     // Initialize saved state from post prop if available
     useEffect(() => {
@@ -78,6 +80,15 @@ export default function PostCard({ post, onVote }: PostCardProps) {
         }
     };
 
+    const handlePostClick = (e: React.MouseEvent) => {
+        // Only navigate if the click was directly on the card and not on a child element with its own click handler
+        if (e.target === e.currentTarget ||
+            (e.currentTarget.contains(e.target as Node) &&
+             !(e.target as HTMLElement).closest('a, button'))) {
+            navigation.goToPost(post.id);
+        }
+    };
+
     const toggleSave = async () => {
         if (!isSignedIn) {
             toast.error("Please sign in to save posts");
@@ -112,19 +123,20 @@ export default function PostCard({ post, onVote }: PostCardProps) {
 
     return (
         <motion.div
-            className="bg-white rounded-lg border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-200"
+            className="bg-white rounded-lg border border-gray-100 overflow-hidden transition-all duration-200 hover:shadow-md hover:border-gray-200 cursor-pointer"
             whileHover={{ y: -2 }}
+            data-testid="post-card"
+            onClick={handlePostClick}
         >
             <div className="p-4 md:p-5">
                 <div className="flex items-center gap-2 mb-3">
                     <div className="flex items-center gap-2">
                         {post.author.image ? (
                             <div className="relative h-8 w-8 rounded-full overflow-hidden">
-                                <Image
+                                <img
                                     src={post.author.image}
                                     alt={post.author.name}
-                                    fill
-                                    className="object-cover"
+                                    className="w-full h-full object-cover"
                                 />
                             </div>
                         ) : (
@@ -135,7 +147,11 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                             </div>
                         )}
                         <div>
-                            <Link href={`/profile/${post.author.id}`} className="text-sm font-medium text-gray-900 hover:text-[#00AEEF] transition-colors">
+                            <Link
+                                href={routes.profile(post.author.id)}
+                                className="text-sm font-medium text-gray-900 hover:text-[#00AEEF] transition-colors"
+                                onClick={(e) => navigation.goToProfile(post.author.id, e)}
+                            >
                                 {post.author.name}
                             </Link>
                             <div className="flex items-center gap-2">
@@ -145,7 +161,10 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                                 {post.community && (
                                     <>
                                         <span className="text-xs text-gray-500">•</span>
-                                        <Link href={`/community/${post.community.id}`}>
+                                        <Link
+                                            href={routes.community(post.community.slug, post.community.id)}
+                                            onClick={(e) => navigation.goToCommunity(post.community.slug, post.community.id, e)}
+                                        >
                                             <Badge variant="outline" className="text-xs bg-blue-50 text-[#00AEEF] hover:bg-blue-100 border-blue-100">
                                                 {post.community.name}
                                             </Badge>
@@ -160,21 +179,19 @@ export default function PostCard({ post, onVote }: PostCardProps) {
 
 
                 <div
-                    className="text-gray-700 text-sm mb-4 post-content prose prose-sm max-w-none prose-headings:font-semibold prose-h3:text-lg prose-h4:text-base prose-p:mb-3 prose-ul:ml-6 prose-ol:ml-6 prose-li:mb-1 prose-strong:font-semibold prose-em:italic"
+                    className="text-gray-700 text-sm mb-4 post-content prose prose-sm max-w-none prose-headings:font-semibold prose-h3:text-lg prose-h4:text-base prose-p:mb-3 prose-ul:ml-6 prose-ol:ml-6 prose-li:mb-1 prose-strong:font-semibold prose-em:italic cursor-pointer"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                     aria-label="Post content"
                 />
 
                 {/* Media Gallery */}
                 {post.mediaUrls && post.mediaUrls.length > 0 && (
-                    <div className="mb-4">
+                    <div className="mb-4" data-testid="post-media-container">
                         {post.mediaUrls.length === 1 ? (
                             <div className="rounded-md overflow-hidden">
-                                <Image
+                                <img
                                     src={post.mediaUrls[0]}
                                     alt="Post media"
-                                    width={600}
-                                    height={400}
                                     className="w-full h-auto object-cover max-h-[400px]"
                                 />
                             </div>
@@ -184,11 +201,9 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                                     {post.mediaUrls.map((url, index) => (
                                         <CarouselItem key={index}>
                                             <div className="rounded-md overflow-hidden">
-                                                <Image
+                                                <img
                                                     src={url}
                                                     alt={`Post media ${index + 1}`}
-                                                    width={600}
-                                                    height={400}
                                                     className="w-full h-auto object-cover max-h-[400px]"
                                                 />
                                             </div>
@@ -213,7 +228,10 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                                     "h-8 w-8 rounded-full hover:bg-blue-50",
                                     isUpvoted ? "text-[#00AEEF]" : "text-gray-500 hover:text-[#00AEEF]",
                                 )}
-                                onClick={handleUpvote}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpvote();
+                                }}
                             >
                                 <ArrowUp className="h-4 w-4" />
                                 <span className="sr-only">Upvote</span>
@@ -235,7 +253,10 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                                     "h-8 w-8 rounded-full hover:bg-blue-50",
                                     isDownvoted ? "text-red-500" : "text-gray-500 hover:text-red-500",
                                 )}
-                                onClick={handleDownvote}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownvote();
+                                }}
                             >
                                 <ArrowDown className="h-4 w-4" />
                                 <span className="sr-only">Downvote</span>
@@ -243,7 +264,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                         </div>
 
                         {/* Comments */}
-                        <Link href={`/posts/${post.id}`}>
+                        <Link href={routes.post(post.id)} onClick={(e) => navigation.goToPost(post.id, e)}>
                             <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-500 hover:text-[#00AEEF] hover:bg-blue-50">
                                 <MessageSquare className="h-4 w-4" />
                                 <span className="text-xs">{post.commentCount}</span>
@@ -260,7 +281,10 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                                 "h-8 w-8 rounded-full hover:bg-blue-50",
                                 saved ? "text-[#00AEEF]" : "text-gray-500 hover:text-[#00AEEF]",
                             )}
-                            onClick={toggleSave}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSave();
+                            }}
                         >
                             <Bookmark className="h-4 w-4" fill={saved ? "#00AEEF" : "none"} />
                             <span className="sr-only">Save</span>
@@ -271,6 +295,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 rounded-full text-gray-500 hover:text-[#00AEEF] hover:bg-blue-50"
+                            onClick={(e) => e.stopPropagation()}
                         >
                             <Share2 className="h-4 w-4" />
                             <span className="sr-only">Share</span>

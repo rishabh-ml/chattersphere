@@ -14,7 +14,7 @@ const mediaUploadSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -41,36 +41,49 @@ export async function POST(req: NextRequest) {
       });
     } catch (validationError) {
       if (validationError instanceof z.ZodError) {
-        const errorMessage = validationError.errors.map(err => 
+        const errorMessage = validationError.errors.map(err =>
           `${err.path.join('.')}: ${err.message}`
         ).join(', ');
-        
-        return NextResponse.json({ 
-          error: "Validation error", 
-          details: errorMessage 
+
+        return NextResponse.json({
+          error: "Validation error",
+          details: errorMessage
         }, { status: 400 });
       }
-      
-      return NextResponse.json({ 
-        error: "Invalid file" 
+
+      return NextResponse.json({
+        error: "Invalid file"
       }, { status: 400 });
     }
 
     // Upload to Supabase
     const path = `${userId}/${type}`;
-    const mediaUrl = await uploadFile(mediaFile, 'media', path);
+    let mediaUrl: string | null = null;
 
-    if (!mediaUrl) {
-      return NextResponse.json({ error: "Failed to upload media" }, { status: 500 });
+    try {
+      mediaUrl = await uploadFile(mediaFile, 'media', path);
+
+      if (!mediaUrl) {
+        console.error("Media upload failed: No URL returned");
+        return NextResponse.json({ error: "Failed to upload media" }, { status: 500 });
+      }
+
+      console.log("Media uploaded successfully:", mediaUrl);
+    } catch (uploadError) {
+      console.error("Error during media upload:", uploadError);
+      return NextResponse.json({
+        error: "Failed to upload media",
+        details: uploadError instanceof Error ? uploadError.message : "Unknown upload error"
+      }, { status: 500 });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       url: mediaUrl,
       success: true
     }, { status: 200 });
   } catch (error) {
     console.error("Error uploading media:", error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: "Failed to upload media",
       details: error instanceof Error ? error.message : "Unknown error"
     }, { status: 500 });

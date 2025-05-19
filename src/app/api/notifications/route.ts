@@ -3,25 +3,17 @@ import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Notification from "@/models/Notification";
-import { rateLimit } from "@/middleware/rateLimit";
 import mongoose from "mongoose";
+import { withApiMiddleware } from "@/lib/apiUtils";
 
 // HEAD /api/notifications - Check if the notifications API is available
 export async function HEAD() {
   return new Response(null, { status: 200 });
 }
 
-// GET /api/notifications - Get user's notifications
-export async function GET(req: NextRequest) {
+// Handler function for GET /api/notifications
+async function getNotificationsHandler(req: NextRequest) {
   try {
-    // Rate limiting
-    const rateLimitResult = await rateLimit.check(req, 20, "1m");
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: "Rate limit exceeded. Please try again later." },
-        { status: 429 }
-      );
-    }
 
     const { userId } = await auth();
     if (!userId) {
@@ -163,3 +155,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to fetch notifications" }, { status: 500 });
   }
 }
+
+// Export the handler with middleware
+export const GET = withApiMiddleware(getNotificationsHandler, {
+  enableRateLimit: true,
+  maxRequests: 20,
+  windowMs: 60000, // 1 minute
+  identifier: 'notifications:get'
+});

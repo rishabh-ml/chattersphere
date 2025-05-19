@@ -14,8 +14,9 @@ import {
 import { usePosts } from "@/context/PostContext";
 import { useAuth } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, X, Loader2 } from "lucide-react";
+import { Send, X, Loader2, Image } from "lucide-react";
 import PostEditor from "./post-editor";
+import MediaUploader from "./media-uploader";
 import { toast } from "sonner";
 
 interface CreatePostFormProps {
@@ -26,11 +27,14 @@ interface CreatePostFormProps {
 export default function CreatePostForm({
                                          communities = [],
                                          onSuccess,
-                                       }: CreatePostFormProps) {
+                                         startExpanded = false,
+                                       }: CreatePostFormProps & { startExpanded?: boolean }) {
   const [content, setContent] = useState("");
-  const [communityId, setCommunityId] = useState("");
+  const [communityId, setCommunityId] = useState("personal");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(startExpanded);
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+  const [showMediaUploader, setShowMediaUploader] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const { createPost, error } = usePosts();
   const { isSignedIn, userId } = useAuth();
@@ -55,9 +59,21 @@ export default function CreatePostForm({
   useEffect(() => {
     if (!isExpanded) {
       setContent("");
-      setCommunityId("");
+      setCommunityId("personal");
+      setMediaUrls([]);
+      setShowMediaUploader(false);
     }
   }, [isExpanded]);
+
+  // Handle media upload completion
+  const handleMediaUpload = (url: string) => {
+    setMediaUrls((prev) => [...prev, url]);
+  };
+
+  // Handle media removal
+  const handleRemoveMedia = (urlToRemove: string) => {
+    setMediaUrls((prev) => prev.filter(url => url !== urlToRemove));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +105,12 @@ export default function CreatePostForm({
       setIsSubmitting(true);
       console.log(`[CreatePostForm] Submitting post with userId: ${userId}, content length: ${trimmed.length}`);
 
-      const post = await createPost(trimmed, communityId || undefined);
+      // Only pass communityId if it's not 'personal'
+      const post = await createPost(
+        trimmed,
+        communityId !== 'personal' ? communityId : undefined,
+        mediaUrls.length > 0 ? mediaUrls : undefined
+      );
 
       if (!post) {
         if (error) {
@@ -155,7 +176,7 @@ export default function CreatePostForm({
               {isExpanded && (
                   <motion.button
                       type="button"
-                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                      className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 z-10"
                       onClick={() => setIsExpanded(false)}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -170,45 +191,97 @@ export default function CreatePostForm({
           <AnimatePresence>
             {isExpanded && (
                 <motion.div
-                    className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3"
+                    className="mt-4 space-y-4"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
                 >
-                  {communities.length > 0 && (
-                      <Select value={communityId} onValueChange={setCommunityId}>
-                        <SelectTrigger className="w-full sm:w-48">
-                          <SelectValue placeholder="Select community" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">Personal post</SelectItem>
-                          {communities.map((c) => (
-                              <SelectItem key={c.id} value={c.id}>
-                                {c.name}
-                              </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {/* Media uploader toggle button */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowMediaUploader(!showMediaUploader)}
+                      className="flex items-center gap-2 text-gray-600"
+                    >
+                      <Image className="h-4 w-4" />
+                      {showMediaUploader ? 'Hide media uploader' : 'Add image'}
+                    </Button>
+                  </div>
+
+                  {/* Media uploader */}
+                  {showMediaUploader && (
+                    <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
+                      <MediaUploader
+                        onUploadComplete={handleMediaUpload}
+                        type="post"
+                      />
+                    </div>
                   )}
 
-                  <Button
-                      type="submit"
-                      disabled={isSubmitting || !content.trim()}
-                      className="w-full sm:w-auto bg-[#00AEEF] hover:bg-[#00AEEF]/90 text-white"
-                  >
-                    {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Posting...
-                        </>
-                    ) : (
-                        <>
-                          Post
-                          <Send className="ml-2 h-4 w-4" />
-                        </>
+                  {/* Media previews */}
+                  {mediaUrls.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-gray-700">Uploaded media:</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {mediaUrls.map((url, index) => (
+                          <div key={index} className="relative group rounded-md overflow-hidden border border-gray-200">
+                            <img
+                              src={url}
+                              alt={`Uploaded media ${index + 1}`}
+                              className="w-full h-24 object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMedia(url)}
+                              className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Community selector and submit button */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    {communities.length > 0 && (
+                        <Select value={communityId} onValueChange={setCommunityId}>
+                          <SelectTrigger className="w-full sm:w-48">
+                            <SelectValue placeholder="Select community" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="personal">Personal post</SelectItem>
+                            {communities.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  {c.name}
+                                </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                     )}
-                  </Button>
+
+                    <Button
+                        type="submit"
+                        disabled={isSubmitting || !content.trim()}
+                        className="w-full sm:w-auto bg-[#00AEEF] hover:bg-[#00AEEF]/90 text-white"
+                    >
+                      {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Posting...
+                          </>
+                      ) : (
+                          <>
+                            Post
+                            <Send className="ml-2 h-4 w-4" />
+                          </>
+                      )}
+                    </Button>
+                  </div>
                 </motion.div>
             )}
           </AnimatePresence>

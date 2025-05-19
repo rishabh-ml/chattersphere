@@ -1,7 +1,8 @@
 // src/middleware.ts
 import { clerkClient } from "@clerk/nextjs/server";
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { addCachingHeaders } from "./middleware/caching";
 
 // Define public routes that don't require authentication
 const publicRoutes = [
@@ -22,6 +23,9 @@ const publicRoutes = [
 
 // Enhanced authentication middleware with custom logic
 export default clerkMiddleware(async (auth, req) => {
+  // Apply caching headers for static assets
+  const cachingResponse = addCachingHeaders(req as NextRequest);
+
   // Custom logic for handling authentication
   const { userId } = await auth();
   // If the user is not authenticated and trying to access a protected route
@@ -53,6 +57,9 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL("/home", req.url));
     }
   }
+
+  // Return the response with caching headers
+  return cachingResponse;
 });
 
 // Helper function to check if a route is public

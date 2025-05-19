@@ -16,6 +16,7 @@ export interface User {
 export interface Community {
   id: string;
   name: string;
+  slug: string;
   description: string;
   members: number;
   icon: string;

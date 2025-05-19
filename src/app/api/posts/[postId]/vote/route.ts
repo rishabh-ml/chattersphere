@@ -6,6 +6,7 @@ import User from "@/models/User";
 import Post from "@/models/Post";
 import mongoose, { Types } from "mongoose";
 import { sanitizeInput } from "@/lib/security";
+import { VoteType } from "@/models/Vote";
 
 export async function POST(
     req: NextRequest,
@@ -43,39 +44,49 @@ export async function POST(
     // Mongoose ObjectId type
     const me = currentUser._id as Types.ObjectId;
 
-    // see if we've already voted
-    const hasUpvoted = post.upvotes.some((id: Types.ObjectId) => id.equals(me));
-    const hasDownvoted = post.downvotes.some((id: Types.ObjectId) =>
-        id.equals(me)
-    );
+    // Get the Vote model
+    const Vote = mongoose.model('Vote');
 
-    // toggle logic
+    // Find existing vote
+    const existingVote = await Vote.findOne({
+      user: me,
+      target: post._id,
+      targetType: 'Post'
+    });
+
+    // Initialize vote status
+    let isUpvoted = false;
+    let isDownvoted = false;
+
+    // Handle vote logic
     if (voteType === "upvote") {
-      if (hasUpvoted) {
-        post.upvotes = post.upvotes.filter((id: Types.ObjectId) => !id.equals(me));
+      if (existingVote && existingVote.voteType === VoteType.UPVOTE) {
+        // Remove upvote if already upvoted (toggle off)
+        await Vote.deleteOne({ _id: existingVote._id });
+        // Decrement upvote count
+        post.upvoteCount = Math.max(0, post.upvoteCount - 1);
       } else {
-        post.upvotes.push(me);
-        post.downvotes = post.downvotes.filter((id: Types.ObjectId) => !id.equals(me));
-      }
-    } else {
-      if (hasDownvoted) {
-        post.downvotes = post.downvotes.filter((id: Types.ObjectId) => !id.equals(me));
-      } else {
-        post.downvotes.push(me);
-        post.upvotes = post.upvotes.filter((id: Types.ObjectId) => !id.equals(me));
-      }
-    }
+        if (existingVote) {
+          // Change from downvote to upvote
+          existingVote.voteType = VoteType.UPVOTE;
+          await existingVote.save();
+          // Update counts
+          post.downvoteCount = Math.max(0, post.downvoteCount - 1);
+          post.upvoteCount += 1;
+        } else {
+          // Create new upvote
+          await Vote.create({
+            user: me,
+            target: post._id,
+            targetType: 'Post',
+            voteType: VoteType.UPVOTE
+          });
+          // Increment upvote count
+          post.upvoteCount += 1;
+        }
+        isUpvoted = true;
 
-    await post.save();
-
-    // recalc toggles
-    const isUpvoted = post.upvotes.some((id: Types.ObjectId) => id.equals(me));
-    const isDownvoted = post.downvotes.some((id: Types.ObjectId) =>
-        id.equals(me)
-    );
-
-    // Create notification for upvote (only if this is a new upvote, not removing an upvote)
-    if (voteType === "upvote" && isUpvoted && !hasUpvoted) {
+        // Create notification for upvote
       try {
         const Notification = mongoose.model('Notification');
         const postAuthor = await User.findById(post.author);
@@ -95,13 +106,58 @@ export async function POST(
         console.error("Error creating notification:", notifError);
         // Continue even if notification creation fails
       }
+      }
+    } else if (voteType === "downvote") {
+      if (existingVote && existingVote.voteType === VoteType.DOWNVOTE) {
+        // Remove downvote if already downvoted (toggle off)
+        await Vote.deleteOne({ _id: existingVote._id });
+        // Decrement downvote count
+        post.downvoteCount = Math.max(0, post.downvoteCount - 1);
+      } else {
+        if (existingVote) {
+          // Change from upvote to downvote
+          existingVote.voteType = VoteType.DOWNVOTE;
+          await existingVote.save();
+          // Update counts
+          post.upvoteCount = Math.max(0, post.upvoteCount - 1);
+          post.downvoteCount += 1;
+        } else {
+          // Create new downvote
+          await Vote.create({
+            user: me,
+            target: post._id,
+            targetType: 'Post',
+            voteType: VoteType.DOWNVOTE
+          });
+          // Increment downvote count
+          post.downvoteCount += 1;
+        }
+        isDownvoted = true;
+      }
+    }
+
+    // Save the updated post
+    await post.save();
+
+    // Check current vote status
+    if (!isUpvoted && !isDownvoted) {
+      const currentVote = await Vote.findOne({
+        user: me,
+        target: post._id,
+        targetType: 'Post'
+      });
+
+      if (currentVote) {
+        isUpvoted = currentVote.voteType === VoteType.UPVOTE;
+        isDownvoted = currentVote.voteType === VoteType.DOWNVOTE;
+      }
     }
 
     return NextResponse.json(
         {
-          upvoteCount: post.upvotes.length,
-          downvoteCount: post.downvotes.length,
-          voteCount: post.upvotes.length - post.downvotes.length,
+          upvoteCount: post.upvoteCount,
+          downvoteCount: post.downvoteCount,
+          voteCount: post.upvoteCount - post.downvoteCount,
           isUpvoted,
           isDownvoted,
         },
