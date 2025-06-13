@@ -14,10 +14,11 @@ import { withCache, invalidateCache, CacheKeys } from "@/lib/redis";
  * Adds the target user to the current user's following list
  * and adds the current user to the target user's followers list
  */
-export async function POST(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+  const resolvedParams = await params;
   try {
     // Get the target user ID from the URL params
-    const targetUserId = sanitizeInput(params.userId);
+    const targetUserId = sanitizeInput(resolvedParams.userId);
 
     // Get the current user's Clerk ID
     const { userId: clerkUserId } = await auth();

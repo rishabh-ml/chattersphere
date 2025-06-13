@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import dbConnect from "@/lib/dbConnect";
 import Community from "@/models/Community";
 import Membership from "@/models/Membership";
 
 export async function GET() {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     await dbConnect();
 
     // Find communities the user is not a member of

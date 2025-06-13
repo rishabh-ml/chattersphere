@@ -9,19 +9,19 @@ import { sanitizeInput } from "@/lib/security";
 // GET /api/communities/slug/[slug] - Get community by slug
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  try {
-    console.log(`[GET /api/communities/slug/[slug]] Fetching community with slug: ${params?.slug}`);
+  const resolvedParams = await params;  try {
+    console.log(`[GET /api/communities/slug/[slug]] Fetching community with slug: ${resolvedParams?.slug}`);
     const { userId: clerkUserId } = await auth();
 
     // Sanitize and validate slug
-    if (!params?.slug) {
+    if (!resolvedParams?.slug) {
       console.log('[GET /api/communities/slug/[slug]] Missing slug parameter');
       return ApiError.badRequest("Missing slug parameter");
     }
 
-    const sanitizedSlug = sanitizeInput(params.slug);
+    const sanitizedSlug = sanitizeInput(resolvedParams.slug);
     console.log(`[GET /api/communities/slug/[slug]] Sanitized slug: ${sanitizedSlug}`);
 
     try {
@@ -30,15 +30,13 @@ export async function GET(
     } catch (dbError) {
       console.error('[GET /api/communities/slug/[slug]] Database connection error:', dbError);
       return ApiError.internalServerError("Database connection failed");
-    }
-
-    // Find the community by slug
+    }    // Find the community by slug
     let community;
     try {
       community = await Community.findOne({ slug: sanitizedSlug })
         .populate("creator", "username name image")
         .lean()
-        .exec();
+        .exec() as any;
 
       console.log(`[GET /api/communities/slug/[slug]] Community found: ${community ? 'Yes' : 'No'}`);
     } catch (findError) {
@@ -59,7 +57,7 @@ export async function GET(
     if (clerkUserId) {
       try {
         console.log(`[GET /api/communities/slug/[slug]] Looking up user with clerkId: ${clerkUserId}`);
-        const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+        const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
 
         if (currentUser) {
           console.log(`[GET /api/communities/slug/[slug]] Found user: ${currentUser.username}`);

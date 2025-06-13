@@ -103,7 +103,7 @@ export async function GET(req: NextRequest) {
         }
         
         // Build query conditions based on the type parameter
-        let queryConditions: mongoose.FilterQuery<any>[] = [];
+        const queryConditions: mongoose.FilterQuery<any>[] = [];
         
         // If type is "all" or "following", include posts from followed users
         if (type === "all" || type === "following") {

@@ -8,8 +8,9 @@ import { supabaseAdmin, uploadFile } from "@/lib/supabase";
 // PUT /api/profile/[userId]/avatar - Update user avatar
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
@@ -17,14 +18,14 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!params?.userId || !mongoose.Types.ObjectId.isValid(params.userId)) {
+    if (!resolvedParams?.userId || !mongoose.Types.ObjectId.isValid(resolvedParams.userId)) {
       return NextResponse.json({ error: "Invalid or missing userId" }, { status: 400 });
     }
 
     await connectToDatabase();
 
     // Find the user
-    const user = await User.findById(params.userId);
+    const user = await User.findById(resolvedParams.userId);
     
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -65,11 +66,9 @@ export async function PUT(
 
     if (!avatarUrl) {
       return NextResponse.json({ error: "Failed to upload avatar" }, { status: 500 });
-    }
-
-    // Update the user document with the new avatar URL
+    }    // Update the user document with the new avatar URL
     const updatedUser = await User.findByIdAndUpdate(
-      params.userId,
+      resolvedParams.userId,
       {
         $set: {
           image: avatarUrl,
@@ -80,7 +79,11 @@ export async function PUT(
     )
       .select("-email")
       .lean()
-      .exec();
+      .exec() as any;
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "Failed to update user avatar" }, { status: 500 });
+    }
 
     return NextResponse.json(
       { 

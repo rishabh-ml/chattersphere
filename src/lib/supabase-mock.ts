@@ -229,12 +229,10 @@ export async function uploadFileFromUrl(
     if (error) {
       console.error('[Mock Supabase] Error uploading file from URL:', error);
       return null;
-    }
-
-    // Get the public URL
+    }    // Get the public URL
     const { data: urlData } = supabaseAdmin.storage
       .from(bucket)
-      .getPublicUrl(data.path);
+      .getPublicUrl(data?.path || '');
 
     console.log(`[Mock Supabase] File uploaded successfully from URL: ${urlData.publicUrl}`);
     return urlData.publicUrl;

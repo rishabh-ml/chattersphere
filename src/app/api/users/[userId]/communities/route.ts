@@ -7,8 +7,9 @@ import type { Types } from "mongoose";
 
 export async function GET(
     _req: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
+    const resolvedParams = await params;
     try {
         await connectToDatabase();
 
@@ -16,10 +17,8 @@ export async function GET(
         interface UserDocument {
             _id: Types.ObjectId;
             communities: CommunityDocument[];
-        }
-
-        // 1) Load user
-        const user = await User.findById(params.userId).populate("communities").lean() as UserDocument | null;
+        }        // 1) Load user
+        const user = await User.findById(resolvedParams.userId).populate("communities").lean() as any;
 
         if (!user) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });

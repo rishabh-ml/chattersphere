@@ -37,14 +37,16 @@ export default function ProfilePage() {
             retries: 2,
             retryDelay: 1000
         }
-    );
-
-    // Update userState when profileData changes
+    );    // Update userState when profileData changes
     useEffect(() => {
         if (profileData?.profile) {
             setUserState(profileData.profile);
         }
     }, [profileData]);
+
+    // Use userState instead of directly accessing profileData
+    const user = userState;
+    const error = fetchError?.message || (!sanitizedUserId ? "Invalid or missing userId" : null);
 
     // Log profile view for analytics
     useEffect(() => {
@@ -72,10 +74,6 @@ export default function ProfilePage() {
             logProfileView();
         }
     }, [user, clerkUser]);
-
-    // Use userState instead of directly accessing profileData
-    const user = userState;
-    const error = fetchError?.message || (!sanitizedUserId ? "Invalid or missing userId" : null);
 
     // Check if the current user is the profile owner
     const isOwner = isSignedIn && user?.clerkId === clerkUser?.id;

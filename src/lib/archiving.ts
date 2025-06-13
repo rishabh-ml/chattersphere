@@ -32,9 +32,10 @@ export async function archiveOldData(
   // Calculate the threshold date
   const thresholdDate = new Date();
   thresholdDate.setDate(thresholdDate.getDate() - thresholdDays);
-  
-  // Get the source and destination collections
+    // Get the source and destination collections
   const db = mongoose.connection.db;
+  if (!db) throw new Error('Database connection not available');
+  
   const sourceCollection = db.collection(collectionName);
   const archiveCollection = db.collection(`${ARCHIVE_PREFIX}${collectionName}`);
   
@@ -91,9 +92,10 @@ export async function restoreArchivedData(
   collectionName: string,
   query: Record<string, any> = {},
   batchSize: number = 1000
-): Promise<number> {
-  // Get the source and destination collections
+): Promise<number> {  // Get the source and destination collections
   const db = mongoose.connection.db;
+  if (!db) throw new Error('Database connection not available');
+  
   const sourceCollection = db.collection(`${ARCHIVE_PREFIX}${collectionName}`);
   const destinationCollection = db.collection(collectionName);
   

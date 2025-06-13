@@ -11,10 +11,11 @@ import { withCache, CacheKeys, CacheTTL } from "@/lib/redis";
 /**
  * GET /api/users/[userId]/followers - Get a user's followers
  */
-export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+  const resolvedParams = await params;
   try {
     // Get the target user ID from the URL params
-    const targetUserId = sanitizeInput(params.userId);
+    const targetUserId = sanitizeInput(resolvedParams.userId);
     
     // Get the current user's Clerk ID
     const { userId: clerkUserId } = await auth();
@@ -28,11 +29,10 @@ export async function GET(req: NextRequest, { params }: { params: { userId: stri
     // Use cache wrapper with a TTL of 5 minutes
     const result = await withCache(
       cacheKey,
-      async () => {
-        // Find the target user
+      async () => {        // Find the target user
         const targetUser = await User.findById(targetUserId)
           .select("username name followers")
-          .lean();
+          .lean() as any;
         
         if (!targetUser) {
           throw new Error("User not found");

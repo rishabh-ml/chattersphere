@@ -116,16 +116,16 @@ export async function monitorFunction<T>(
         category: 'performance',
         message: `Slow function: ${name} took ${duration}ms`,
         level: 'warning',
-      });
-
-      // Create a performance span
-      const transaction = Sentry.startTransaction({
+      });      // Create a performance span
+      const transaction = Sentry.startSpan({
         name: `function.${name}`,
         op: 'function',
+      }, () => {
+        // Span operations here
       });
 
-      transaction.setMeasurement('duration', duration, 'millisecond');
-      transaction.finish();
+      Sentry.setMeasurement('duration', duration, 'millisecond');
+      // transaction.finish(); // Not needed with startSpan
 
       // Log to console in development
       if (process.env.NODE_ENV === 'development') {
@@ -174,16 +174,16 @@ export async function monitorQuery<T>(
         category: 'database',
         message: `Slow query: ${name} took ${duration}ms`,
         level: 'warning',
-      });
-
-      // Create a performance span
-      const transaction = Sentry.startTransaction({
+      });      // Create a performance span
+      const transaction = Sentry.startSpan({
         name: `query.${name}`,
         op: 'db',
+      }, () => {
+        // Span operations here
       });
 
-      transaction.setMeasurement('duration', duration, 'millisecond');
-      transaction.finish();
+      Sentry.setMeasurement('duration', duration, 'millisecond');
+      // transaction.finish(); // Not needed with startSpan
 
       // Log to console in development
       if (process.env.NODE_ENV === 'development') {

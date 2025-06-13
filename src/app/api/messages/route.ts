@@ -6,7 +6,7 @@ import DirectMessage from "@/models/DirectMessage";
 import mongoose from "mongoose";
 import { withCache } from "@/lib/redis";
 import { withApiMiddleware } from "@/lib/apiUtils";
-import { z } from "zod";
+
 
 /**
  * @api {get} /api/messages Get user conversations

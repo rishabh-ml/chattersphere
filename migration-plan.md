@@ -1,0 +1,1 @@
+# Migration Plan for Chattersphere Architecture Restructuring

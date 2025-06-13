@@ -46,10 +46,8 @@ export async function GET(request: NextRequest) {
       sortConfig = { createdAt: -1 };
     }
     // Note: For posts and members counts, we'll use aggregation pipeline
-    // since these are arrays and we need to count their length
-
-    // Use aggregation pipeline for efficient database-level operations
-    let aggregationPipeline = [];
+    // since these are arrays and we need to count their length    // Use aggregation pipeline for efficient database-level operations
+    const aggregationPipeline: any[] = [];
 
     // Match stage (can add filters here in the future)
     aggregationPipeline.push({ $match: {} });
@@ -64,18 +62,18 @@ export async function GET(request: NextRequest) {
 
     // Sort based on user preference
     if (sortBy === "recent") {
-      aggregationPipeline.push({ $sort: { createdAt: -1 } });
+      aggregationPipeline.push({ $sort: { createdAt: -1 as const } });
     } else if (sortBy === "posts") {
-      aggregationPipeline.push({ $sort: { postCount: -1 } });
+      aggregationPipeline.push({ $sort: { postCount: -1 as const } });
     } else {
       // Default sort by members
-      aggregationPipeline.push({ $sort: { memberCount: -1 } });
+      aggregationPipeline.push({ $sort: { memberCount: -1 as const } });
     }
 
     // Count total before pagination
     const countPipeline = [...aggregationPipeline];
     countPipeline.push({ $count: "total" });
-    const totalResult = await Community.aggregate(countPipeline);
+    const totalResult = await Community.aggregate(countPipeline) as any[];
     const total = totalResult.length > 0 ? totalResult[0].total : 0;
 
     // Add pagination
@@ -98,10 +96,8 @@ export async function GET(request: NextRequest) {
         path: "$creatorInfo",
         preserveNullAndEmptyArrays: true
       }
-    });
-
-    // Execute the aggregation
-    const communitiesResult = await Community.aggregate(aggregationPipeline);
+    });    // Execute the aggregation
+    const communitiesResult = await Community.aggregate(aggregationPipeline) as any[];
 
     let me: Types.ObjectId | null = null;
     if (userId) {
@@ -131,9 +127,8 @@ export async function GET(request: NextRequest) {
         image: c.image ?? "",
         creator: creatorInfo,
         memberCount: c.memberCount || 0,
-        postCount: c.postCount || 0,
-        isMember: me ? c.members.some((m) => m.equals(me)) : false,
-        isModerator: me ? c.moderators.some((m) => m.equals(me)) : false,
+        postCount: c.postCount || 0,        isMember: me ? c.members.some((m: any) => m.equals(me)) : false,
+        isModerator: me ? c.moderators.some((m: any) => m.equals(me)) : false,
         isCreator: me ? c.creator.toString() === me.toString() : false,
         createdAt: c.createdAt.toISOString(),
         updatedAt: c.updatedAt.toISOString(),

@@ -44,8 +44,8 @@ const messageCreateSchema = z.object({
  */
 async function getMessagesHandler(
   req: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+  { params }: { params: Promise<{ userId: string }> }
+) {  const resolvedParams = await params;
   try {
     // Get the authenticated user
     const { userId: clerkUserId } = await auth();
@@ -54,11 +54,11 @@ async function getMessagesHandler(
     }
 
     // Sanitize and validate userId
-    if (!params?.userId) {
+    if (!resolvedParams?.userId) {
       return NextResponse.json({ error: "Missing userId parameter" }, { status: 400 });
     }
 
-    const sanitizedUserId = sanitizeInput(params.userId);
+    const sanitizedUserId = sanitizeInput(resolvedParams.userId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedUserId)) {
       return NextResponse.json({ error: "Invalid userId format" }, { status: 400 });
@@ -194,8 +194,9 @@ async function getMessagesHandler(
  */
 async function sendMessageHandler(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     // Get the authenticated user
     const { userId: clerkUserId } = await auth();
@@ -204,11 +205,11 @@ async function sendMessageHandler(
     }
 
     // Sanitize and validate userId
-    if (!params?.userId) {
+    if (!resolvedParams?.userId) {
       return NextResponse.json({ error: "Missing userId parameter" }, { status: 400 });
     }
 
-    const sanitizedUserId = sanitizeInput(params.userId);
+    const sanitizedUserId = sanitizeInput(resolvedParams.userId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedUserId)) {
       return NextResponse.json({ error: "Invalid userId format" }, { status: 400 });
@@ -294,7 +295,10 @@ async function sendMessageHandler(
 
 // Export the handler functions with middleware
 export const GET = withApiMiddleware(
-  (req: NextRequest) => getMessagesHandler(req, { params: { userId: req.nextUrl.pathname.split('/')[3] } }),
+  async (req: NextRequest) => {
+    const userId = req.nextUrl.pathname.split('/')[3];
+    return getMessagesHandler(req, { params: Promise.resolve({ userId }) });
+  },
   {
     enableRateLimit: true,
     maxRequests: 100,
@@ -304,7 +308,10 @@ export const GET = withApiMiddleware(
 );
 
 export const POST = withApiMiddleware(
-  (req: NextRequest) => sendMessageHandler(req, { params: { userId: req.nextUrl.pathname.split('/')[3] } }),
+  async (req: NextRequest) => {
+    const userId = req.nextUrl.pathname.split('/')[3];
+    return sendMessageHandler(req, { params: Promise.resolve({ userId }) });
+  },
   {
     enableRateLimit: true,
     maxRequests: 20,

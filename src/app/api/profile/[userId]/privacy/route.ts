@@ -8,8 +8,9 @@ import { privacyUpdateSchema } from "@/lib/validations/profile";
 // GET /api/profile/[userId]/privacy - Get user privacy settings
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
@@ -17,14 +18,12 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!params?.userId || !mongoose.Types.ObjectId.isValid(params.userId)) {
+    if (!resolvedParams?.userId || !mongoose.Types.ObjectId.isValid(resolvedParams.userId)) {
       return NextResponse.json({ error: "Invalid or missing userId" }, { status: 400 });
     }
 
-    await connectToDatabase();
-
-    // Find the user
-    const user = await User.findById(params.userId).lean().exec();
+    await connectToDatabase();    // Find the user
+    const user = await User.findById(resolvedParams.userId).lean().exec() as any;
     
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -56,8 +55,9 @@ export async function GET(
 // PUT /api/profile/[userId]/privacy - Update user privacy settings
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
@@ -65,14 +65,14 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!params?.userId || !mongoose.Types.ObjectId.isValid(params.userId)) {
+    if (!resolvedParams?.userId || !mongoose.Types.ObjectId.isValid(resolvedParams.userId)) {
       return NextResponse.json({ error: "Invalid or missing userId" }, { status: 400 });
     }
 
     await connectToDatabase();
 
     // Find the user
-    const user = await User.findById(params.userId);
+    const user = await User.findById(resolvedParams.userId);
     
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -98,11 +98,9 @@ export async function PUT(
       );
     }
 
-    const { privacySettings } = validationResult.data;
-
-    // Update the user document
+    const { privacySettings } = validationResult.data;    // Update the user document
     const updatedUser = await User.findByIdAndUpdate(
-      params.userId,
+      resolvedParams.userId,
       {
         $set: {
           privacySettings,
@@ -113,7 +111,11 @@ export async function PUT(
     )
       .select("privacySettings")
       .lean()
-      .exec();
+      .exec() as any;
+
+    if (!updatedUser) {
+      return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
+    }
 
     return NextResponse.json(
       { 

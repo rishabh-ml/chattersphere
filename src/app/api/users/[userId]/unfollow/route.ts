@@ -14,10 +14,11 @@ import { invalidateCache, CacheKeys } from "@/lib/redis";
  * Removes the target user from the current user's following list
  * and removes the current user from the target user's followers list
  */
-export async function DELETE(req: NextRequest, { params }: { params: { userId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+  const resolvedParams = await params;
   try {
     // Get the target user ID from the URL params
-    const targetUserId = sanitizeInput(params.userId);
+    const targetUserId = sanitizeInput(resolvedParams.userId);
     
     // Get the current user's Clerk ID
     const { userId: clerkUserId } = await auth();

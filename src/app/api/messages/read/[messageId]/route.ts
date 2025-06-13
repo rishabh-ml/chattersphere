@@ -22,8 +22,9 @@ import { sanitizeInput } from "@/lib/security";
  */
 async function markMessageReadHandler(
   _req: NextRequest,
-  { params }: { params: { messageId: string } }
+  { params }: { params: Promise<{ messageId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     // Get the authenticated user
     const { userId: clerkUserId } = await auth();
@@ -32,11 +33,11 @@ async function markMessageReadHandler(
     }
 
     // Sanitize and validate messageId
-    if (!params?.messageId) {
+    if (!resolvedParams?.messageId) {
       return NextResponse.json({ error: "Missing messageId parameter" }, { status: 400 });
     }
 
-    const sanitizedMessageId = sanitizeInput(params.messageId);
+    const sanitizedMessageId = sanitizeInput(resolvedParams.messageId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedMessageId)) {
       return NextResponse.json({ error: "Invalid messageId format" }, { status: 400 });

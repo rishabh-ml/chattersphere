@@ -6,7 +6,7 @@ import Comment from "@/models/Comment";
 import mongoose from "mongoose";
 import { z } from "zod";
 import { sanitizeInput } from "@/lib/security";
-import { rateLimit } from "@/middleware/rateLimit";
+import { rateLimit, apiRateLimit } from "@/lib/rateLimit";
 import { VoteType } from "@/models/Vote";
 
 // Define validation schema for vote
@@ -17,16 +17,14 @@ const voteSchema = z.object({
 // POST /api/comments/[commentId]/vote - Vote on a comment
 export async function POST(
   req: NextRequest,
-  { params }: { params: { commentId: string } }
+  { params }: { params: Promise<{ commentId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     // Rate limiting
-    const rateLimitResult = await rateLimit.check(req, 20, "1m");
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: "Rate limit exceeded. Please try again later." },
-        { status: 429 }
-      );
+    const rateLimitResult = await rateLimit(req, apiRateLimit);
+    if (rateLimitResult) {
+      return rateLimitResult;
     }
 
     const { userId } = await auth();
@@ -35,11 +33,11 @@ export async function POST(
     }
 
     // Sanitize and validate commentId
-    if (!params?.commentId) {
+    if (!resolvedParams?.commentId) {
       return NextResponse.json({ error: "Missing commentId parameter" }, { status: 400 });
     }
 
-    const sanitizedCommentId = sanitizeInput(params.commentId);
+    const sanitizedCommentId = sanitizeInput(resolvedParams.commentId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommentId)) {
       return NextResponse.json({ error: "Invalid commentId format" }, { status: 400 });

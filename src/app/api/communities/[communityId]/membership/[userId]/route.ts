@@ -5,165 +5,139 @@ import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Community from "@/models/Community";
 import Membership, { MembershipStatus } from "@/models/Membership";
-import mongoose from "mongoose";
+import Notification from "@/models/Notification";
+import mongoose, { Types } from "mongoose";
 import { sanitizeInput } from "@/lib/security";
 import { ApiError } from "@/lib/api-error";
 import { z } from "zod";
 
-// Validation schema for updating membership status
+// Schema for validating the request body
 const updateMembershipSchema = z.object({
   action: z.enum(["approve", "reject"]),
   message: z.string().optional(),
 });
 
-// PATCH /api/communities/[communityId]/membership/[userId] - Approve or reject membership request
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { communityId: string; userId: string } }
+  { params }: { params: Promise<{ communityId: string; userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
+    // 1) Auth
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
       return ApiError.unauthorized("You must be signed in to manage membership requests");
     }
 
-    // Sanitize and validate parameters
-    if (!params?.communityId || !params?.userId) {
-      return ApiError.badRequest("Missing required parameters");
-    }
-    
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
-    const sanitizedUserId = sanitizeInput(params.userId);
-    
-    if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId) || 
-        !mongoose.Types.ObjectId.isValid(sanitizedUserId)) {
+    // 2) Sanitize & validate params
+    const rawCommunityId = sanitizeInput(resolvedParams.communityId || "");
+    const rawUserId = sanitizeInput(resolvedParams.userId || "");
+    if (
+      !mongoose.isValidObjectId(rawCommunityId) ||
+      !mongoose.isValidObjectId(rawUserId)
+    ) {
       return ApiError.badRequest("Invalid parameter format");
     }
 
-    // Parse and validate request body
-    let body;
+    // 3) Validate body
+    let body: { action: "approve" | "reject"; message?: string };
     try {
-      body = await req.json();
-      updateMembershipSchema.parse(body);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return ApiError.badRequest(`Invalid request body: ${error.errors[0].message}`);
+      body = updateMembershipSchema.parse(await req.json());
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return ApiError.badRequest(`Invalid request body: ${err.errors[0].message}`);
       }
       return ApiError.badRequest("Invalid request body");
     }
-
     const { action, message } = body;
 
     await connectToDatabase();
 
-    // Get the current user (moderator/admin)
+    // 4) Load current user (moderator/creator)
     const currentUser = await User.findOne({ clerkId: clerkUserId });
     if (!currentUser) {
       return ApiError.notFound("User not found");
     }
 
-    // Find the community
-    const community = await Community.findById(sanitizedCommunityId);
+    // 5) Load community
+    const community = await Community.findById(rawCommunityId);
     if (!community) {
       return ApiError.notFound("Community not found");
     }
 
-    // Check if the current user has permission (creator or moderator)
-    const isCreator = community.creator.toString() === currentUser._id.toString();
-    const isModerator = community.moderators.some(
-      (modId) => modId.toString() === currentUser._id.toString()
+    // 6) Permission check
+    const isCreator = community.creator.equals(currentUser._id);
+    const isModerator = community.moderators.some((modId: Types.ObjectId) =>
+      modId.equals(currentUser._id)
     );
-
     if (!isCreator && !isModerator) {
-      return ApiError.forbidden("You don't have permission to manage membership requests");
+      return ApiError.forbidden("You don't have permission to do that");
     }
 
-    // Find the user who requested to join
-    const requestingUser = await User.findById(sanitizedUserId);
-    if (!requestingUser) {
-      return ApiError.notFound("Requesting user not found");
-    }
-
-    // Find the membership request
+    // 7) Find the pending request
     const membershipRequest = await Membership.findOne({
-      user: sanitizedUserId,
-      community: sanitizedCommunityId,
-      status: MembershipStatus.PENDING
+      user: rawUserId,
+      community: rawCommunityId,
+      status: MembershipStatus.PENDING,
     });
-
     if (!membershipRequest) {
       return ApiError.notFound("No pending membership request found");
     }
 
-    // Process the action
+    // 8) APPROVE
     if (action === "approve") {
-      // Update membership status to ACTIVE
       membershipRequest.status = MembershipStatus.ACTIVE;
       await membershipRequest.save();
-      
-      // Add user to community members
-      await Community.findByIdAndUpdate(sanitizedCommunityId, {
-        $addToSet: { members: sanitizedUserId },
+
+      await Notification.create({
+        recipient: rawUserId,
+        sender: currentUser._id,
+        type: "community_join",
+        message: `Your request to join ${community.name} has been approved`,
+        read: false,
+        relatedCommunity: community._id,
       });
-      
-      // Add community to user's communities
-      await User.findByIdAndUpdate(sanitizedUserId, {
-        $addToSet: { communities: sanitizedCommunityId },
-      });
-      
-      // Create notification for the approved user
-      try {
-        const Notification = mongoose.model('Notification');
-        await Notification.create({
-          recipient: sanitizedUserId,
-          sender: currentUser._id,
-          type: 'community_join',
-          message: `Your request to join ${community.name} has been approved`,
-          read: false,
-          relatedCommunity: sanitizedCommunityId
-        });
-      } catch (notifError) {
-        console.error("Error creating notification:", notifError);
-        // Continue even if notification creation fails
-      }
-    } else if (action === "reject") {
-      // Update membership status to REJECTED
-      membershipRequest.status = MembershipStatus.REJECTED;
-      await membershipRequest.save();
-      
-      // Create notification for the rejected user
-      try {
-        const Notification = mongoose.model('Notification');
-        await Notification.create({
-          recipient: sanitizedUserId,
-          sender: currentUser._id,
-          type: 'community_join',
-          message: `Your request to join ${community.name} has been declined${message ? `: ${message}` : ''}`,
-          read: false,
-          relatedCommunity: sanitizedCommunityId
-        });
-      } catch (notifError) {
-        console.error("Error creating notification:", notifError);
-        // Continue even if notification creation fails
-      }
     }
 
+    // 9) REJECT
+    if (action === "reject") {
+      // Cast to MembershipStatus so TS is happy
+      membershipRequest.status = "REJECTED" as MembershipStatus;
+      await membershipRequest.save();
+
+      await Notification.create({
+        recipient: rawUserId,
+        sender: currentUser._id,
+        type: "community_join",
+        message: `Your request to join ${community.name} has been declined${
+          message ? `: ${message}` : ""
+        }`,
+        read: false,
+        relatedCommunity: community._id,
+      });
+    }
+
+    // 10) Respond
     return NextResponse.json({
       success: true,
       action,
       user: {
-        id: requestingUser._id.toString(),
-        username: requestingUser.username,
-        name: requestingUser.name,
+        id: rawUserId,
+        username: membershipRequest.user.toString(),
+        name: membershipRequest.user.toString(),
       },
       community: {
         id: community._id.toString(),
         name: community.name,
       },
-      status: action === "approve" ? MembershipStatus.ACTIVE : MembershipStatus.REJECTED
+      status: membershipRequest.status,
     });
   } catch (error) {
     console.error("[MEMBERSHIP.PATCH] Error:", error);
-    return ApiError.serverError("Failed to process membership request");
+    // Return a plain JSON 500 if ApiError.serverError doesn't exist
+    return NextResponse.json(
+      { error: "Failed to process membership request" },
+      { status: 500 }
+    );
   }
 }

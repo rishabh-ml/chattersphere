@@ -1,3 +1,5 @@
+import { ReadPreferenceMode } from 'mongodb';
+
 /**
  * MongoDB Sharding and Replication Configuration
  * 
@@ -118,11 +120,11 @@ export const readPreferenceOptions = {
  * @param readPreference The read preference to use
  * @returns MongoDB connection options
  */
-export function getReplicaSetOptions(readPreference = 'primaryPreferred') {
+export function getReplicaSetOptions(readPreference: ReadPreferenceMode = 'primaryPreferred') {
   return {
     readPreference,
     replicaSet: process.env.MONGODB_REPLICA_SET || 'rs0',
-    w: 'majority', // Write concern: wait for acknowledgment from a majority of replicas
+    w: 'majority' as const, // Write concern: wait for acknowledgment from a majority of replicas
     wtimeout: 5000, // Wait up to 5 seconds for write acknowledgment
     j: true, // Wait for the write to be journaled before returning
   };
@@ -134,9 +136,9 @@ export function getReplicaSetOptions(readPreference = 'primaryPreferred') {
  */
 export function getShardedClusterOptions() {
   return {
-    readPreference: 'secondaryPreferred',
+    readPreference: 'secondaryPreferred' as ReadPreferenceMode,
     retryWrites: true,
-    w: 'majority',
+    w: 'majority' as const,
     wtimeout: 5000,
     j: true,
   };

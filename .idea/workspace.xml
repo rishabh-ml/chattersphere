@@ -4,210 +4,44 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c808e3f6-6cc1-468d-a315-e755d7ba4fea" name="Changes" comment="Refactor and expand community, slug, and membership functionality&#10;&#10;Implemented dynamic slug generation across APIs and models for unique identifiers. Enhanced private community membership handling with request/approval workflows, detailed error handling, and notification updates. Added new tests, scripts, and database integration for robust functionality.">
-      <change afterPath="$PROJECT_DIR$/API_DOCUMENTATION.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CONTRIBUTING.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/__tests__/models/refactoring.test.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/next.config.js.new" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/create-sample-community.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/migrate-memberships.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/migrate-votes.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sentry.client.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sentry.edge.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sentry.server.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/communities/[slug]/error.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/error.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/messages/[userId]/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/messages/layout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/messages/new/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/messages/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/profile/[userId]/followers/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/profile/[userId]/following/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/(main)/settings/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/admin/cache/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/admin/database/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/admin/layout.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/admin/monitoring/page.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/analytics.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/comment-deletion.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/communities.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/community-membership.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/community-slug-api.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/community-slug.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/direct-messages.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/follow-privacy.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/membership-approval.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/post-comments.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/post-deletion.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/private-community-access.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/__tests__/user-deletion.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/admin/cache/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/admin/database/archive/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/admin/performance/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/analytics/profile-view/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership-requests/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/[userId]/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/communities/suggested/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/feed/home/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/messages/[userId]/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/messages/read/[messageId]/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/messages/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/messages/unread/count/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/posts/feed/mock-route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/posts/mock-data.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/topics/trending/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/followers/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/following/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/unfollow/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/api/users/search/route.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/providers.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/Community/CommunityJoinButton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/Community/__tests__/CommunityJoinButton.test.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/__tests__/ConversationView.test.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/__tests__/PostCard.test.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/comments/DeleteCommentButton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/home-feed.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/layouts/StandardPageWrapper.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/messages/ConversationView.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/messages/ConversationsList.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/messages/MessageNotificationBadge.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/messages/NewMessage.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/my-communities-list.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/posts/DeletePostButton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/posts/PostCard.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/posts/post-feed.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/providers/swr-provider.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/settings/DeleteAccountButton.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/optimized-image.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/ui/spinner.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/context/DirectMessageContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/context/HomeFeedContext.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/hooks/useCommunityActions.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/hooks/usePostActions.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/__tests__/navigation.test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/__tests__/navigationIntegration.test.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/__tests__/navigationLinks.test.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/__tests__/navigationProvider.test.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/__tests__/useNavigation.test.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/apiUtils.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/archiving.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/changeStreams.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/dbSharding.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/mongooseUtils.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/monitoring.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/navigation.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/navigation.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/performanceTesting.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/swr.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib/test-utils.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/middleware/caching.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/middleware/performanceMonitoring.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/middleware/requestLogger.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/Analytics.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/DirectMessage.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/Vote.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/scripts/archive-data.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/scripts/create-indexes.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/scripts/performance-test.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/scripts/seed-data.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/types/post.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/ci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM_[Changes]/prince.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM_[Changes]1/prince.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM_[Changes]1/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM_[No_push]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM_[No_push]1/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM__Changes_1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM__No_push_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_5_12_2025_6_02_AM__No_push_1.xml" beforeDir="false" />
+    <list default="true" id="c808e3f6-6cc1-468d-a315-e755d7ba4fea" name="Changes" comment="Add react-hot-toast for improved notification handling and refactor various components for better error handling and code clarity">
+      <change afterPath="$PROJECT_DIR$/src/app/(main)/community/[slug]/CommunityPage.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/jest.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/jest.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/jest.setup.js" beforeDir="false" afterPath="$PROJECT_DIR$/jest.setup.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/__tests__/models/refactoring.test.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/support/commands.ts" beforeDir="false" afterPath="$PROJECT_DIR$/cypress/support/commands.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/next.config.mjs" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/next.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/next.config.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/communities/[slug]/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/communities/[slug]/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/communities/[slug]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/communities/[slug]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(main)/admin/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/admin/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/(main)/community/[slug]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/community/[slug]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/home/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/popular/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/popular/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/posts/[postId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/posts/[postId]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(main)/profile/[userId]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(main)/profile/[userId]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/__tests__/comments.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/__tests__/comments.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/__tests__/community.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/__tests__/community.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/__tests__/notifications.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/__tests__/notifications.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/comments/[commentId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/comments/[commentId]/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/comments/[commentId]/vote/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/comments/[commentId]/vote/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/admin/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/admin/layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership-requests/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership-requests/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/[userId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/[userId]/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/membership/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/posts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/posts/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/communities/my-communities/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/my-communities/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/communities/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/communities/slug/[slug]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/slug/[slug]/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/media/upload/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/media/upload/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/notifications/[notificationId]/read/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/notifications/[notificationId]/read/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/notifications/read-all/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/notifications/read-all/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/communities/[communityId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/communities/[communityId]/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/api/notifications/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/notifications/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/[postId]/comments/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/[postId]/comments/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/[postId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/[postId]/route.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/api/posts/[postId]/vote/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/[postId]/vote/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/feed/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/popular/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/popular/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/posts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/posts/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/profile/[userId]/activity/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/profile/[userId]/activity/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/profile/[userId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/profile/[userId]/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/follow/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/users/[userId]/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/layout.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Community/CommunityChannelSidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Community/CommunityChannelSidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Community/CommunityHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Community/CommunityHeader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Community/CommunityMembersSidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Community/CommunityMembersSidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Profile/ProfileHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Profile/ProfileHeader.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Profile/__tests__/AboutTab.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Profile/__tests__/AboutTab.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Profile/__tests__/ProfileHeader.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Profile/__tests__/ProfileHeader.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/Profile/__tests__/ProfileTabs.test.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Profile/__tests__/ProfileTabs.test.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ProfileDropdown.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ProfileDropdown.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/comments/CommentForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/comments/CommentForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/comments/CommentItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/comments/CommentItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/community-card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/community-card.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/create-post-form.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/create-post-form.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/create-post-modal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/create-post-modal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/notifications/NotificationList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/notifications/NotificationList.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Profile/AboutTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/Profile/AboutTab.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Profile/__tests__/AboutTab.test.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Profile/__tests__/ProfileHeader.test.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/Profile/__tests__/ProfileTabs.test.tsx" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/post-card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/post-card.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/right-sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/right-sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/topbar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/topbar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/CommunityContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/CommunityContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/PostContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/PostContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/context/SingleCommunityContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/context/SingleCommunityContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/dbConnect.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/dbConnect.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/enable-mock.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/enable-mock.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/redis.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/redis.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/supabase-mock.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/supabase-mock.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/supabase.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/supabase.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/utils.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/middleware.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/middleware.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/Channel.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/Channel.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/Comment.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/Comment.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/Community.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/Community.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/Membership.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/Membership.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/Notification.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/Notification.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/Post.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/Post.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/Role.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/Role.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/User.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/User.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript JSX File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -220,10 +54,14 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/rishabh-ml/chattersphere&quot;,
+    &quot;url&quot;: &quot;https://github.com/rishabh-ml/chattersphere.git&quot;,
     &quot;accountId&quot;: &quot;5499b3b1-cae4-4331-afb5-f75bfde8b523&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="autoscrollToSource" value="true" />
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 4
@@ -236,30 +74,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;frontend&quot;,
-    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
-    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.Next.js: server-side.executor&quot;: &quot;Run&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\datam\\Desktop\\chattersphere\\node_modules\\typescript\\lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "JavaScript Debug.localhost:3000.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "js.debugger.nextJs.config.created.client": "true",
+    "js.debugger.nextJs.config.created.server": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.Next.js: server-side.executor": "Run",
+    "prettierjs.PrettierConfiguration.Package": "C:\\Users\\datam\\Desktop\\Next JS Web\\chattersphere\\node_modules\\prettier",
+    "ts.external.directory.path": "C:\\Users\\datam\\Desktop\\Next JS Web\\chattersphere\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;DatabaseDriversLRU&quot;: [
-      &quot;mongo&quot;
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mongo"
     ]
   }
-}</component>
-  <component name="RunManager" selected="npm.Next.js: server-side">
+}]]></component>
+  <component name="RunManager" selected="JavaScript Debug.localhost:3000">
     <configuration name="Next.js: debug client-side" type="JavascriptDebugType" uri="http://localhost:3000/">
+      <method v="2" />
+    </configuration>
+    <configuration name="localhost:3000" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:3000">
       <method v="2" />
     </configuration>
     <configuration name="Next.js: server-side" type="js.build_tools.npm">
@@ -272,6 +116,11 @@
       <envs />
       <method v="2" />
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JavaScript Debug.localhost:3000" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -293,6 +142,8 @@
       <workItem from="1747492538433" duration="15550000" />
       <workItem from="1747544030121" duration="11928000" />
       <workItem from="1747659272998" duration="624000" />
+      <workItem from="1749246559652" duration="75000" />
+      <workItem from="1749246660363" duration="9293000" />
     </task>
     <servers />
   </component>
@@ -319,6 +170,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Refactor and expand community, slug, and membership functionality&#10;&#10;Implemented dynamic slug generation across APIs and models for unique identifiers. Enhanced private community membership handling with request/approval workflows, detailed error handling, and notification updates. Added new tests, scripts, and database integration for robust functionality." />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor and expand community, slug, and membership functionality&#10;&#10;Implemented dynamic slug generation across APIs and models for unique identifiers. Enhanced private community membership handling with request/approval workflows, detailed error handling, and notification updates. Added new tests, scripts, and database integration for robust functionality." />
+    <MESSAGE value="Add react-hot-toast for improved notification handling and refactor various components for better error handling and code clarity" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add react-hot-toast for improved notification handling and refactor various components for better error handling and code clarity" />
   </component>
 </project>

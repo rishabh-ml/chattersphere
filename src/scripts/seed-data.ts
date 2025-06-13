@@ -181,7 +181,7 @@ async function createUsers() {
 /**
  * Create sample communities
  */
-async function createCommunities(users) {
+async function createCommunities(users: any[]) {
   const [admin, moderator, alice, bob, charlie] = users;
   
   const communities = [
@@ -223,7 +223,7 @@ async function createCommunities(users) {
 /**
  * Create roles for communities
  */
-async function createRoles(communities) {
+async function createRoles(communities: any[]) {
   const roles = [];
   
   for (const community of communities) {
@@ -339,7 +339,7 @@ async function createRoles(communities) {
 /**
  * Create channels for communities
  */
-async function createChannels(communities) {
+async function createChannels(communities: any[]) {
   const channels = [];
   
   for (const community of communities) {
@@ -383,30 +383,27 @@ async function createChannels(communities) {
 /**
  * Create memberships for users in communities
  */
-async function createMemberships(users, communities, roles) {
+async function createMemberships(users: any[], communities: any[], roles: any[]) {
   const [admin, moderator, alice, bob, charlie] = users;
   const [techCommunity, designCommunity, privateCommunity] = communities;
-  
-  // Get roles for each community
-  const techRoles = roles.filter(role => role.community.toString() === techCommunity._id.toString());
-  const designRoles = roles.filter(role => role.community.toString() === designCommunity._id.toString());
-  const privateRoles = roles.filter(role => role.community.toString() === privateCommunity._id.toString());
-  
-  const memberships = [
+    // Get roles for each community
+  const techRoles = roles.filter((role: any) => role.community.toString() === techCommunity._id.toString());
+  const designRoles = roles.filter((role: any) => role.community.toString() === designCommunity._id.toString());
+  const privateRoles = roles.filter((role: any) => role.community.toString() === privateCommunity._id.toString());
+    const memberships = [
     // Tech Enthusiasts memberships
     {
       user: admin._id,
       community: techCommunity._id,
-      roles: [techRoles.find(role => role.name === 'Admin')._id],
+      roles: [techRoles.find((role: any) => role.name === 'Admin')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Admin',
       joinedAt: new Date(),
       lastActive: new Date(),
-    },
-    {
+    },    {
       user: moderator._id,
       community: techCommunity._id,
-      roles: [techRoles.find(role => role.name === 'Moderator')._id],
+      roles: [techRoles.find((role: any) => role.name === 'Moderator')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Moderator',
       joinedAt: new Date(),
@@ -415,7 +412,7 @@ async function createMemberships(users, communities, roles) {
     {
       user: alice._id,
       community: techCommunity._id,
-      roles: [techRoles.find(role => role.name === 'Member')._id],
+      roles: [techRoles.find((role: any) => role.name === 'Member')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Alice',
       joinedAt: new Date(),
@@ -424,7 +421,7 @@ async function createMemberships(users, communities, roles) {
     {
       user: bob._id,
       community: techCommunity._id,
-      roles: [techRoles.find(role => role.name === 'Member')._id],
+      roles: [techRoles.find((role: any) => role.name === 'Member')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Bob',
       joinedAt: new Date(),
@@ -433,18 +430,17 @@ async function createMemberships(users, communities, roles) {
     {
       user: charlie._id,
       community: techCommunity._id,
-      roles: [techRoles.find(role => role.name === 'Member')._id],
+      roles: [techRoles.find((role: any) => role.name === 'Member')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Charlie',
       joinedAt: new Date(),
       lastActive: new Date(),
     },
-    
-    // Design Corner memberships
+      // Design Corner memberships
     {
       user: bob._id,
       community: designCommunity._id,
-      roles: [designRoles.find(role => role.name === 'Admin')._id],
+      roles: [designRoles.find((role: any) => role.name === 'Admin')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Bob (Admin)',
       joinedAt: new Date(),
@@ -453,7 +449,7 @@ async function createMemberships(users, communities, roles) {
     {
       user: alice._id,
       community: designCommunity._id,
-      roles: [designRoles.find(role => role.name === 'Member')._id],
+      roles: [designRoles.find((role: any) => role.name === 'Member')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Alice',
       joinedAt: new Date(),
@@ -462,7 +458,7 @@ async function createMemberships(users, communities, roles) {
     {
       user: charlie._id,
       community: designCommunity._id,
-      roles: [designRoles.find(role => role.name === 'Member')._id],
+      roles: [designRoles.find((role: any) => role.name === 'Member')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Charlie',
       joinedAt: new Date(),
@@ -471,18 +467,17 @@ async function createMemberships(users, communities, roles) {
     {
       user: admin._id,
       community: designCommunity._id,
-      roles: [designRoles.find(role => role.name === 'Member')._id],
+      roles: [designRoles.find((role: any) => role.name === 'Member')?._id],
       status: MembershipStatus.PENDING,
       displayName: 'Admin',
       joinedAt: new Date(),
       lastActive: new Date(),
     },
-    
-    // Private Discussion memberships
+      // Private Discussion memberships
     {
       user: alice._id,
       community: privateCommunity._id,
-      roles: [privateRoles.find(role => role.name === 'Admin')._id],
+      roles: [privateRoles.find((role: any) => role.name === 'Admin')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Alice (Admin)',
       joinedAt: new Date(),
@@ -491,7 +486,7 @@ async function createMemberships(users, communities, roles) {
     {
       user: bob._id,
       community: privateCommunity._id,
-      roles: [privateRoles.find(role => role.name === 'Member')._id],
+      roles: [privateRoles.find((role: any) => role.name === 'Member')?._id],
       status: MembershipStatus.ACTIVE,
       displayName: 'Bob',
       joinedAt: new Date(),
@@ -500,7 +495,7 @@ async function createMemberships(users, communities, roles) {
     {
       user: charlie._id,
       community: privateCommunity._id,
-      roles: [privateRoles.find(role => role.name === 'Member')._id],
+      roles: [privateRoles.find((role: any) => role.name === 'Member')?._id],
       status: MembershipStatus.PENDING,
       displayName: 'Charlie',
       joinedAt: new Date(),
@@ -514,7 +509,7 @@ async function createMemberships(users, communities, roles) {
 /**
  * Create sample posts
  */
-async function createPosts(users, communities) {
+async function createPosts(users: any[], communities: any[]) {
   const [admin, moderator, alice, bob, charlie] = users;
   const [techCommunity, designCommunity, privateCommunity] = communities;
   
@@ -604,7 +599,7 @@ async function createPosts(users, communities) {
 /**
  * Create sample comments
  */
-async function createComments(users, posts) {
+async function createComments(users: any[], posts: any[]) {
   const [admin, moderator, alice, bob, charlie] = users;
   
   const comments = [];

@@ -52,7 +52,7 @@ MembershipSchema.index({ community: 1, lastActive: -1 });
 
 // Method to check if user has a specific role
 MembershipSchema.methods.hasRole = function(roleId: mongoose.Types.ObjectId | string) {
-  return this.roles.some(id => id.toString() === roleId.toString());
+  return this.roles.some((id: mongoose.Types.ObjectId) => id.toString() === roleId.toString());
 };
 
 // Method to add a role
@@ -60,7 +60,7 @@ MembershipSchema.methods.addRole = async function(roleId: mongoose.Types.ObjectI
   const roleIdStr = roleId.toString();
 
   // Check if role already exists
-  if (!this.roles.some(id => id.toString() === roleIdStr)) {
+  if (!this.roles.some((id: mongoose.Types.ObjectId) => id.toString() === roleIdStr)) {
     this.roles.push(roleId);
     return this.save();
   }
@@ -71,7 +71,7 @@ MembershipSchema.methods.addRole = async function(roleId: mongoose.Types.ObjectI
 // Method to remove a role
 MembershipSchema.methods.removeRole = async function(roleId: mongoose.Types.ObjectId | string) {
   const roleIdStr = roleId.toString();
-  const roleIndex = this.roles.findIndex(id => id.toString() === roleIdStr);
+  const roleIndex = this.roles.findIndex((id: mongoose.Types.ObjectId) => id.toString() === roleIdStr);
 
   if (roleIndex !== -1) {
     this.roles.splice(roleIndex, 1);

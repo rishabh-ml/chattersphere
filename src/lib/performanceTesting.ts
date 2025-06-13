@@ -263,5 +263,12 @@ export async function compareDatabaseQueries<T>(
   };
   fasterQuery: 'A' | 'B';
 }> {
-  return comparePerformance(queryA, queryB, [], iterations);
+  const result = await comparePerformance(queryA, queryB, [], iterations);
+  
+  return {
+    queryA: result.fnA,
+    queryB: result.fnB,
+    difference: result.difference,
+    fasterQuery: result.fasterFunction,
+  };
 }

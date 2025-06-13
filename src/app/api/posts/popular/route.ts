@@ -28,8 +28,8 @@ interface CachedPost {
   score: number;
 }
 
-let cachedPosts: { posts: CachedPost[]; cacheKey: string } | null = null;
-let lastCacheTime = 0;
+const cachedPosts: { posts: CachedPost[]; cacheKey: string } | null = null;
+const lastCacheTime = 0;
 
 function calculateScore(
     upvotes: number,

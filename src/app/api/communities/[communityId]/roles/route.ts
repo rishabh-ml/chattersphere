@@ -20,36 +20,33 @@ const createRoleSchema = z.object({
 // GET /api/communities/[communityId]/roles - Get all roles for a community
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { communityId: string } }
+  { params }: { params: Promise<{ communityId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
     // Sanitize and validate communityId
-    if (!params?.communityId) {
+    if (!resolvedParams?.communityId) {
       return ApiError.badRequest("Missing communityId parameter");
     }
     
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
+    const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
       return ApiError.badRequest("Invalid communityId format");
     }
 
-    await connectToDatabase();
-
-    // Find the community
-    const community = await Community.findById(sanitizedCommunityId).lean().exec();
+    await connectToDatabase();    // Find the community
+    const community = await Community.findById(sanitizedCommunityId).lean().exec() as any;
     
     if (!community) {
       return ApiError.notFound("Community not found");
     }
 
     // Check if the user has permission to view roles
-    let hasPermission = false;
-
-    if (clerkUserId) {
-      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+    let hasPermission = false;    if (clerkUserId) {
+      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
       
       if (currentUser) {
         const currentUserId = currentUser._id.toString();
@@ -76,10 +73,8 @@ export async function GET(
     const roles = await Role.find({ community: sanitizedCommunityId })
       .sort({ position: -1 })
       .lean()
-      .exec();
-
-    // Format the response
-    const formattedRoles = roles.map(role => ({
+      .exec();    // Format the response
+    const formattedRoles = roles.map((role: any) => ({
       id: role._id.toString(),
       name: role.name,
       color: role.color,
@@ -100,8 +95,9 @@ export async function GET(
 // POST /api/communities/[communityId]/roles - Create a new role
 export async function POST(
   req: NextRequest,
-  { params }: { params: { communityId: string } }
+  { params }: { params: Promise<{ communityId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
@@ -110,11 +106,11 @@ export async function POST(
     }
 
     // Sanitize and validate communityId
-    if (!params?.communityId) {
+    if (!resolvedParams?.communityId) {
       return ApiError.badRequest("Missing communityId parameter");
     }
     
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
+    const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
       return ApiError.badRequest("Invalid communityId format");
@@ -127,10 +123,8 @@ export async function POST(
     
     if (!community) {
       return ApiError.notFound("Community not found");
-    }
-
-    // Find the current user
-    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+    }    // Find the current user
+    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
     
     if (!currentUser) {
       return ApiError.unauthorized("User not found");

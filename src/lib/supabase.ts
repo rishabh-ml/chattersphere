@@ -33,8 +33,8 @@ if (USE_MOCK) {
 import * as mockModule from './supabase-mock';
 
 // Create clients based on whether we're using the mock or real implementation
-let supabaseClient;
-let supabaseAdmin;
+let supabaseClient: any;
+let supabaseAdmin: any;
 
 if (USE_MOCK) {
   // Use the mock implementation
@@ -248,9 +248,7 @@ export async function listFiles(
     if (error) {
       console.error('Error listing files:', error);
       return null;
-    }
-
-    return data.map(file => ({
+    }    return data.map((file: any) => ({
       name: file.name,
       url: supabaseAdmin.storage.from(bucket).getPublicUrl(path ? `${path}/${file.name}` : file.name).data.publicUrl
     }));

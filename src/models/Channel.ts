@@ -64,15 +64,14 @@ ChannelSchema.methods.hasAccess = async function(
 ) {
   // If channel is not private, everyone has access
   if (!this.isPrivate) return true;
-
   // Check if user is directly allowed
-  if (this.allowedUsers.some(id => id.toString() === userId.toString())) {
+  if (this.allowedUsers.some((id: any) => id.toString() === userId.toString())) {
     return true;
   }
 
   // Check if user has an allowed role
   for (const roleId of userRoles) {
-    if (this.allowedRoles.some(id => id.toString() === roleId.toString())) {
+    if (this.allowedRoles.some((id: any) => id.toString() === roleId.toString())) {
       return true;
     }
   }

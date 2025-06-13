@@ -58,9 +58,8 @@ AnalyticsSchema.methods.addPageView = function(pageView: PageView) {
   this.pageViews.push(pageView);
   this.totalVisits += 1;
   this.lastVisit = new Date();
-  
-  // Update most visited pages
-  const existingPage = this.mostVisitedPages.find(p => p.path === pageView.path);
+    // Update most visited pages
+  const existingPage = this.mostVisitedPages.find((p: any) => p.path === pageView.path);
   if (existingPage) {
     existingPage.count += 1;
   } else {
@@ -68,15 +67,14 @@ AnalyticsSchema.methods.addPageView = function(pageView: PageView) {
   }
   
   // Sort most visited pages by count in descending order
-  this.mostVisitedPages.sort((a, b) => b.count - a.count);
+  this.mostVisitedPages.sort((a: any, b: any) => b.count - a.count);
   
   // Keep only top 10 most visited pages
   if (this.mostVisitedPages.length > 10) {
     this.mostVisitedPages = this.mostVisitedPages.slice(0, 10);
   }
-  
-  // Calculate average session duration
-  const totalDuration = this.pageViews.reduce((sum, view) => sum + view.duration, 0);
+    // Calculate average session duration
+  const totalDuration = this.pageViews.reduce((sum: any, view: any) => sum + view.duration, 0);
   this.avgSessionDuration = totalDuration / this.pageViews.length;
   
   return this.save();

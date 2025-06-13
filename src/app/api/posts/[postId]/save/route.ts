@@ -8,8 +8,9 @@ import { sanitizeInput } from "@/lib/utils";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId } = await auth();
 
@@ -21,11 +22,11 @@ export async function POST(
     await connectToDatabase();
 
     // Sanitize and validate postId
-    if (!params?.postId) {
+    if (!resolvedParams?.postId) {
       return NextResponse.json({ error: "Missing postId parameter" }, { status: 400 });
     }
     
-    const sanitizedPostId = sanitizeInput(params.postId);
+    const sanitizedPostId = sanitizeInput(resolvedParams.postId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedPostId)) {
       return NextResponse.json({ error: "Invalid postId format" }, { status: 400 });
@@ -35,9 +36,7 @@ export async function POST(
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Find the post
+    }    // Find the post
     const post = await Post.findById(sanitizedPostId);
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -45,12 +44,12 @@ export async function POST(
 
     // Check if the post is already saved
     const postObjectId = new mongoose.Types.ObjectId(sanitizedPostId);
-    const isSaved = user.savedPosts.some(id => id.equals(postObjectId));
+    const isSaved = user.savedPosts.some((id: mongoose.Types.ObjectId) => id.equals(postObjectId));
 
     // Toggle saved status
     if (isSaved) {
       // Remove from saved posts
-      user.savedPosts = user.savedPosts.filter(id => !id.equals(postObjectId));
+      user.savedPosts = user.savedPosts.filter((id: mongoose.Types.ObjectId) => !id.equals(postObjectId));
     } else {
       // Add to saved posts
       user.savedPosts.push(postObjectId);

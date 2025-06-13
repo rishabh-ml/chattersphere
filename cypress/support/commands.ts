@@ -1,55 +1,48 @@
 /// <reference types="cypress" />
+export {}; // ← this turns the file into a module
 
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite
 // existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
 // ***********************************************
 
 // -- This is a parent command --
-Cypress.Commands.add('login', () => {
+Cypress.Commands.add("login", () => {
   // Mock Clerk authentication
-  cy.intercept('GET', '/api/clerk/user', {
+  cy.intercept("GET", "/api/clerk/user", {
     statusCode: 200,
     body: {
-      id: 'test-user-id',
-      username: 'testuser',
-      firstName: 'Test',
-      lastName: 'User',
-      imageUrl: 'https://example.com/avatar.jpg',
+      id: "test-user-id",
+      username: "testuser",
+      firstName: "Test",
+      lastName: "User",
+      imageUrl: "https://example.com/avatar.jpg",
     },
   });
-  
+
   // Set local storage to simulate authenticated state
-  localStorage.setItem('clerk-user', JSON.stringify({
-    id: 'test-user-id',
-    username: 'testuser',
-    firstName: 'Test',
-    lastName: 'User',
-    imageUrl: 'https://example.com/avatar.jpg',
-  }));
+  localStorage.setItem(
+    "clerk-user",
+    JSON.stringify({
+      id: "test-user-id",
+      username: "testuser",
+      firstName: "Test",
+      lastName: "User",
+      imageUrl: "https://example.com/avatar.jpg",
+    })
+  );
 });
 
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-
+// -- Type augmentations for our custom command --
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
+      /**
+       * Custom login command simulating Clerk auth
+       */
       login(): Chainable<void>;
-      // drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-      // dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-      // visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
     }
   }
 }

@@ -13,9 +13,8 @@ import { useState } from 'react';
 // Default fetcher function
 const defaultFetcher = async (url: string) => {
   const response = await fetch(url);
-  
-  if (!response.ok) {
-    const error = new Error('An error occurred while fetching the data.');
+    if (!response.ok) {
+    const error = new Error('An error occurred while fetching the data.') as any;
     error.info = await response.json();
     error.status = response.status;
     throw error;
@@ -74,9 +73,9 @@ export function usePaginatedData<Data = any, Error = any>(
  */
 export function useDataMutation<Data = any, Error = any, Variables = any>(
   url: string | null,
-  config: SWRMutationConfiguration<Data, Error, Variables> = {}
-): SWRMutationResponse<Data, Error, Variables> {
-  return useSWRMutation<Data, Error, string, Variables>(
+  config: any = {}
+): any {
+  return useSWRMutation(
     url,
     async (url, { arg }: { arg: Variables }) => {
       const response = await fetch(url, {
@@ -86,9 +85,8 @@ export function useDataMutation<Data = any, Error = any, Variables = any>(
         },
         body: JSON.stringify(arg),
       });
-      
-      if (!response.ok) {
-        const error = new Error('An error occurred while mutating the data.');
+        if (!response.ok) {
+        const error = new Error('An error occurred while mutating the data.') as any;
         error.info = await response.json();
         error.status = response.status;
         throw error;
@@ -125,9 +123,8 @@ export function useInfiniteScroll<Data = any, Error = any>(
   
   const [isReachingEnd, setIsReachingEnd] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Check if we've reached the end of the data
-  const isEmpty = data?.[0]?.length === 0;
+    // Check if we've reached the end of the data
+  const isEmpty = (data?.[0] as any)?.length === 0;
   const isLoadingInitialData = !data && !error;
   const isLoadingMore = isLoadingInitialData || (size > 0 && data && typeof data[size - 1] === 'undefined');
   
@@ -137,9 +134,8 @@ export function useInfiniteScroll<Data = any, Error = any>(
     
     try {
       await setSize(size + 1);
-      
-      // Check if we've reached the end
-      if (data && data[data.length - 1]?.length === 0) {
+        // Check if we've reached the end
+      if (data && (data[data.length - 1] as any)?.length === 0) {
         setIsReachingEnd(true);
       }
     } catch (error) {

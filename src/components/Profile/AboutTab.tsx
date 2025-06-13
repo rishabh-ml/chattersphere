@@ -14,7 +14,14 @@ import { profileUpdateSchema } from "@/lib/validations/profile";
 interface AboutTabProps {
   user: User;
   isOwner: boolean;
-  onProfileUpdate: (data: any) => Promise<void>;
+  onProfileUpdate: (data: {
+    bio: string;
+    pronouns?: string | null;
+    location: string;
+    website: string;
+    interests: string[];
+    socialLinks: Array<{ platform: string; url: string }>;
+  }) => Promise<void>;
 }
 
 export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabProps) {
@@ -77,11 +84,10 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
         socialLinks: [
           ...prev.socialLinks,
           { platform: newSocialPlatform.trim(), url: newSocialUrl.trim() },
-        ],
-      }));
+        ],      }));
       setNewSocialPlatform("");
       setNewSocialUrl("");
-    } catch (error) {
+    } catch {
       toast.error("Please enter a valid URL");
     }
   };
@@ -99,15 +105,26 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
     try {
       // Validate form data
       const validatedData = profileUpdateSchema.parse(formData);
-      
+      const validatedData = profileUpdateSchema.parse(formData);
+
       setIsSubmitting(true);
-      await onProfileUpdate(validatedData);
+      await onProfileUpdate({
+        bio: validatedData.bio || "",
+        pronouns: validatedData.pronouns,
+        location: validatedData.location || "",
+        website: validatedData.website || "",
+        interests: validatedData.interests || [],
+        socialLinks: validatedData.socialLinks || []
+      });
       setIsEditing(false);
-      toast.success("Profile updated successfully");
-    } catch (error) {
-      if (error.errors) {
+      toast.success("Profile updated successfully");    } catch (error: unknown) {
+      if (error &&
+          typeof error === 'object' &&
+          'errors' in error &&
+          Array.isArray((error as { errors: { message: string }[] }).errors) &&
+          (error as { errors: { message: string }[] }).errors.length > 0) {
         // Zod validation error
-        toast.error(error.errors[0].message);
+        toast.error((error as { errors: { message: string }[] }).errors[0].message);
       } else {
         toast.error("Failed to update profile");
         console.error("Profile update error:", error);
@@ -353,7 +370,7 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
           </div>
         ) : (
           <div className="text-gray-500 italic">
-            This user hasn't added a bio yet
+            This user hasn&apos;t added a bio yet
           </div>
         )}
 

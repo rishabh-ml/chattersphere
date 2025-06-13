@@ -10,8 +10,9 @@ import { withApiMiddleware } from "@/lib/apiUtils";
 // Handler function for PUT /api/notifications/[notificationId]/read
 async function markNotificationReadHandler(
   _req: NextRequest,
-  { params }: { params: { notificationId: string } }
+  { params }: { params: Promise<{ notificationId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -19,11 +20,11 @@ async function markNotificationReadHandler(
     }
 
     // Sanitize and validate notificationId
-    if (!params?.notificationId) {
+    if (!resolvedParams?.notificationId) {
       return NextResponse.json({ error: "Missing notificationId parameter" }, { status: 400 });
     }
 
-    const sanitizedNotificationId = sanitizeInput(params.notificationId);
+    const sanitizedNotificationId = sanitizeInput(resolvedParams.notificationId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedNotificationId)) {
       return NextResponse.json({ error: "Invalid notificationId format" }, { status: 400 });

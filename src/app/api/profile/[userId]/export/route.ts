@@ -9,8 +9,9 @@ import mongoose from "mongoose";
 // POST /api/profile/[userId]/export - Request a data export
 export async function POST(
   _req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
@@ -18,14 +19,12 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!params?.userId || !mongoose.Types.ObjectId.isValid(params.userId)) {
+    if (!resolvedParams?.userId || !mongoose.Types.ObjectId.isValid(resolvedParams.userId)) {
       return NextResponse.json({ error: "Invalid or missing userId" }, { status: 400 });
     }
 
-    await connectToDatabase();
-
-    // Find the user
-    const user = await User.findById(params.userId).lean().exec();
+    await connectToDatabase();    // Find the user
+    const user = await User.findById(resolvedParams.userId).lean().exec() as any;
     
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -60,15 +59,13 @@ export async function POST(
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
       },
-    };
-
-    // Fetch user's posts
+    };    // Fetch user's posts
     const posts = await Post.find({ author: user._id })
       .sort({ createdAt: -1 })
       .lean()
       .exec();
 
-    userData.posts = posts.map(post => ({
+    (userData as any).posts = posts.map((post: any) => ({
       id: post._id.toString(),
       content: post.content,
       community: post.community?.toString(),
@@ -83,9 +80,7 @@ export async function POST(
     const comments = await Comment.find({ author: user._id })
       .sort({ createdAt: -1 })
       .lean()
-      .exec();
-
-    userData.comments = comments.map(comment => ({
+      .exec();    (userData as any).comments = comments.map((comment: any) => ({
       id: comment._id.toString(),
       content: comment.content,
       post: comment.post.toString(),

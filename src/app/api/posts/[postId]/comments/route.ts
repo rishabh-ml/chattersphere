@@ -40,17 +40,17 @@ interface PopulatedComment {
 // GET /api/posts/[postId]/comments - Get comments for a post
 async function getCommentsHandler(
   req: NextRequest,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
-  try {
+  const resolvedParams = await params;  try {
     const { userId } = await auth();
 
     // Sanitize and validate postId
-    if (!params?.postId) {
+    if (!resolvedParams?.postId) {
       return NextResponse.json({ error: "Missing postId parameter" }, { status: 400 });
     }
 
-    const sanitizedPostId = sanitizeInput(params.postId);
+    const sanitizedPostId = sanitizeInput(resolvedParams.postId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedPostId)) {
       return NextResponse.json({ error: "Invalid postId format" }, { status: 400 });
@@ -91,10 +91,8 @@ async function getCommentsHandler(
           user: user._id,
           community: post.community,
           status: 'ACTIVE'
-        });
-
-        // Fallback to the deprecated array if Membership model check fails
-        const isMember = membership || community.members.some(memberId =>
+        });        // Fallback to the deprecated array if Membership model check fails
+        const isMember = membership || community.members.some((memberId: mongoose.Types.ObjectId) =>
           memberId.toString() === user._id.toString()
         );
 
@@ -154,9 +152,7 @@ async function getCommentsHandler(
             as: "authorInfo"
           }},
           { $unwind: "$authorInfo" }
-        ];
-
-        // Build and execute the aggregation pipeline
+        ];        // Build and execute the aggregation pipeline
         const pipeline = buildPaginatedAggregation(
           matchStage,
           { createdAt: -1 },
@@ -165,7 +161,7 @@ async function getCommentsHandler(
           lookupStages
         );
 
-        const [aggregateResult] = await Comment.aggregate(pipeline);
+        const [aggregateResult] = await Comment.aggregate(pipeline as any);
 
         const total = aggregateResult.metadata.length > 0 ? aggregateResult.metadata[0].total : 0;
         const comments = aggregateResult.data;
@@ -181,14 +177,12 @@ async function getCommentsHandler(
       120 // 2 minutes TTL
     );
 
-    const { comments, total, currentUser } = result;
-
-    // Format comments for response
-    const formattedComments = comments.map(comment => {
-      const isUpvoted = currentUser ? comment.upvotes.some(id =>
-        id.toString() === currentUser?._id.toString()) : false;
-      const isDownvoted = currentUser ? comment.downvotes.some(id =>
-        id.toString() === currentUser?._id.toString()) : false;
+    const { comments, total, currentUser } = result;    // Format comments for response
+    const formattedComments = comments.map((comment: any) => {
+      const isUpvoted = currentUser ? comment.upvotes.some((id: mongoose.Types.ObjectId) =>
+        id.toString() === (currentUser as any)?._id?.toString()) : false;
+      const isDownvoted = currentUser ? comment.downvotes.some((id: mongoose.Types.ObjectId) =>
+        id.toString() === (currentUser as any)?._id?.toString()) : false;
 
       return {
         id: comment._id.toString(),
@@ -231,8 +225,9 @@ async function getCommentsHandler(
 // POST /api/posts/[postId]/comments - Create a new comment
 async function createCommentHandler(
   req: NextRequest,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
 
     const { userId } = await auth();
@@ -241,11 +236,11 @@ async function createCommentHandler(
     }
 
     // Sanitize and validate postId
-    if (!params?.postId) {
+    if (!resolvedParams?.postId) {
       return NextResponse.json({ error: "Missing postId parameter" }, { status: 400 });
     }
 
-    const sanitizedPostId = sanitizeInput(params.postId);
+    const sanitizedPostId = sanitizeInput(resolvedParams.postId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedPostId)) {
       return NextResponse.json({ error: "Invalid postId format" }, { status: 400 });
@@ -400,7 +395,10 @@ async function createCommentHandler(
 
 // Export the handler functions with middleware
 export const GET = withApiMiddleware(
-  (req: NextRequest) => getCommentsHandler(req, { params: { postId: req.nextUrl.pathname.split('/')[3] } }),
+  async (req: NextRequest) => {
+    const postId = req.nextUrl.pathname.split('/')[3];
+    return getCommentsHandler(req, { params: Promise.resolve({ postId }) });
+  },
   {
     enableRateLimit: true,
     maxRequests: 100,
@@ -410,7 +408,10 @@ export const GET = withApiMiddleware(
 );
 
 export const POST = withApiMiddleware(
-  (req: NextRequest) => createCommentHandler(req, { params: { postId: req.nextUrl.pathname.split('/')[3] } }),
+  async (req: NextRequest) => {
+    const postId = req.nextUrl.pathname.split('/')[3];
+    return createCommentHandler(req, { params: Promise.resolve({ postId }) });
+  },
   {
     enableRateLimit: true,
     maxRequests: 10,

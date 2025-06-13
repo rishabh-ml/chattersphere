@@ -81,11 +81,11 @@ MessageSchema.methods.addReaction = async function(
   const userIdStr = userId.toString();
 
   // Find the reaction or create a new one
-  const reaction = this.reactions.find(r => r.emoji === emoji);
+  const reaction = this.reactions.find((r: any) => r.emoji === emoji);
 
   if (reaction) {
     // Check if user already reacted
-    if (!reaction.users.some(id => id.toString() === userIdStr)) {
+    if (!reaction.users.some((id: mongoose.Types.ObjectId) => id.toString() === userIdStr)) {
       reaction.users.push(userId);
       reaction.count += 1;
     }
@@ -107,11 +107,11 @@ MessageSchema.methods.removeReaction = async function(
   userId: mongoose.Types.ObjectId | string
 ) {
   const userIdStr = userId.toString();
-  const reactionIndex = this.reactions.findIndex(r => r.emoji === emoji);
+  const reactionIndex = this.reactions.findIndex((r: any) => r.emoji === emoji);
 
   if (reactionIndex !== -1) {
     const reaction = this.reactions[reactionIndex];
-    const userIndex = reaction.users.findIndex(id => id.toString() === userIdStr);
+    const userIndex = reaction.users.findIndex((id: mongoose.Types.ObjectId) => id.toString() === userIdStr);
 
     if (userIndex !== -1) {
       reaction.users.splice(userIndex, 1);

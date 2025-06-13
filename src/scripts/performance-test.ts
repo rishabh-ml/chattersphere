@@ -205,9 +205,8 @@ async function testDatabaseQueries() {
   
   // Test community members query performance
   console.log('\n🔍 Testing community members query performance...');
-  
-  const membersQuery = async () => {
-    return User.find({ communities: sampleCommunity._id })
+    const membersQuery = async () => {
+    return User.find({ communities: (sampleCommunity as any)._id })
       .sort({ username: 1 })
       .limit(10)
       .lean();
@@ -215,7 +214,7 @@ async function testDatabaseQueries() {
   
   const membersAggregateQuery = async () => {
     return User.aggregate([
-      { $match: { communities: sampleCommunity._id } },
+      { $match: { communities: (sampleCommunity as any)._id } },
       { $sort: { username: 1 } },
       { $limit: 10 }
     ]);

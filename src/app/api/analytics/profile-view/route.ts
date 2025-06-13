@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { z } from "zod";
 
 // Define validation schema for profile view
@@ -40,10 +40,9 @@ export async function POST(req: NextRequest) {
     
     // Connect to the database
     await connectToDatabase();
-    
-    // Find the current user and target user
-    const currentUser = await User.findOne({ clerkId: clerkUserId }).select("_id").lean();
-    const targetUser = await User.findById(profileId).select("_id").lean();
+      // Find the current user and target user
+    const currentUser = await User.findOne({ clerkId: clerkUserId }).select("_id").lean() as { _id: Types.ObjectId } | null;
+    const targetUser = await User.findById(profileId).select("_id").lean() as { _id: Types.ObjectId } | null;
     
     if (!currentUser || !targetUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -56,9 +55,8 @@ export async function POST(req: NextRequest) {
         message: "Cannot log views of your own profile"
       });
     }
-    
-    // Check if ProfileView model exists, if not, create it
-    let ProfileView;
+      // Check if ProfileView model exists, if not, create it
+    let ProfileView: mongoose.Model<any>;
     try {
       ProfileView = mongoose.model('ProfileView');
     } catch (e) {

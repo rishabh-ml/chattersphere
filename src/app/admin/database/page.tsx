@@ -7,9 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Checkbox } from '@/shared/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import { Database, Archive, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
@@ -129,7 +129,7 @@ export default function DatabaseDashboard() {
                       <Checkbox
                         id="posts"
                         checked={collections.posts}
-                        onCheckedChange={(checked) => setCollections({ ...collections, posts: !!checked })}
+                        onCheckedChange={(checked: boolean) => setCollections({ ...collections, posts: !!checked })}
                       />
                       <Label htmlFor="posts">Posts</Label>
                     </div>
@@ -137,7 +137,7 @@ export default function DatabaseDashboard() {
                       <Checkbox
                         id="comments"
                         checked={collections.comments}
-                        onCheckedChange={(checked) => setCollections({ ...collections, comments: !!checked })}
+                        onCheckedChange={(checked: boolean) => setCollections({ ...collections, comments: !!checked })}
                       />
                       <Label htmlFor="comments">Comments</Label>
                     </div>
@@ -145,7 +145,7 @@ export default function DatabaseDashboard() {
                       <Checkbox
                         id="notifications"
                         checked={collections.notifications}
-                        onCheckedChange={(checked) => setCollections({ ...collections, notifications: !!checked })}
+                        onCheckedChange={(checked: boolean) => setCollections({ ...collections, notifications: !!checked })}
                       />
                       <Label htmlFor="notifications">Notifications</Label>
                     </div>
@@ -153,7 +153,7 @@ export default function DatabaseDashboard() {
                       <Checkbox
                         id="activities"
                         checked={collections.activities}
-                        onCheckedChange={(checked) => setCollections({ ...collections, activities: !!checked })}
+                        onCheckedChange={(checked: boolean) => setCollections({ ...collections, activities: !!checked })}
                       />
                       <Label htmlFor="activities">Activities</Label>
                     </div>

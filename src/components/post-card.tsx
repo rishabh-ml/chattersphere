@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { type Post } from "@/context/PostContext";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import Link from "next/link";
-import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import DOMPurify from "isomorphic-dompurify";
 import { toast } from "sonner";
@@ -163,7 +162,7 @@ export default function PostCard({ post, onVote }: PostCardProps) {
                                         <span className="text-xs text-gray-500">•</span>
                                         <Link
                                             href={routes.community(post.community.slug, post.community.id)}
-                                            onClick={(e) => navigation.goToCommunity(post.community.slug, post.community.id, e)}
+                                            onClick={(e) => post.community && navigation.goToCommunity(post.community.slug, post.community.id, e)}
                                         >
                                             <Badge variant="outline" className="text-xs bg-blue-50 text-[#00AEEF] hover:bg-blue-100 border-blue-100">
                                                 {post.community.name}

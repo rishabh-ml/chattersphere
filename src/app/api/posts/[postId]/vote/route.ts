@@ -1,173 +1,164 @@
 // src/app/api/posts/[postId]/vote/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import mongoose, { Types } from "mongoose";
 import connectToDatabase from "@/lib/dbConnect";
+import { sanitizeInput } from "@/lib/security";
 import User from "@/models/User";
 import Post from "@/models/Post";
-import mongoose, { Types } from "mongoose";
-import { sanitizeInput } from "@/lib/security";
-import { VoteType } from "@/models/Vote";
+import Vote, { VoteType } from "@/models/Vote";
+import Notification from "@/models/Notification";
+
+interface VoteBody {
+  voteType: VoteType;
+}
 
 export async function POST(
-    req: NextRequest,
-    { params }: { params: { postId: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ postId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
-    // await auth() because it returns a Promise<Auth>
+    // 1) Authenticate
     const { userId } = await auth();
-
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // connect to the DB
-    await connectToDatabase();
-
-    // parse & validate
-    const { voteType } = (await req.json()) as { voteType: string };
-    if (voteType !== "upvote" && voteType !== "downvote") {
-      return NextResponse.json({ error: "Invalid vote type" }, { status: 400 });
+    // 2) Validate & sanitize postId
+    const rawPostId = sanitizeInput(resolvedParams.postId || "");
+    if (!mongoose.isValidObjectId(rawPostId)) {
+      return NextResponse.json({ error: "Invalid postId" }, { status: 400 });
     }
 
-    // look up the user
+    await connectToDatabase();
+
+    // 3) Parse & validate body
+    const { voteType } = (await req.json()) as VoteBody;
+    if (voteType !== VoteType.UPVOTE && voteType !== VoteType.DOWNVOTE) {
+      return NextResponse.json({ error: "Invalid voteType" }, { status: 400 });
+    }
+
+    // 4) Load user
     const currentUser = await User.findOne({ clerkId: userId });
     if (!currentUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+    const me = currentUser._id as Types.ObjectId;
 
-    // look up the post
-    const post = await Post.findById(params.postId);
+    // 5) Load post
+    const post = await Post.findById(rawPostId);
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Mongoose ObjectId type
-    const me = currentUser._id as Types.ObjectId;
-
-    // Get the Vote model
-    const Vote = mongoose.model('Vote');
-
-    // Find existing vote
+    // 6) Find existing vote (if any)
     const existingVote = await Vote.findOne({
       user: me,
       target: post._id,
-      targetType: 'Post'
+      targetType: "Post",
     });
 
-    // Initialize vote status
+    // 7) Prepare flags
     let isUpvoted = false;
     let isDownvoted = false;
 
-    // Handle vote logic
-    if (voteType === "upvote") {
-      if (existingVote && existingVote.voteType === VoteType.UPVOTE) {
-        // Remove upvote if already upvoted (toggle off)
-        await Vote.deleteOne({ _id: existingVote._id });
-        // Decrement upvote count
+    // 8) Handle upvote
+    if (voteType === VoteType.UPVOTE) {
+      if (existingVote?.voteType === VoteType.UPVOTE) {
+        // Toggle off
+        await existingVote.deleteOne();
         post.upvoteCount = Math.max(0, post.upvoteCount - 1);
       } else {
         if (existingVote) {
-          // Change from downvote to upvote
+          // Switch from downvote to upvote
           existingVote.voteType = VoteType.UPVOTE;
           await existingVote.save();
-          // Update counts
           post.downvoteCount = Math.max(0, post.downvoteCount - 1);
           post.upvoteCount += 1;
         } else {
-          // Create new upvote
+          // New upvote
           await Vote.create({
             user: me,
             target: post._id,
-            targetType: 'Post',
-            voteType: VoteType.UPVOTE
+            targetType: "Post",
+            voteType: VoteType.UPVOTE,
           });
-          // Increment upvote count
           post.upvoteCount += 1;
         }
         isUpvoted = true;
 
-        // Create notification for upvote
-      try {
-        const Notification = mongoose.model('Notification');
-        const postAuthor = await User.findById(post.author);
-
-        // Only create notification if the voter is not the post author
-        if (postAuthor && postAuthor._id.toString() !== me.toString()) {
+        // Notify author (if not self)
+        if (!post.author.equals(me)) {
           await Notification.create({
             recipient: post.author,
             sender: me,
-            type: 'post_like',
+            type: "post_like",
             message: `${currentUser.name} liked your post`,
             read: false,
-            relatedPost: post._id
+            relatedPost: post._id,
           });
         }
-      } catch (notifError) {
-        console.error("Error creating notification:", notifError);
-        // Continue even if notification creation fails
       }
-      }
-    } else if (voteType === "downvote") {
-      if (existingVote && existingVote.voteType === VoteType.DOWNVOTE) {
-        // Remove downvote if already downvoted (toggle off)
-        await Vote.deleteOne({ _id: existingVote._id });
-        // Decrement downvote count
+    }
+
+    // 9) Handle downvote
+    else {
+      if (existingVote?.voteType === VoteType.DOWNVOTE) {
+        // Toggle off
+        await existingVote.deleteOne();
         post.downvoteCount = Math.max(0, post.downvoteCount - 1);
       } else {
         if (existingVote) {
-          // Change from upvote to downvote
+          // Switch from upvote to downvote
           existingVote.voteType = VoteType.DOWNVOTE;
           await existingVote.save();
-          // Update counts
           post.upvoteCount = Math.max(0, post.upvoteCount - 1);
           post.downvoteCount += 1;
         } else {
-          // Create new downvote
+          // New downvote
           await Vote.create({
             user: me,
             target: post._id,
-            targetType: 'Post',
-            voteType: VoteType.DOWNVOTE
+            targetType: "Post",
+            voteType: VoteType.DOWNVOTE,
           });
-          // Increment downvote count
           post.downvoteCount += 1;
         }
         isDownvoted = true;
       }
     }
 
-    // Save the updated post
+    // 10) Persist post changes
     await post.save();
 
-    // Check current vote status
+    // 11) Reconcile final status
     if (!isUpvoted && !isDownvoted) {
-      const currentVote = await Vote.findOne({
+      const finalVote = await Vote.findOne({
         user: me,
         target: post._id,
-        targetType: 'Post'
+        targetType: "Post",
       });
-
-      if (currentVote) {
-        isUpvoted = currentVote.voteType === VoteType.UPVOTE;
-        isDownvoted = currentVote.voteType === VoteType.DOWNVOTE;
-      }
+      isUpvoted = finalVote?.voteType === VoteType.UPVOTE;
+      isDownvoted = finalVote?.voteType === VoteType.DOWNVOTE;
     }
 
+    // 12) Return updated counts & flags
     return NextResponse.json(
-        {
-          upvoteCount: post.upvoteCount,
-          downvoteCount: post.downvoteCount,
-          voteCount: post.upvoteCount - post.downvoteCount,
-          isUpvoted,
-          isDownvoted,
-        },
-        { status: 200 }
+      {
+        upvoteCount: post.upvoteCount,
+        downvoteCount: post.downvoteCount,
+        voteCount: post.upvoteCount - post.downvoteCount,
+        isUpvoted,
+        isDownvoted,
+      },
+      { status: 200 }
     );
   } catch (err) {
-    console.error("Error voting on post:", err);
+    console.error("[POST] /api/posts/[postId]/vote Error:", err);
     return NextResponse.json(
-        { error: "Failed to vote on post" },
-        { status: 500 }
+      { error: "Failed to vote on post" },
+      { status: 500 }
     );
   }
 }

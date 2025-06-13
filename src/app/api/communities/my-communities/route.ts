@@ -26,28 +26,27 @@ export async function GET(req: NextRequest) {
     })
     .select("name slug description image creator members posts")
     .populate("creator", "username name image")
-    .lean();
-
-    // Transform the data for the frontend
+    .lean();    // Transform the data for the frontend
     const transformedCommunities = communities.map(community => {
       const { _id, name, slug, description, image, creator, members, posts } = community;
+      const objectId = _id as mongoose.Types.ObjectId;
 
       return {
-        id: _id.toString(),
+        id: objectId.toString(),
         name,
         slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
         description,
         image,
         creator: creator ? {
-          id: creator._id.toString(),
+          id: (creator._id as mongoose.Types.ObjectId).toString(),
           username: creator.username,
           name: creator.name,
           image: creator.image
         } : undefined,
         memberCount: members?.length || 0,
         postCount: posts?.length || 0,
-        createdAt: _id.getTimestamp().toISOString(),
-        updatedAt: _id.getTimestamp().toISOString()
+        createdAt: objectId.getTimestamp().toISOString(),
+        updatedAt: objectId.getTimestamp().toISOString()
       };
     });
 

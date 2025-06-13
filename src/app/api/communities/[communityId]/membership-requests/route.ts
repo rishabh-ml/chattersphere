@@ -1,109 +1,116 @@
 // src/app/api/communities/[communityId]/membership-requests/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
 import User from "@/models/User";
 import Community from "@/models/Community";
 import Membership, { MembershipStatus } from "@/models/Membership";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { sanitizeInput } from "@/lib/security";
 import { ApiError } from "@/lib/api-error";
 
-// GET /api/communities/[communityId]/membership-requests - Get pending membership requests
+// Shape of a pending request after .lean()
+interface LeanRequest {
+  _id: Types.ObjectId;
+  user: {
+    _id: Types.ObjectId;
+    username: string;
+    name: string;
+    image?: string | null;
+  };
+  joinedAt: Date;
+}
+
 export async function GET(
   req: NextRequest,
-  { params }: { params: { communityId: string } }
+  { params }: { params: Promise<{ communityId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
-    const { userId: clerkUserId } = await auth();
-    if (!clerkUserId) {
+    // 1) Auth
+    const { userId } = await auth();
+    if (!userId) {
       return ApiError.unauthorized("You must be signed in to view membership requests");
     }
 
-    // Sanitize and validate communityId
-    if (!params?.communityId) {
-      return ApiError.badRequest("Missing communityId parameter");
-    }
-    
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
-    
-    if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
-      return ApiError.badRequest("Invalid communityId format");
+    // 2) Validate communityId
+    const rawCommunityId = sanitizeInput(resolvedParams.communityId || "");
+    if (!mongoose.isValidObjectId(rawCommunityId)) {
+      return ApiError.badRequest("Missing or invalid communityId");
     }
 
     await connectToDatabase();
 
-    // Get the current user
-    const currentUser = await User.findOne({ clerkId: clerkUserId });
+    // 3) Load current user
+    const currentUser = await User.findOne({ clerkId: userId });
     if (!currentUser) {
       return ApiError.notFound("User not found");
     }
 
-    // Find the community
-    const community = await Community.findById(sanitizedCommunityId);
+    // 4) Load community
+    const community = await Community.findById(rawCommunityId);
     if (!community) {
       return ApiError.notFound("Community not found");
     }
 
-    // Check if the user has permission to view requests (creator or moderator)
-    const isCreator = community.creator.toString() === currentUser._id.toString();
-    const isModerator = community.moderators.some(
-      (modId) => modId.toString() === currentUser._id.toString()
+    // 5) Permission check
+    const isCreator = community.creator.equals(currentUser._id);
+    const isModerator = community.moderators.some((modId: Types.ObjectId) =>
+      modId.equals(currentUser._id)
     );
-
     if (!isCreator && !isModerator) {
       return ApiError.forbidden("You don't have permission to view membership requests");
     }
 
-    // Parse pagination parameters
-    const page = parseInt(req.nextUrl.searchParams.get("page") || "1");
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "20");
-    
-    // Validate pagination parameters
-    const validPage = page > 0 ? page : 1;
-    const validLimit = limit > 0 && limit <= 100 ? limit : 20;
-    const skip = (validPage - 1) * validLimit;
+    // 6) Pagination
+    const url = req.nextUrl;
+    const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") || "20", 10)));
+    const skip = (page - 1) * limit;
 
-    // Find pending membership requests
-    const requests = await Membership.find({
+    // 7) Query pending requests (typed as an array)
+    const rawRequests = (await Membership.find({
       community: community._id,
-      status: MembershipStatus.PENDING
+      status: MembershipStatus.PENDING,
     })
       .sort({ joinedAt: -1 })
       .skip(skip)
-      .limit(validLimit)
+      .limit(limit)
       .populate("user", "username name image")
-      .lean();
+      .lean()) as unknown as LeanRequest[];
 
-    // Count total pending requests
-    const totalRequests = await Membership.countDocuments({
+    const total = await Membership.countDocuments({
       community: community._id,
-      status: MembershipStatus.PENDING
+      status: MembershipStatus.PENDING,
     });
 
-    // Format the response
-    const formattedRequests = requests.map(request => ({
-      id: request._id.toString(),
+    // 8) Format for client
+    const formatted = rawRequests.map((reqDoc: LeanRequest) => ({
+      id: reqDoc._id.toString(),
       user: {
-        id: request.user._id.toString(),
-        username: request.user.username,
-        name: request.user.name,
-        image: request.user.image || null,
+        id: reqDoc.user._id.toString(),
+        username: reqDoc.user.username,
+        name: reqDoc.user.name,
+        image: reqDoc.user.image ?? null,
       },
-      requestedAt: request.joinedAt.toISOString(),
+      requestedAt: reqDoc.joinedAt.toISOString(),
     }));
 
     return NextResponse.json({
-      requests: formattedRequests,
+      requests: formatted,
       pagination: {
-        page: validPage,
-        limit: validLimit,
-        totalRequests,
-        hasMore: skip + requests.length < totalRequests,
+        page,
+        limit,
+        totalRequests: total,
+        hasMore: skip + formatted.length < total,
       },
     });
-  } catch (error) {
-    console.error("[MEMBERSHIP-REQUESTS.GET] Error:", error);
-    return ApiError.serverError("Failed to fetch membership requests");
+  } catch (err) {
+    console.error("[MEMBERSHIP-REQUESTS.GET] Error:", err);
+    return NextResponse.json(
+      { error: "Failed to fetch membership requests" },
+      { status: 500 }
+    );
   }
 }

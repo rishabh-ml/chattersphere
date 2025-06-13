@@ -11,26 +11,25 @@ import mongoose from "mongoose";
 // GET /api/communities/[communityId]/members - Get all members of a community
 export async function GET(
   req: NextRequest,
-  { params }: { params: { communityId: string } }
+  { params }: { params: Promise<{ communityId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
     // Sanitize and validate communityId
-    if (!params?.communityId) {
+    if (!resolvedParams?.communityId) {
       return ApiError.badRequest("Missing communityId parameter");
     }
     
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
+    const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
       return ApiError.badRequest("Invalid communityId format");
     }
 
-    await connectToDatabase();
-
-    // Find the community
-    const community = await Community.findById(sanitizedCommunityId).lean().exec();
+    await connectToDatabase();    // Find the community
+    const community = await Community.findById(sanitizedCommunityId).lean().exec() as any;
     
     if (!community) {
       return ApiError.notFound("Community not found");
@@ -40,9 +39,7 @@ export async function GET(
     if (community.isPrivate) {
       if (!clerkUserId) {
         return ApiError.unauthorized("You must be signed in to view members in a private community");
-      }
-
-      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+      }      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
       
       if (!currentUser) {
         return ApiError.unauthorized("User not found");
@@ -103,10 +100,8 @@ export async function GET(
 
     const countQuery = Membership.countDocuments(query).exec();
 
-    const [memberships, totalCount] = await Promise.all([membershipsQuery, countQuery]);
-
-    // Format the response
-    const formattedMembers = memberships.map(membership => ({
+    const [memberships, totalCount] = await Promise.all([membershipsQuery, countQuery]);    // Format the response
+    const formattedMembers = memberships.map((membership: any) => ({
       id: membership._id.toString(),
       user: {
         id: membership.user._id.toString(),

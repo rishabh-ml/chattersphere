@@ -12,8 +12,9 @@ import { invalidateCache } from "@/lib/redis";
 // DELETE /api/comments/[commentId] - Delete a comment
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { commentId: string } }
+  { params }: { params: Promise<{ commentId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -21,11 +22,11 @@ export async function DELETE(
     }
 
     // Sanitize and validate commentId
-    if (!params?.commentId) {
+    if (!resolvedParams?.commentId) {
       return NextResponse.json({ error: "Missing commentId parameter" }, { status: 400 });
     }
 
-    const sanitizedCommentId = sanitizeInput(params.commentId);
+    const sanitizedCommentId = sanitizeInput(resolvedParams.commentId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommentId)) {
       return NextResponse.json({ error: "Invalid commentId format" }, { status: 400 });

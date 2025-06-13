@@ -13,17 +13,18 @@ import { withApiMiddleware } from "@/lib/apiUtils";
 // GET /api/profile/[userId] - Get user profile data
 async function getUserProfileHandler(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
 
     // Sanitize and validate userId
-    if (!params?.userId) {
+    if (!resolvedParams?.userId) {
       return ApiError.badRequest("Missing userId parameter");
     }
 
-    const sanitizedUserId = sanitizeInput(params.userId);
+    const sanitizedUserId = sanitizeInput(resolvedParams.userId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedUserId)) {
       return ApiError.badRequest("Invalid userId format");
@@ -104,8 +105,7 @@ async function getUserProfileHandler(
           interests: userDoc.interests || [],
           followingCount: userDoc.followingCount,
           followerCount: userDoc.followerCount,
-          communityCount: userDoc.communityCount,
-          communities: userDoc.communitiesInfo?.map(c => ({
+          communityCount: userDoc.communityCount,          communities: userDoc.communitiesInfo?.map((c: any) => ({
             id: c._id.toString(),
             name: c.name,
             image: c.image || ""
@@ -113,17 +113,13 @@ async function getUserProfileHandler(
           isFollowing: false,
           createdAt: userDoc.createdAt.toISOString(),
           updatedAt: userDoc.updatedAt.toISOString(),
-        };
-
-        // Add email only if the user is the owner or if showEmail is true
+        };        // Add email only if the user is the owner or if showEmail is true
         if (isOwner || (userDoc.privacySettings?.showEmail)) {
-          profile.email = userDoc.email;
-        }
-
-        // Check if the current user is following this profile
+          (profile as any).email = userDoc.email;
+        }        // Check if the current user is following this profile
         if (clerkUserId && !isOwner) {
-          const currentUser = await User.findOne({ clerkId: clerkUserId }).select("following").lean(true);
-          if (currentUser) {
+          const currentUser = await User.findOne({ clerkId: clerkUserId }).select("following").lean() as { following?: mongoose.Types.ObjectId[] } | null;
+          if (currentUser?.following) {
             profile.isFollowing = currentUser.following.some(
               (id: mongoose.Types.ObjectId) => id.toString() === userDoc._id.toString()
             );
@@ -145,21 +141,20 @@ async function getUserProfileHandler(
 // PUT /api/profile/[userId] - Update user profile
 async function updateUserProfileHandler(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
 
     if (!clerkUserId) {
       return ApiError.unauthorized();
-    }
-
-    // Sanitize and validate userId
-    if (!params?.userId) {
+    }    // Sanitize and validate userId
+    if (!resolvedParams?.userId) {
       return ApiError.badRequest("Missing userId parameter");
     }
 
-    const sanitizedUserId = sanitizeInput(params.userId);
+    const sanitizedUserId = sanitizeInput(resolvedParams.userId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedUserId)) {
       return ApiError.badRequest("Invalid userId format");
@@ -191,11 +186,9 @@ async function updateUserProfileHandler(
       return ApiError.badRequest("Validation error", { details: errorMessage });
     }
 
-    const { bio, pronouns, location, website, socialLinks, interests } = validationResult.data;
-
-    // Update the user document
+    const { bio, pronouns, location, website, socialLinks, interests } = validationResult.data;    // Update the user document
     const updatedUser = await User.findByIdAndUpdate(
-      params.userId,
+      resolvedParams.userId,
       {
         $set: {
           ...(bio !== undefined && { bio }),
@@ -211,14 +204,14 @@ async function updateUserProfileHandler(
     )
       .select("-email")
       .lean()
-      .exec();
-
-    return NextResponse.json(
+      .exec();    if (!updatedUser) {
+      return ApiError.notFound("User not found");
+    }    return NextResponse.json(
       {
         success: true,
         profile: {
           ...updatedUser,
-          id: updatedUser._id.toString(),
+          id: (updatedUser as any)._id.toString(),
         }
       },
       { status: 200 }
@@ -231,7 +224,10 @@ async function updateUserProfileHandler(
 
 // Export the handler functions with middleware
 export const GET = withApiMiddleware(
-  (req: NextRequest) => getUserProfileHandler(req, { params: { userId: req.nextUrl.pathname.split('/')[3] } }),
+  async (req: NextRequest) => {
+    const userId = req.nextUrl.pathname.split('/')[3];
+    return getUserProfileHandler(req, { params: Promise.resolve({ userId }) });
+  },
   {
     enableRateLimit: true,
     maxRequests: 100,
@@ -241,7 +237,10 @@ export const GET = withApiMiddleware(
 );
 
 export const PUT = withApiMiddleware(
-  (req: NextRequest) => updateUserProfileHandler(req, { params: { userId: req.nextUrl.pathname.split('/')[3] } }),
+  async (req: NextRequest) => {
+    const userId = req.nextUrl.pathname.split('/')[3];
+    return updateUserProfileHandler(req, { params: Promise.resolve({ userId }) });
+  },
   {
     enableRateLimit: true,
     maxRequests: 20,

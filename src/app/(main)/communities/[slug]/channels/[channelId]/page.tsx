@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
-import { useSingleCommunity } from "@/context/SingleCommunityContext";
+import { useSingleCommunity } from "@/features/communities/contexts/SingleCommunityContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Hash, Volume2, Megaphone, Send, Image, Smile, PlusCircle } from "lucide-react";
 import { format } from "date-fns";
@@ -27,7 +27,7 @@ interface Message {
 }
 
 export default function ChannelPage() {
-  const { slug, channelId } = useParams<{ slug: string; channelId: string }>();
+  const { channelId } = useParams<{ slug: string; channelId: string }>();
   const {
     community,
     channels,

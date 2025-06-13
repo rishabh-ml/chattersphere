@@ -20,26 +20,25 @@ const createChannelSchema = z.object({
 // GET /api/communities/[communityId]/channels - Get all channels for a community
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { communityId: string } }
+  { params }: { params: Promise<{ communityId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
     // Sanitize and validate communityId
-    if (!params?.communityId) {
+    if (!resolvedParams?.communityId) {
       return ApiError.badRequest("Missing communityId parameter");
     }
     
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
+    const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
       return ApiError.badRequest("Invalid communityId format");
     }
 
-    await connectToDatabase();
-
-    // Find the community
-    const community = await Community.findById(sanitizedCommunityId).lean().exec();
+    await connectToDatabase();    // Find the community
+    const community = await Community.findById(sanitizedCommunityId).lean().exec() as any;
     
     if (!community) {
       return ApiError.notFound("Community not found");
@@ -51,7 +50,7 @@ export async function GET(
         return ApiError.unauthorized("You must be signed in to view channels in a private community");
       }
 
-      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
       
       if (!currentUser) {
         return ApiError.unauthorized("User not found");
@@ -71,10 +70,8 @@ export async function GET(
     const channels = await Channel.find({ community: sanitizedCommunityId })
       .sort({ type: 1, name: 1 })
       .lean()
-      .exec();
-
-    // Format the response
-    const formattedChannels = channels.map(channel => ({
+      .exec();    // Format the response
+    const formattedChannels = channels.map((channel: any) => ({
       id: channel._id.toString(),
       name: channel.name,
       slug: channel.slug,
@@ -96,8 +93,9 @@ export async function GET(
 // POST /api/communities/[communityId]/channels - Create a new channel
 export async function POST(
   req: NextRequest,
-  { params }: { params: { communityId: string } }
+  { params }: { params: Promise<{ communityId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
@@ -106,11 +104,11 @@ export async function POST(
     }
 
     // Sanitize and validate communityId
-    if (!params?.communityId) {
+    if (!resolvedParams?.communityId) {
       return ApiError.badRequest("Missing communityId parameter");
     }
     
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
+    const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
       return ApiError.badRequest("Invalid communityId format");
@@ -123,10 +121,8 @@ export async function POST(
     
     if (!community) {
       return ApiError.notFound("Community not found");
-    }
-
-    // Find the current user
-    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+    }    // Find the current user
+    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
     
     if (!currentUser) {
       return ApiError.unauthorized("User not found");

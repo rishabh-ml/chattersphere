@@ -43,14 +43,16 @@ async function dbConnect(): Promise<typeof mongoose> {
             ...(isShardedCluster ? getShardedClusterOptions() : {}),
             ...(isReplicaSet && !isShardedCluster ? getReplicaSetOptions() : {}),
         };
-
+        
         console.log(`Connecting to MongoDB with ${isShardedCluster ? 'sharded cluster' : isReplicaSet ? 'replica set' : 'standalone'} configuration`);
-
+        
         global.mongooseConnection = {
             promise: mongoose
                 .connect(MONGODB_URI, connectionOptions)
                 .then((mongooseInstance) => {
-                    global.mongooseConnection.isConnected = true;
+                    if (global.mongooseConnection) {
+                        global.mongooseConnection.isConnected = true;
+                    }
                     console.log('MongoDB connected successfully');
 
                     // Log connection details in development

@@ -34,17 +34,16 @@ interface PopulatedPost {
 // GET /api/posts/[postId] - Get a single post by ID
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { postId: string } }
+  { params }: { params: Promise<{ postId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
-    const { userId } = await auth();
-
-    // Sanitize and validate postId
-    if (!params?.postId) {
+    const { userId } = await auth();    // Sanitize and validate postId
+    if (!resolvedParams?.postId) {
       return NextResponse.json({ error: "Missing postId parameter" }, { status: 400 });
     }
 
-    const sanitizedPostId = sanitizeInput(params.postId);
+    const sanitizedPostId = sanitizeInput(resolvedParams.postId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedPostId)) {
       return NextResponse.json({ error: "Invalid postId format" }, { status: 400 });
@@ -89,10 +88,8 @@ export async function GET(
           user: user._id,
           community: post.community._id,
           status: 'ACTIVE'
-        });
-
-        // Fallback to the deprecated array if Membership model check fails
-        const isMember = membership || community.members.some(memberId =>
+        });        // Fallback to the deprecated array if Membership model check fails
+        const isMember = membership || community.members.some((memberId: any) =>
           memberId.toString() === user._id.toString()
         );
 
@@ -139,9 +136,8 @@ export async function GET(
         : false,
       isDownvoted: currentUser
         ? post.downvotes.some(id => id.toString() === currentUser._id.toString())
-        : false,
-      isSaved: currentUser
-        ? currentUser.savedPosts.some(id => id.toString() === post._id.toString())
+        : false,      isSaved: currentUser
+        ? currentUser.savedPosts.some((id: any) => id.toString() === post._id.toString())
         : false,
       createdAt: post.createdAt.toISOString(),
       updatedAt: post.updatedAt.toISOString(),
@@ -154,21 +150,20 @@ export async function GET(
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { postId: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ postId: string }> }) {
+  const resolvedParams = await params;
   try {
     await connectToDatabase();
 
     // Get the postId from the params
-    const { postId } = params;
+    const { postId } = resolvedParams;
     const sanitizedPostId = sanitizeInput(postId);
 
     // Validate postId
     if (!mongoose.Types.ObjectId.isValid(sanitizedPostId)) {
       return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
-    }
-
-    // Get the authenticated user
-    const { userId } = auth();
+    }    // Get the authenticated user
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "You must be signed in to delete a post" }, { status: 401 });
     }

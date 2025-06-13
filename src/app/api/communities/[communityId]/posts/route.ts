@@ -1,3 +1,4 @@
+// src/app/api/communities/[communityId]/posts/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import connectToDatabase from "@/lib/dbConnect";
@@ -5,13 +6,17 @@ import User from "@/models/User";
 import Post from "@/models/Post";
 import Community from "@/models/Community";
 import Membership, { MembershipStatus } from "@/models/Membership";
-import mongoose, { Types } from "mongoose";
+import mongoose, { Types, PipelineStage } from "mongoose";
 import { sanitizeInput } from "@/lib/security";
 import { withCache } from "@/lib/redis";
-import { readOptions, getPaginationOptions, formatPaginationMetadata, buildPaginatedAggregation } from "@/lib/mongooseUtils";
+import {
+  getPaginationOptions,
+  formatPaginationMetadata,
+  buildPaginatedAggregation,
+} from "@/lib/mongooseUtils";
 import { withApiMiddleware } from "@/lib/apiUtils";
 
-// Type for a populated post document
+// The shape of each post after aggregation
 interface PopulatedPost {
   _id: Types.ObjectId;
   author: {
@@ -33,192 +38,194 @@ interface PopulatedPost {
   updatedAt: Date;
 }
 
-// GET /api/communities/[communityId]/posts - Get posts for a community
+// What the aggregation returns
+interface AggregationResult {
+  metadata: { total: number }[];
+  data: PopulatedPost[];
+}
+
+// Leaned current user for vote/saved checks
+interface CurrentUserLean {
+  _id: Types.ObjectId;
+  savedPosts: Types.ObjectId[];
+}
+
+// Core handler
 async function getCommunityPostsHandler(
   req: NextRequest,
-  { params }: { params: { communityId: string } }
+  { params }: { params: Promise<{ communityId: string }> }
 ) {
-  try {
-    const { userId } = await auth();
+  const resolvedParams = await params;
+  // 1) Fetch userId if signed in
+  const { userId } = await auth().catch(() => ({ userId: null }));
 
-    // Sanitize and validate communityId
-    if (!params?.communityId) {
-      return NextResponse.json({ error: "Missing communityId parameter" }, { status: 400 });
-    }
+  // 2) Validate & sanitize communityId
+  const rawCommunityId = sanitizeInput(resolvedParams.communityId || "");
+  if (!mongoose.isValidObjectId(rawCommunityId)) {
+    return NextResponse.json(
+      { error: "Missing or invalid communityId" },
+      { status: 400 }
+    );
+  }
 
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
+  await connectToDatabase();
 
-    if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
-      return NextResponse.json({ error: "Invalid communityId format" }, { status: 400 });
-    }
+  // 3) Ensure the community exists
+  const community = await Community.findById(rawCommunityId);
+  if (!community) {
+    return NextResponse.json({ error: "Community not found" }, { status: 404 });
+  }
 
-    await connectToDatabase();
-
-    // Check if community exists
-    const community = await Community.findById(sanitizedCommunityId);
-    if (!community) {
-      return NextResponse.json({ error: "Community not found" }, { status: 404 });
-    }
-
-    // Check if the community is private
-    if (community.isPrivate) {
-      // If private, user must be authenticated
-      if (!userId) {
-        console.log(`[COMMUNITIES POSTS GET] Unauthorized access attempt to private community: ${sanitizedCommunityId}`);
-        return NextResponse.json({
-          error: "You must be signed in to view posts in this private community"
-        }, { status: 401 });
-      }
-
-      // Get the user's MongoDB ID
-      const user = await User.findOne({ clerkId: userId });
-      if (!user) {
-        console.log(`[COMMUNITIES POSTS GET] User not found for clerkId: ${userId}`);
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-
-      // Check if the user is a member of the community using Membership model
-      const membership = await Membership.findOne({
-        user: user._id,
-        community: sanitizedCommunityId,
-        status: 'ACTIVE'
-      });
-
-      // Fallback to the deprecated array if Membership model check fails
-      const isMember = membership || community.members.some(memberId =>
-        memberId.toString() === user._id.toString()
+  // 4) If the community is private, enforce ACTIVE membership
+  if (community.isPrivate) {
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Sign in to view this private community" },
+        { status: 401 }
       );
-
-      if (!isMember) {
-        console.log(`[COMMUNITIES POSTS GET] Forbidden access attempt by user ${user._id} to private community: ${sanitizedCommunityId}`);
-        return NextResponse.json({
-          error: "You are not authorized to view posts in this private community"
-        }, { status: 403 });
-      }
-
-      console.log(`[COMMUNITIES POSTS GET] Authorized access to private community ${sanitizedCommunityId} by member ${user._id}`);
     }
+    const userDoc = await User.findOne({ clerkId: userId });
+    if (!userDoc) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    const isMember = Boolean(
+      await Membership.findOne({
+        user: userDoc._id,
+        community: community._id,
+        status: MembershipStatus.ACTIVE,
+      })
+    );
+    if (!isMember) {
+      return NextResponse.json(
+        { error: "Not authorized to view this private community" },
+        { status: 403 }
+      );
+    }
+  }
 
-    // Parse query parameters
-    const url = req.nextUrl;
-    const page = parseInt(url.searchParams.get("page") ?? "1", 10);
-    const limit = parseInt(url.searchParams.get("limit") ?? "10", 10);
+  // 5) Parse pagination
+  const url = req.nextUrl;
+  const page = parseInt(url.searchParams.get("page") ?? "1", 10);
+  const limit = parseInt(url.searchParams.get("limit") ?? "10", 10);
+  const { limit: validLimit } = getPaginationOptions(page, limit);
 
-    // Use pagination utility
-    const { skip, limit: validLimit } = getPaginationOptions(page, limit);
+  // 6) Cache key
+  const cacheKey = `comm:${rawCommunityId}:posts:p${page}:l${validLimit}${
+    userId ? `:u${userId}` : ""
+  }`;
 
-    // Create a cache key based on the request parameters
-    const cacheKey = `community:${sanitizedCommunityId}:posts:page:${page}:limit:${validLimit}${userId ? `:user:${userId}` : ''}`;
-
-    // Use cache wrapper with a TTL of 2 minutes
-    const result = await withCache(
-      cacheKey,
-      async () => {
-        // Build aggregation pipeline
-        const lookupStages = [
-          // Lookup author information
-          { $lookup: {
+  // 7) Fetch & cache
+  const { posts, total, currentUser } = await withCache(
+    cacheKey,
+    async () => {
+      // a) Build lookup stages
+      const lookup: PipelineStage[] = [
+        {
+          $lookup: {
             from: "users",
             localField: "author",
             foreignField: "_id",
-            as: "authorInfo"
-          }},
-          { $unwind: "$authorInfo" },
-
-          // Lookup community information
-          { $lookup: {
+            as: "authorInfo",
+          },
+        },
+        { $unwind: "$authorInfo" },
+        {
+          $lookup: {
             from: "communities",
             localField: "community",
             foreignField: "_id",
-            as: "communityInfo"
-          }},
-          { $unwind: "$communityInfo" }
-        ];
-
-        const pipeline = buildPaginatedAggregation(
-          { community: new Types.ObjectId(sanitizedCommunityId) },
-          { createdAt: -1 },
-          page,
-          validLimit,
-          lookupStages
-        );
-
-        const [aggregateResult] = await Post.aggregate(pipeline);
-
-        const total = aggregateResult.metadata.length > 0 ? aggregateResult.metadata[0].total : 0;
-        const posts = aggregateResult.data;
-
-        // Get current user for vote status and saved status
-        let currentUser = null;
-        if (userId) {
-          currentUser = await User.findOne({ clerkId: userId }).lean(true);
-        }
-
-        return { posts, total, currentUser };
-      },
-      120 // 2 minutes TTL
-    );
-
-    const { posts, total, currentUser } = result;
-
-    // Format posts for response
-    const formattedPosts = posts.map(post => {
-      const isUpvoted = currentUser
-        ? post.upvotes.some(id => id.toString() === currentUser._id.toString())
-        : false;
-      const isDownvoted = currentUser
-        ? post.downvotes.some(id => id.toString() === currentUser._id.toString())
-        : false;
-      const isSaved = currentUser
-        ? currentUser.savedPosts.some(id => id.toString() === post._id.toString())
-        : false;
-
-      return {
-        id: post._id.toString(),
-        author: {
-          id: post.author._id.toString(),
-          username: post.author.username,
-          name: post.author.name,
-          image: post.author.image,
+            as: "communityInfo",
+          },
         },
-        content: post.content,
-        community: {
-          id: post.community._id.toString(),
-          name: post.community.name,
-          image: post.community.image,
-        },
-        upvoteCount: post.upvotes.length,
-        downvoteCount: post.downvotes.length,
-        voteCount: post.upvotes.length - post.downvotes.length,
-        commentCount: post.comments.length,
-        isUpvoted,
-        isDownvoted,
-        isSaved,
-        createdAt: post.createdAt.toISOString(),
-        updatedAt: post.updatedAt.toISOString(),
-      };
-    });
+        { $unwind: "$communityInfo" },
+      ];
 
-    return NextResponse.json(
-      {
-        posts: formattedPosts,
-        pagination: formatPaginationMetadata(page, validLimit, total),
+      // b) Aggregation pipeline
+      const pipeline = buildPaginatedAggregation(
+        { community: new Types.ObjectId(rawCommunityId) },
+        { createdAt: -1 },
+        page,
+        validLimit,
+        lookup
+      );
+
+      // c) Run aggregation with explicit generic
+      const [aggResult] = await Post.aggregate<AggregationResult>(
+        pipeline as PipelineStage[]
+      );
+
+      const totalCount = aggResult.metadata[0]?.total ?? 0;
+      const pagedPosts = aggResult.data;
+
+      // d) Load current user for vote/saved
+      let cu: CurrentUserLean | null = null;
+      if (userId) {
+        cu = (await User.findOne({ clerkId: userId })
+          .select("_id savedPosts")
+          .lean()) as CurrentUserLean | null;
+      }
+
+      return { posts: pagedPosts, total: totalCount, currentUser: cu };
+    },
+    120 // TTL in seconds
+  );
+
+  // 8) Format for response
+  const formattedPosts = posts.map((p: PopulatedPost) => {
+    const isUpvoted =
+      currentUser?.savedPosts !== undefined
+        ? p.upvotes.some((id) => id.equals(currentUser._id))
+        : false;
+    const isDownvoted = currentUser
+      ? p.downvotes.some((id) => id.equals(currentUser._id))
+      : false;
+    const isSaved = currentUser
+      ? currentUser.savedPosts.some((id) => id.equals(p._id))
+      : false;
+
+    return {
+      id: p._id.toString(),
+      author: {
+        id: p.author._id.toString(),
+        username: p.author.username,
+        name: p.author.name,
+        image: p.author.image ?? "",
       },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("[GET /api/communities/[communityId]/posts] Error:", error);
-    return NextResponse.json({ error: "Failed to fetch community posts" }, { status: 500 });
-  }
+      community: {
+        id: p.community._id.toString(),
+        name: p.community.name,
+        image: p.community.image ?? "",
+      },
+      content: p.content,
+      upvoteCount: p.upvotes.length,
+      downvoteCount: p.downvotes.length,
+      voteCount: p.upvotes.length - p.downvotes.length,
+      commentCount: p.comments.length,
+      isUpvoted,
+      isDownvoted,
+      isSaved,
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+    };
+  });
+
+  // 9) Return JSON
+  return NextResponse.json(
+    {
+      posts: formattedPosts,
+      pagination: formatPaginationMetadata(page, validLimit, total),
+    },
+    { status: 200 }
+  );
 }
 
-// Export the handler function with middleware
-export const GET = withApiMiddleware(
-  (req: NextRequest) => getCommunityPostsHandler(req, { params: { communityId: req.nextUrl.pathname.split('/')[3] } }),
-  {
-    enableRateLimit: true,
-    maxRequests: 100,
-    windowMs: 60000, // 1 minute
-    identifier: 'community:posts:get'
-  }
-);
+// 10) Wrap with middleware
+export const GET = withApiMiddleware(async (req) => {
+  const communityId = req.nextUrl.pathname.split('/')[3];
+  return getCommunityPostsHandler(req, { params: Promise.resolve({ communityId }) });
+}, {
+  enableRateLimit: true,
+  maxRequests: 100,
+  windowMs: 60_000,
+  identifier: "community:posts:get",
+});

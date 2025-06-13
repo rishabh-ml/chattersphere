@@ -40,21 +40,20 @@ interface UserDocument {
 
 export async function GET(
     _req: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
 
-    if (!params?.userId || !mongoose.Types.ObjectId.isValid(params.userId)) {
+    if (!resolvedParams?.userId || !mongoose.Types.ObjectId.isValid(resolvedParams.userId)) {
       return NextResponse.json({ error: "Invalid or missing userId" }, { status: 400 });
     }
 
-    await connectToDatabase();
-
-    const userDoc = await User.findById(params.userId)
+    await connectToDatabase();    const userDoc = await User.findById(resolvedParams.userId)
         .populate("communities", "name image")
         .lean()
-        .exec() as UserDocument | null;
+        .exec() as any;
 
     if (!userDoc) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -70,10 +69,8 @@ export async function GET(
       communityCount: userDoc.communities.length,
       joinedDate: userDoc.createdAt.toISOString(),
       isFollowing: false,
-    };
-
-    if (clerkUserId) {
-      const me = await User.findOne({ clerkId: clerkUserId }).lean().exec() as UserDocument | null;
+    };    if (clerkUserId) {
+      const me = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
       if (me) {
         user.isFollowing = me.following.some(
             (id: mongoose.Types.ObjectId) => id.toString() === userDoc._id.toString()
@@ -90,21 +87,20 @@ export async function GET(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     // Get the authenticated user
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Sanitize and validate userId
-    if (!params?.userId) {
+    }    // Sanitize and validate userId
+    if (!resolvedParams?.userId) {
       return NextResponse.json({ error: "Missing userId parameter" }, { status: 400 });
     }
 
-    const sanitizedUserId = sanitizeInput(params.userId);
+    const sanitizedUserId = sanitizeInput(resolvedParams.userId);
 
     if (!mongoose.Types.ObjectId.isValid(sanitizedUserId)) {
       return NextResponse.json({ error: "Invalid userId format" }, { status: 400 });
@@ -164,12 +160,11 @@ export async function DELETE(
       );
 
       // 5. Delete the user from MongoDB
-      await User.findByIdAndDelete(sanitizedUserId, { session });
-
-      // 6. Delete the user from Clerk (if possible)
+      await User.findByIdAndDelete(sanitizedUserId, { session });      // 6. Delete the user from Clerk (if possible)
       try {
         if (userToDelete.clerkId) {
-          await clerkClient.users.deleteUser(userToDelete.clerkId);
+          const client = await clerkClient();
+          await client.users.deleteUser(userToDelete.clerkId);
         }
       } catch (clerkError) {
         console.error("Error deleting user from Clerk:", clerkError);

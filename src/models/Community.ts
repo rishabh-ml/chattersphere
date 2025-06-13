@@ -100,9 +100,8 @@ CommunitySchema.methods.isMember = async function(userId: mongoose.Types.ObjectI
       status: 'ACTIVE'
     });
     return !!membership;
-  } catch (error) {
-    // Fallback to the deprecated array if Membership model fails
-    return this.members.some(id => id.toString() === userId.toString());
+  } catch (error) {    // Fallback to the deprecated array if Membership model fails
+    return this.members.some((id: any) => id.toString() === userId.toString());
   }
 };
 
@@ -118,9 +117,8 @@ CommunitySchema.methods.isModerator = async function(userId: mongoose.Types.Obje
       name: 'Moderator'
     });
 
-    if (!modRole) {
-      // Fallback to the deprecated array if Role model fails
-      return this.moderators.some(id => id.toString() === userId.toString());
+    if (!modRole) {      // Fallback to the deprecated array if Role model fails
+      return this.moderators.some((id: any) => id.toString() === userId.toString());
     }
 
     // Check if user has the moderator role
@@ -132,9 +130,8 @@ CommunitySchema.methods.isModerator = async function(userId: mongoose.Types.Obje
     });
 
     return !!membership;
-  } catch (error) {
-    // Fallback to the deprecated array if models fail
-    return this.moderators.some(id => id.toString() === userId.toString());
+  } catch (error) {    // Fallback to the deprecated array if models fail
+    return this.moderators.some((id: any) => id.toString() === userId.toString());
   }
 };
 

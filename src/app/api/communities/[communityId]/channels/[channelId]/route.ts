@@ -20,43 +20,39 @@ const updateChannelSchema = z.object({
 // GET /api/communities/[communityId]/channels/[channelId] - Get a specific channel
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { communityId: string; channelId: string } }
+  { params }: { params: Promise<{ communityId: string; channelId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
     // Sanitize and validate parameters
-    if (!params?.communityId || !params?.channelId) {
+    if (!resolvedParams?.communityId || !resolvedParams?.channelId) {
       return ApiError.badRequest("Missing required parameters");
     }
     
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
-    const sanitizedChannelId = sanitizeInput(params.channelId);
+    const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
+    const sanitizedChannelId = sanitizeInput(resolvedParams.channelId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId) || 
         !mongoose.Types.ObjectId.isValid(sanitizedChannelId)) {
       return ApiError.badRequest("Invalid ID format");
     }
 
-    await connectToDatabase();
-
-    // Find the channel
+    await connectToDatabase();    // Find the channel
     const channel = await Channel.findOne({
       _id: sanitizedChannelId,
       community: sanitizedCommunityId,
-    }).lean().exec();
+    }).lean().exec() as any;
     
     if (!channel) {
-      return ApiError.notFound("Channel not found");
-    }
+      return ApiError.notFound("Channel not found");    }
 
     // Check if the channel is private and the user has access
     if (channel.isPrivate) {
       if (!clerkUserId) {
         return ApiError.unauthorized("You must be signed in to view this channel");
-      }
-
-      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+      }    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
       
       if (!currentUser) {
         return ApiError.unauthorized("User not found");
@@ -65,7 +61,7 @@ export async function GET(
       const currentUserId = currentUser._id.toString();
 
       // Find the community to check if user is creator or moderator
-      const community = await Community.findById(sanitizedCommunityId).lean().exec();
+      const community = await Community.findById(sanitizedCommunityId).lean().exec() as any;
       
       if (!community) {
         return ApiError.notFound("Community not found");
@@ -74,9 +70,7 @@ export async function GET(
       const isCreator = community.creator.toString() === currentUserId;
       const isModerator = community.moderators.some(
         (id: any) => id.toString() === currentUserId
-      );
-
-      // Check if user is allowed to access this private channel
+      );// Check if user is allowed to access this private channel
       const hasAccess = isCreator || isModerator || channel.allowedUsers.some(
         (id: any) => id.toString() === currentUserId
       );
@@ -84,9 +78,7 @@ export async function GET(
       if (!hasAccess) {
         return ApiError.forbidden("You don't have permission to view this channel");
       }
-    }
-
-    // Format the response
+    }    // Format the response
     const formattedChannel = {
       id: channel._id.toString(),
       name: channel.name,
@@ -109,8 +101,9 @@ export async function GET(
 // PUT /api/communities/[communityId]/channels/[channelId] - Update a channel
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { communityId: string; channelId: string } }
+  { params }: { params: Promise<{ communityId: string; channelId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
@@ -119,12 +112,12 @@ export async function PUT(
     }
 
     // Sanitize and validate parameters
-    if (!params?.communityId || !params?.channelId) {
+    if (!resolvedParams?.communityId || !resolvedParams?.channelId) {
       return ApiError.badRequest("Missing required parameters");
     }
     
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
-    const sanitizedChannelId = sanitizeInput(params.channelId);
+    const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
+    const sanitizedChannelId = sanitizeInput(resolvedParams.channelId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId) || 
         !mongoose.Types.ObjectId.isValid(sanitizedChannelId)) {
@@ -141,10 +134,8 @@ export async function PUT(
     
     if (!channel) {
       return ApiError.notFound("Channel not found");
-    }
-
-    // Find the current user
-    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+    }    // Find the current user
+    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
     
     if (!currentUser) {
       return ApiError.unauthorized("User not found");
@@ -153,7 +144,7 @@ export async function PUT(
     const currentUserId = currentUser._id.toString();
 
     // Find the community to check if user is creator or moderator
-    const community = await Community.findById(sanitizedCommunityId).lean().exec();
+    const community = await Community.findById(sanitizedCommunityId).lean().exec() as any;
     
     if (!community) {
       return ApiError.notFound("Community not found");
@@ -198,9 +189,7 @@ export async function PUT(
       if (existingChannel) {
         return ApiError.conflict("A channel with this name already exists in this community");
       }
-    }
-
-    // Update the channel
+    }    // Update the channel
     const updatedChannel = await Channel.findByIdAndUpdate(
       sanitizedChannelId,
       {
@@ -212,7 +201,11 @@ export async function PUT(
         },
       },
       { new: true }
-    ).lean().exec();
+    ).lean().exec() as any;
+
+    if (!updatedChannel) {
+      return ApiError.notFound("Channel not found after update");
+    }
 
     // Format the response
     const formattedChannel = {
@@ -237,8 +230,9 @@ export async function PUT(
 // DELETE /api/communities/[communityId]/channels/[channelId] - Delete a channel
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { communityId: string; channelId: string } }
+  { params }: { params: Promise<{ communityId: string; channelId: string }> }
 ) {
+  const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
     
@@ -247,12 +241,12 @@ export async function DELETE(
     }
 
     // Sanitize and validate parameters
-    if (!params?.communityId || !params?.channelId) {
+    if (!resolvedParams?.communityId || !resolvedParams?.channelId) {
       return ApiError.badRequest("Missing required parameters");
     }
     
-    const sanitizedCommunityId = sanitizeInput(params.communityId);
-    const sanitizedChannelId = sanitizeInput(params.channelId);
+    const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
+    const sanitizedChannelId = sanitizeInput(resolvedParams.channelId);
     
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId) || 
         !mongoose.Types.ObjectId.isValid(sanitizedChannelId)) {
@@ -269,10 +263,8 @@ export async function DELETE(
     
     if (!channel) {
       return ApiError.notFound("Channel not found");
-    }
-
-    // Find the current user
-    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec();
+    }    // Find the current user
+    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
     
     if (!currentUser) {
       return ApiError.unauthorized("User not found");
@@ -281,7 +273,7 @@ export async function DELETE(
     const currentUserId = currentUser._id.toString();
 
     // Find the community to check if user is creator or moderator
-    const community = await Community.findById(sanitizedCommunityId);
+    const community = await Community.findById(sanitizedCommunityId) as any;
     
     if (!community) {
       return ApiError.notFound("Community not found");
