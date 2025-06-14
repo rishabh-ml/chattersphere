@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { useSignIn } from "@clerk/nextjs";
@@ -16,38 +23,38 @@ export default function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect_url") || "/";
-  
+
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [pendingVerification, setPendingVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
-  
+
   // Handle form submission for sign in
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoaded) return;
-    
+
     try {
       setIsSubmitting(true);
-        // Determine if the input is an email or username
+      // Determine if the input is an email or username
       const identifier = emailOrUsername.includes("@") ? emailOrUsername : emailOrUsername;
-      
+
       // Attempt to sign in
       const result = await signIn.create({
         strategy: "password",
         identifier,
         password,
       });
-      
+
       // Check if 2FA or email verification is required
       if (result.status === "needs_first_factor") {
         toast.info("Please check your email for a verification code.");
         setPendingVerification(true);
         return;
       }
-      
+
       // If successful, set the session as active
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
@@ -61,21 +68,21 @@ export default function SignInForm() {
       setIsSubmitting(false);
     }
   };
-  
+
   // Handle verification code submission
   const handleVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLoaded) return;
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Attempt to verify with the provided code
       const result = await signIn.attemptFirstFactor({
         strategy: "email_code",
         code: verificationCode,
       });
-      
+
       // If verification successful, set the session as active
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
@@ -91,14 +98,12 @@ export default function SignInForm() {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-        <CardDescription>
-          Enter your credentials to sign in to your account
-        </CardDescription>
+        <CardDescription>Enter your credentials to sign in to your account</CardDescription>
       </CardHeader>
       <CardContent>
         {!pendingVerification ? (
@@ -113,14 +118,11 @@ export default function SignInForm() {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link 
-                  href="/forgot-password" 
-                  className="text-sm text-blue-500 hover:text-blue-700"
-                >
+                <Link href="/forgot-password" className="text-sm text-blue-500 hover:text-blue-700">
                   Forgot password?
                 </Link>
               </div>
@@ -147,15 +149,9 @@ export default function SignInForm() {
                 </Button>
               </div>
             </div>
-            
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!isLoaded || isSubmitting}
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : null}
+
+            <Button type="submit" className="w-full" disabled={!isLoaded || isSubmitting}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
               Sign In
             </Button>
           </form>
@@ -170,19 +166,11 @@ export default function SignInForm() {
                 onChange={(e) => setVerificationCode(e.target.value)}
                 required
               />
-              <p className="text-sm text-gray-500">
-                Check your email for the verification code.
-              </p>
+              <p className="text-sm text-gray-500">Check your email for the verification code.</p>
             </div>
-            
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!isLoaded || isSubmitting}
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : null}
+
+            <Button type="submit" className="w-full" disabled={!isLoaded || isSubmitting}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
               Verify Email
             </Button>
           </form>

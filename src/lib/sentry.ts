@@ -1,5 +1,5 @@
-import * as Sentry from '@sentry/nextjs';
-import { env } from '@/lib/env';
+import * as Sentry from "@sentry/nextjs";
+import { env } from "@/lib/env";
 
 /**
  * Initialize Sentry for error tracking
@@ -14,7 +14,7 @@ export function initSentry() {
       profilesSampleRate: 0.1, // Capture 10% of transactions for profiling
 
       // Only enable in production
-      enabled: process.env.NODE_ENV === 'production',
+      enabled: process.env.NODE_ENV === "production",
 
       // Set environment
       environment: process.env.NODE_ENV,
@@ -22,13 +22,13 @@ export function initSentry() {
       // Ignore common errors
       ignoreErrors: [
         // Network errors that we don't need to track
-        'Network request failed',
-        'Failed to fetch',
-        'NetworkError',
-        'AbortError',
+        "Network request failed",
+        "Failed to fetch",
+        "NetworkError",
+        "AbortError",
         // Client-side navigation cancellations
-        'cancelled',
-        'ResizeObserver loop limit exceeded',
+        "cancelled",
+        "ResizeObserver loop limit exceeded",
       ],
 
       // Adjust this based on your application's needs
@@ -58,11 +58,11 @@ export function initSentry() {
 export function captureException(error: Error, context?: Record<string, unknown>) {
   if (env.SENTRY_DSN) {
     Sentry.captureException(error, {
-      extra: context
+      extra: context,
     });
   } else {
     // Log to console in development
-    console.error('Error captured:', error, context);
+    console.error("Error captured:", error, context);
   }
 }
 

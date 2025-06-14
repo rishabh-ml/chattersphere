@@ -1,8 +1,8 @@
 "use client";
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Home } from 'lucide-react';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Home } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -25,12 +25,7 @@ export default function NotFound() {
             Go Back
           </Button>
 
-          <Button
-            variant="default"
-            size="lg"
-            className="flex items-center gap-2"
-            asChild
-          >
+          <Button variant="default" size="lg" className="flex items-center gap-2" asChild>
             <Link href="/">
               <Home size={16} />
               Home Page

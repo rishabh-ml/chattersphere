@@ -50,7 +50,7 @@ export default function CommentForm({
       // Create an AbortController for timeout handling
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
-        controller.abort(new DOMException('Timeout exceeded', 'TimeoutError'));
+        controller.abort(new DOMException("Timeout exceeded", "TimeoutError"));
       }, 10000); // 10 second timeout
 
       try {
@@ -61,13 +61,13 @@ export default function CommentForm({
           headers: {
             "Content-Type": "application/json",
             "Cache-Control": "no-cache",
-            "Pragma": "no-cache"
+            Pragma: "no-cache",
           },
           body: JSON.stringify({
             content: content.trim(),
             ...(parentCommentId && { parentCommentId }),
           }),
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         // Clear the timeout as soon as the response is received
@@ -111,9 +111,9 @@ export default function CommentForm({
       console.error("Error adding comment:", error);
 
       // Handle different types of errors
-      if (error instanceof DOMException && error.name === 'TimeoutError') {
+      if (error instanceof DOMException && error.name === "TimeoutError") {
         toast.error("Request timed out. Please try again later.");
-      } else if (error instanceof TypeError && error.message.includes('fetch')) {
+      } else if (error instanceof TypeError && error.message.includes("fetch")) {
         toast.error("Network error. Please check your connection.");
       } else {
         toast.error(error instanceof Error ? error.message : "Failed to add comment");
@@ -124,7 +124,7 @@ export default function CommentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={`${isReply ? 'ml-12 mt-2' : 'mt-4'}`}>
+    <form onSubmit={handleSubmit} className={`${isReply ? "ml-12 mt-2" : "mt-4"}`}>
       <div className="flex gap-3">
         {user?.imageUrl && (
           <Avatar className="h-8 w-8">
@@ -166,8 +166,10 @@ export default function CommentForm({
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {isReply ? "Replying..." : "Commenting..."}
                 </>
+              ) : isReply ? (
+                "Reply"
               ) : (
-                isReply ? "Reply" : "Comment"
+                "Comment"
               )}
             </Button>
           </div>

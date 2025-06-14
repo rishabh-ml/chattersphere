@@ -14,13 +14,13 @@ interface RawCommunity {
   description: string;
   image?: string;
   creator:
-      | Types.ObjectId
-      | {
-    _id: Types.ObjectId;
-    username: string;
-    name: string;
-    image?: string;
-  };
+    | Types.ObjectId
+    | {
+        _id: Types.ObjectId;
+        username: string;
+        name: string;
+        image?: string;
+      };
   members: Types.ObjectId[];
   moderators: Types.ObjectId[];
   posts: Types.ObjectId[];
@@ -56,8 +56,8 @@ export async function GET(request: NextRequest) {
     aggregationPipeline.push({
       $addFields: {
         memberCount: { $size: "$members" },
-        postCount: { $size: "$posts" }
-      }
+        postCount: { $size: "$posts" },
+      },
     });
 
     // Sort based on user preference
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     // Count total before pagination
     const countPipeline = [...aggregationPipeline];
     countPipeline.push({ $count: "total" });
-    const totalResult = await Community.aggregate(countPipeline) as any[];
+    const totalResult = (await Community.aggregate(countPipeline)) as any[];
     const total = totalResult.length > 0 ? totalResult[0].total : 0;
 
     // Add pagination
@@ -86,18 +86,18 @@ export async function GET(request: NextRequest) {
         from: "users",
         localField: "creator",
         foreignField: "_id",
-        as: "creatorInfo"
-      }
+        as: "creatorInfo",
+      },
     });
 
     // Unwind creator info
     aggregationPipeline.push({
       $unwind: {
         path: "$creatorInfo",
-        preserveNullAndEmptyArrays: true
-      }
-    });    // Execute the aggregation
-    const communitiesResult = await Community.aggregate(aggregationPipeline) as any[];
+        preserveNullAndEmptyArrays: true,
+      },
+    }); // Execute the aggregation
+    const communitiesResult = (await Community.aggregate(aggregationPipeline)) as any[];
 
     let me: Types.ObjectId | null = null;
     if (userId) {
@@ -107,17 +107,19 @@ export async function GET(request: NextRequest) {
 
     const communities = communitiesResult.map((c) => {
       // Format creator info from the aggregation result
-      const creatorInfo = c.creatorInfo ? {
-        id: c.creatorInfo._id.toString(),
-        username: c.creatorInfo.username,
-        name: c.creatorInfo.name,
-        image: c.creatorInfo.image ?? "",
-      } : {
-        id: c.creator.toString(),
-        username: "",
-        name: "",
-        image: "",
-      }
+      const creatorInfo = c.creatorInfo
+        ? {
+            id: c.creatorInfo._id.toString(),
+            username: c.creatorInfo.username,
+            name: c.creatorInfo.name,
+            image: c.creatorInfo.image ?? "",
+          }
+        : {
+            id: c.creator.toString(),
+            username: "",
+            name: "",
+            image: "",
+          };
 
       return {
         id: c._id.toString(),
@@ -127,7 +129,8 @@ export async function GET(request: NextRequest) {
         image: c.image ?? "",
         creator: creatorInfo,
         memberCount: c.memberCount || 0,
-        postCount: c.postCount || 0,        isMember: me ? c.members.some((m: any) => m.equals(me)) : false,
+        postCount: c.postCount || 0,
+        isMember: me ? c.members.some((m: any) => m.equals(me)) : false,
         isModerator: me ? c.moderators.some((m: any) => m.equals(me)) : false,
         isCreator: me ? c.creator.toString() === me.toString() : false,
         createdAt: c.createdAt.toISOString(),
@@ -136,17 +139,17 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(
-        {
-          communities,
-          pagination: {
-            page,
-            limit,
-            totalCommunities: total,
-            hasMore: total > skip + limit,
-          },
-          sort: sortBy,
+      {
+        communities,
+        pagination: {
+          page,
+          limit,
+          totalCommunities: total,
+          hasMore: total > skip + limit,
         },
-        { status: 200 }
+        sort: sortBy,
+      },
+      { status: 200 }
     );
   } catch (err) {
     console.error("[COMMUNITIES GET] Error:", err);
@@ -202,27 +205,27 @@ export async function POST(request: NextRequest) {
     await creator.save();
 
     return NextResponse.json(
-        {
-          message: "Community created successfully",
-          community: {
-            id: community._id.toString(),
-            name: community.name,
-            slug: community.slug,
-            description: community.description,
-            image: community.image ?? "",
-            creator: {
-              id: creator._id.toString(),
-              username: creator.username,
-              name: creator.name,
-              image: creator.image ?? "",
-            },
-            memberCount: 1,
-            postCount: 0,
-            createdAt: community.createdAt.toISOString(),
-            updatedAt: community.updatedAt.toISOString(),
+      {
+        message: "Community created successfully",
+        community: {
+          id: community._id.toString(),
+          name: community.name,
+          slug: community.slug,
+          description: community.description,
+          image: community.image ?? "",
+          creator: {
+            id: creator._id.toString(),
+            username: creator.username,
+            name: creator.name,
+            image: creator.image ?? "",
           },
+          memberCount: 1,
+          postCount: 0,
+          createdAt: community.createdAt.toISOString(),
+          updatedAt: community.updatedAt.toISOString(),
         },
-        { status: 201 }
+      },
+      { status: 201 }
     );
   } catch (err) {
     console.error("[COMMUNITIES POST] Error:", err);

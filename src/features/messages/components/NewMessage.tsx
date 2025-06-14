@@ -90,7 +90,7 @@ export default function NewMessage() {
           </Button>
           <h2 className="text-lg font-semibold text-gray-900">New Message</h2>
         </div>
-        
+
         {selectedUser ? (
           <div className="mt-4 flex items-center">
             <Avatar className="h-8 w-8 mr-2">
@@ -100,9 +100,9 @@ export default function NewMessage() {
               <p className="font-medium text-sm text-gray-900">{selectedUser.name}</p>
               <p className="text-xs text-gray-500">@{selectedUser.username}</p>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="ml-auto"
               onClick={() => setSelectedUser(null)}
             >
@@ -112,7 +112,8 @@ export default function NewMessage() {
         ) : (
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input              placeholder="Search for someone..."
+            <Input
+              placeholder="Search for someone..."
               className="pl-10"
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
@@ -167,7 +168,10 @@ export default function NewMessage() {
             <div className="flex items-center">
               <Input
                 placeholder="Type a message..."
-                value={messageContent}                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessageContent(e.target.value)}
+                value={messageContent}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setMessageContent(e.target.value)
+                }
                 className="flex-1"
                 onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -181,11 +185,7 @@ export default function NewMessage() {
                 onClick={handleSendMessage}
                 disabled={!messageContent.trim() || isSending}
               >
-                {isSending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Send"
-                )}
+                {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
               </Button>
             </div>
           </div>

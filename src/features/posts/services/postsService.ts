@@ -10,22 +10,22 @@ import { Post, PaginatedPosts, PostsQueryParams } from "../types/post";
  * Fetch posts with pagination and filters
  */
 export async function getPosts(options: PostsQueryParams): Promise<PaginatedPosts> {
-  const { page = 1, limit = 10, sort = 'newest', communityId, userId } = options;
-  
+  const { page = 1, limit = 10, sort = "newest", communityId, userId } = options;
+
   // Build query parameters
   const params = new URLSearchParams();
-  params.append('page', page.toString());
-  params.append('limit', limit.toString());
-  params.append('sort', sort);
-  
+  params.append("page", page.toString());
+  params.append("limit", limit.toString());
+  params.append("sort", sort);
+
   if (communityId) {
-    params.append('communityId', communityId);
+    params.append("communityId", communityId);
   }
-  
+
   if (userId) {
-    params.append('userId', userId);
+    params.append("userId", userId);
   }
-  
+
   // Make the API call using our shared client
   return ApiClient.get<PaginatedPosts>(`/api/posts?${params.toString()}`);
 }
@@ -45,7 +45,7 @@ export async function createPost(data: {
   communityId?: string;
   mediaUrls?: string[];
 }): Promise<{ post: Post }> {
-  return ApiClient.post<{ post: Post }>('/api/posts', data);
+  return ApiClient.post<{ post: Post }>("/api/posts", data);
 }
 
 /**
@@ -59,20 +59,14 @@ export async function deletePost(postId: string): Promise<{ success: boolean }> 
  * Upvote a post
  */
 export async function upvotePost(postId: string): Promise<{ success: boolean }> {
-  return ApiClient.post<{ success: boolean }>(
-    `/api/posts/${postId}/vote`, 
-    { action: 'upvote' }
-  );
+  return ApiClient.post<{ success: boolean }>(`/api/posts/${postId}/vote`, { action: "upvote" });
 }
 
 /**
  * Downvote a post
  */
 export async function downvotePost(postId: string): Promise<{ success: boolean }> {
-  return ApiClient.post<{ success: boolean }>(
-    `/api/posts/${postId}/vote`, 
-    { action: 'downvote' }
-  );
+  return ApiClient.post<{ success: boolean }>(`/api/posts/${postId}/vote`, { action: "downvote" });
 }
 
 /**

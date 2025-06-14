@@ -20,7 +20,7 @@ export default function ConversationsList() {
     fetchConversations,
     setActiveConversation,
   } = useDirectMessages();
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
@@ -60,7 +60,7 @@ export default function ConversationsList() {
           />
         </div>
       </div>
-      
+
       <div className="p-2">
         <Button
           onClick={handleNewMessageClick}
@@ -70,7 +70,7 @@ export default function ConversationsList() {
           New Message
         </Button>
       </div>
-      
+
       <ScrollArea className="flex-1">
         {isLoadingConversations ? (
           <div className="flex items-center justify-center h-32">
@@ -87,23 +87,22 @@ export default function ConversationsList() {
                 key={conversation.userId}
                 className={cn(
                   "flex items-center p-3 rounded-lg cursor-pointer transition-colors",
-                  activeConversation === conversation.userId
-                    ? "bg-blue-50"
-                    : "hover:bg-gray-50"
+                  activeConversation === conversation.userId ? "bg-blue-50" : "hover:bg-gray-50"
                 )}
                 onClick={() => handleConversationClick(conversation)}
               >
                 <Avatar className="h-10 w-10 mr-3">
                   <img
-                    src={conversation.image || `https://placehold.co/200x200?text=${conversation.name.charAt(0)}`}
+                    src={
+                      conversation.image ||
+                      `https://placehold.co/200x200?text=${conversation.name.charAt(0)}`
+                    }
                     alt={conversation.name}
                   />
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-sm truncate">
-                      {conversation.name}
-                    </h3>
+                    <h3 className="font-medium text-sm truncate">{conversation.name}</h3>
                     <span className="text-xs text-gray-500">
                       {formatDistanceToNow(new Date(conversation.lastMessageAt), {
                         addSuffix: false,
@@ -111,13 +110,9 @@ export default function ConversationsList() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-1">
-                    <p className="text-xs text-gray-500 truncate">
-                      {conversation.lastMessage}
-                    </p>
+                    <p className="text-xs text-gray-500 truncate">{conversation.lastMessage}</p>
                     {conversation.unreadCount > 0 && (
-                      <Badge className="ml-2 bg-[#00AEEF]">
-                        {conversation.unreadCount}
-                      </Badge>
+                      <Badge className="ml-2 bg-[#00AEEF]">{conversation.unreadCount}</Badge>
                     )}
                   </div>
                 </div>

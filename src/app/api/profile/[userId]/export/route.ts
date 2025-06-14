@@ -7,14 +7,11 @@ import Comment from "@/models/Comment";
 import mongoose from "mongoose";
 
 // POST /api/profile/[userId]/export - Request a data export
-export async function POST(
-  _req: NextRequest,
-  { params }: { params: Promise<{ userId: string }> }
-) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
-    
+
     if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -23,16 +20,19 @@ export async function POST(
       return NextResponse.json({ error: "Invalid or missing userId" }, { status: 400 });
     }
 
-    await connectToDatabase();    // Find the user
-    const user = await User.findById(resolvedParams.userId).lean().exec() as any;
-    
+    await connectToDatabase(); // Find the user
+    const user = (await User.findById(resolvedParams.userId).lean().exec()) as any;
+
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Check if the requesting user is the profile owner
     if (user.clerkId !== clerkUserId) {
-      return NextResponse.json({ error: "Unauthorized: You can only export your own data" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Unauthorized: You can only export your own data" },
+        { status: 403 }
+      );
     }
 
     // Generate a unique export ID
@@ -59,11 +59,8 @@ export async function POST(
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
       },
-    };    // Fetch user's posts
-    const posts = await Post.find({ author: user._id })
-      .sort({ createdAt: -1 })
-      .lean()
-      .exec();
+    }; // Fetch user's posts
+    const posts = await Post.find({ author: user._id }).sort({ createdAt: -1 }).lean().exec();
 
     (userData as any).posts = posts.map((post: any) => ({
       id: post._id.toString(),
@@ -77,10 +74,8 @@ export async function POST(
     }));
 
     // Fetch user's comments
-    const comments = await Comment.find({ author: user._id })
-      .sort({ createdAt: -1 })
-      .lean()
-      .exec();    (userData as any).comments = comments.map((comment: any) => ({
+    const comments = await Comment.find({ author: user._id }).sort({ createdAt: -1 }).lean().exec();
+    (userData as any).comments = comments.map((comment: any) => ({
       id: comment._id.toString(),
       content: comment.content,
       post: comment.post.toString(),
@@ -96,17 +91,17 @@ export async function POST(
 
     // For this example, we'll return the data directly
     // In a production app, you would return a token or job ID that the user can use to check the status
-    return NextResponse.json({
-      success: true,
-      message: "Data export generated successfully",
-      exportId,
-      data: userData,
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Data export generated successfully",
+        exportId,
+        data: userData,
+      },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("[POST /api/profile/[userId]/export] Error:", err);
-    return NextResponse.json(
-      { error: "Failed to generate data export" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to generate data export" }, { status: 500 });
   }
 }

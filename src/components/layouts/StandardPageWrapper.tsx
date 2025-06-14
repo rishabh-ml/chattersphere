@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface StandardPageWrapperProps {
   children: React.ReactNode;
@@ -12,9 +12,5 @@ interface StandardPageWrapperProps {
  * nested layouts to use the full width
  */
 export function StandardPageWrapper({ children }: StandardPageWrapperProps) {
-  return (
-    <div className="max-w-3xl mx-auto">
-      {children}
-    </div>
-  );
+  return <div className="max-w-3xl mx-auto">{children}</div>;
 }

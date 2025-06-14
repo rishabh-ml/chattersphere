@@ -31,7 +31,7 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
     // Skip if URL is empty
     if (!url) return;
 
-    setState(prev => ({ ...prev, loading: true }));
+    setState((prev) => ({ ...prev, loading: true }));
 
     let attempts = 0;
     let lastError: Error | null = null;
@@ -53,7 +53,7 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
 
         if (attempts < retries) {
           // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, retryDelay * attempts));
+          await new Promise((resolve) => setTimeout(resolve, retryDelay * attempts));
         }
       }
     }

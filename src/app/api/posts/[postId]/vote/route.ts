@@ -13,10 +13,7 @@ interface VoteBody {
   voteType: VoteType;
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ postId: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ postId: string }> }) {
   const resolvedParams = await params;
   try {
     // 1) Authenticate
@@ -156,9 +153,6 @@ export async function POST(
     );
   } catch (err) {
     console.error("[POST] /api/posts/[postId]/vote Error:", err);
-    return NextResponse.json(
-      { error: "Failed to vote on post" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to vote on post" }, { status: 500 });
   }
 }

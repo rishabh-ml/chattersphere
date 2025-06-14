@@ -11,15 +11,21 @@ import { z } from "zod";
 
 // Define validation schema for message creation
 const messageCreateSchema = z.object({
-  content: z.string().trim().min(1, "Message content is required").max(5000, "Message too long; max 5000 chars"),
-  attachments: z.array(
-    z.object({
-      url: z.string().url("Invalid attachment URL"),
-      type: z.string(),
-      name: z.string(),
-      size: z.number().positive("File size must be positive")
-    })
-  ).optional(),
+  content: z
+    .string()
+    .trim()
+    .min(1, "Message content is required")
+    .max(5000, "Message too long; max 5000 chars"),
+  attachments: z
+    .array(
+      z.object({
+        url: z.string().url("Invalid attachment URL"),
+        type: z.string(),
+        name: z.string(),
+        size: z.number().positive("File size must be positive"),
+      })
+    )
+    .optional(),
 });
 
 /**
@@ -27,9 +33,9 @@ const messageCreateSchema = z.object({
  * @apiName GetMessages
  * @apiGroup Messages
  * @apiDescription Get messages exchanged with a specific user
- * 
+ *
  * @apiParam {String} userId ID of the user to get messages with
- * 
+ *
  * @apiSuccess {Object[]} messages List of messages
  * @apiSuccess {String} messages.id Message ID
  * @apiSuccess {String} messages.content Message content
@@ -45,7 +51,8 @@ const messageCreateSchema = z.object({
 async function getMessagesHandler(
   req: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
-) {  const resolvedParams = await params;
+) {
+  const resolvedParams = await params;
   try {
     // Get the authenticated user
     const { userId: clerkUserId } = await auth();
@@ -80,14 +87,17 @@ async function getMessagesHandler(
 
     // Check if the other user allows messages
     if (otherUser.privacySettings?.allowMessages === false) {
-      return NextResponse.json({ error: "This user does not allow direct messages" }, { status: 403 });
+      return NextResponse.json(
+        { error: "This user does not allow direct messages" },
+        { status: 403 }
+      );
     }
 
     // Get pagination parameters
     const url = new URL(req.url);
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "50");
-    
+
     // Validate pagination parameters
     const validPage = Math.max(1, page);
     const validLimit = Math.min(100, Math.max(1, limit));
@@ -104,8 +114,8 @@ async function getMessagesHandler(
         const messages = await DirectMessage.find({
           $or: [
             { sender: currentUser._id, recipient: sanitizedUserId },
-            { sender: sanitizedUserId, recipient: currentUser._id }
-          ]
+            { sender: sanitizedUserId, recipient: currentUser._id },
+          ],
         })
           .sort({ createdAt: -1 })
           .skip(skip)
@@ -117,8 +127,8 @@ async function getMessagesHandler(
         const totalMessages = await DirectMessage.countDocuments({
           $or: [
             { sender: currentUser._id, recipient: sanitizedUserId },
-            { sender: sanitizedUserId, recipient: currentUser._id }
-          ]
+            { sender: sanitizedUserId, recipient: currentUser._id },
+          ],
         });
 
         // Mark messages as read
@@ -126,27 +136,25 @@ async function getMessagesHandler(
           {
             sender: sanitizedUserId,
             recipient: currentUser._id,
-            isRead: false
+            isRead: false,
           },
           {
-            $set: { isRead: true }
+            $set: { isRead: true },
           }
-        );
-
-        // Format messages for response
-        const formattedMessages = messages.map(message => ({
+        ); // Format messages for response
+        const formattedMessages = messages.map((message: any) => ({
           id: message._id.toString(),
           content: message.content,
           sender: {
             id: message.sender._id.toString(),
             username: message.sender.username,
             name: message.sender.name,
-            image: message.sender.image
+            image: message.sender.image,
           },
           attachments: message.attachments || [],
           isRead: message.isRead,
           createdAt: message.createdAt,
-          updatedAt: message.updatedAt
+          updatedAt: message.updatedAt,
         }));
 
         return {
@@ -156,8 +164,8 @@ async function getMessagesHandler(
             limit: validLimit,
             totalMessages,
             totalPages: Math.ceil(totalMessages / validLimit),
-            hasMore: validPage * validLimit < totalMessages
-          }
+            hasMore: validPage * validLimit < totalMessages,
+          },
         };
       },
       30 // 30 seconds TTL
@@ -178,12 +186,12 @@ async function getMessagesHandler(
  * @apiName SendMessage
  * @apiGroup Messages
  * @apiDescription Send a direct message to a specific user
- * 
+ *
  * @apiParam {String} userId ID of the user to send a message to
- * 
+ *
  * @apiBody {String} content Message content
  * @apiBody {Object[]} [attachments] Message attachments
- * 
+ *
  * @apiSuccess {Object} message The created message
  * @apiSuccess {String} message.id Message ID
  * @apiSuccess {String} message.content Message content
@@ -223,10 +231,13 @@ async function sendMessageHandler(
       body = validatedData;
     } catch (validationError) {
       if (validationError instanceof z.ZodError) {
-        return NextResponse.json({ 
-          error: "Validation error", 
-          details: validationError.errors 
-        }, { status: 400 });
+        return NextResponse.json(
+          {
+            error: "Validation error",
+            details: validationError.errors,
+          },
+          { status: 400 }
+        );
       }
       throw validationError;
     }
@@ -247,7 +258,10 @@ async function sendMessageHandler(
 
     // Check if the recipient allows messages
     if (recipient.privacySettings?.allowMessages === false) {
-      return NextResponse.json({ error: "This user does not allow direct messages" }, { status: 403 });
+      return NextResponse.json(
+        { error: "This user does not allow direct messages" },
+        { status: 403 }
+      );
     }
 
     // Create the message
@@ -256,7 +270,7 @@ async function sendMessageHandler(
       sender: currentUser._id,
       recipient: recipient._id,
       attachments: body.attachments || [],
-      isRead: false
+      isRead: false,
     });
 
     // Populate sender information
@@ -270,21 +284,22 @@ async function sendMessageHandler(
         id: message.sender._id.toString(),
         username: message.sender.username,
         name: message.sender.name,
-        image: message.sender.image
+        image: message.sender.image,
       },
       attachments: message.attachments || [],
       isRead: message.isRead,
       createdAt: message.createdAt,
-      updatedAt: message.updatedAt
+      updatedAt: message.updatedAt,
     };
 
     // Invalidate caches
     await invalidateCache(`messages:${currentUser._id}:${sanitizedUserId}:*`);
-    await invalidateCache(`messages:${sanitizedUserId}:${currentUser._id}:*`);
-    await invalidateCache(`messages:conversations:${currentUser._id}:*`);
+    await invalidateCache(`messages:${sanitizedUserId}:${currentUser._id}:*`);    await invalidateCache(`messages:conversations:${currentUser._id}:*`);
     await invalidateCache(`messages:conversations:${sanitizedUserId}:*`);
 
-    // TODO: Send notification to recipient
+    // Note: Notification system is implemented via Notification model
+    // Message notifications are handled by the notifications API endpoints
+    // This could be enhanced to create a notification for new messages
 
     return NextResponse.json({ message: formattedMessage }, { status: 201 });
   } catch (error) {
@@ -296,26 +311,26 @@ async function sendMessageHandler(
 // Export the handler functions with middleware
 export const GET = withApiMiddleware(
   async (req: NextRequest) => {
-    const userId = req.nextUrl.pathname.split('/')[3];
+    const userId = req.nextUrl.pathname.split("/")[3];
     return getMessagesHandler(req, { params: Promise.resolve({ userId }) });
   },
   {
     enableRateLimit: true,
     maxRequests: 100,
     windowMs: 60000, // 1 minute
-    identifier: 'messages:user:get'
+    identifier: "messages:user:get",
   }
 );
 
 export const POST = withApiMiddleware(
   async (req: NextRequest) => {
-    const userId = req.nextUrl.pathname.split('/')[3];
+    const userId = req.nextUrl.pathname.split("/")[3];
     return sendMessageHandler(req, { params: Promise.resolve({ userId }) });
   },
   {
     enableRateLimit: true,
     maxRequests: 20,
     windowMs: 60000, // 1 minute
-    identifier: 'messages:user:post'
+    identifier: "messages:user:post",
   }
 );

@@ -33,7 +33,7 @@ async function getUserProfileHandler(
     await connectToDatabase();
 
     // Create a cache key based on the user ID and requesting user
-    const cacheKey = `profile:${sanitizedUserId}${clerkUserId ? `:${clerkUserId}` : ''}`;
+    const cacheKey = `profile:${sanitizedUserId}${clerkUserId ? `:${clerkUserId}` : ""}`;
 
     // Use cache wrapper with a TTL of 5 minutes
     const profile = await withCache(
@@ -43,43 +43,47 @@ async function getUserProfileHandler(
         const pipeline = [
           { $match: { _id: new mongoose.Types.ObjectId(sanitizedUserId) } },
           // Add computed fields for counts
-          { $addFields: {
-            followingCount: { $size: { $ifNull: ["$following", []] } },
-            followerCount: { $size: { $ifNull: ["$followers", []] } },
-            communityCount: { $size: { $ifNull: ["$communities", []] } },
-          }},
+          {
+            $addFields: {
+              followingCount: { $size: { $ifNull: ["$following", []] } },
+              followerCount: { $size: { $ifNull: ["$followers", []] } },
+              communityCount: { $size: { $ifNull: ["$communities", []] } },
+            },
+          },
           // Lookup communities
-          { $lookup: {
-            from: "communities",
-            localField: "communities",
-            foreignField: "_id",
-            as: "communitiesInfo",
-            pipeline: [
-              { $project: { name: 1, image: 1 } }
-            ]
-          }},
+          {
+            $lookup: {
+              from: "communities",
+              localField: "communities",
+              foreignField: "_id",
+              as: "communitiesInfo",
+              pipeline: [{ $project: { name: 1, image: 1 } }],
+            },
+          },
           // Project only the fields we need
-          { $project: {
-            _id: 1,
-            clerkId: 1,
-            username: 1,
-            name: 1,
-            email: 1,
-            bio: 1,
-            image: 1,
-            pronouns: 1,
-            location: 1,
-            website: 1,
-            socialLinks: 1,
-            interests: 1,
-            followingCount: 1,
-            followerCount: 1,
-            communityCount: 1,
-            communitiesInfo: 1,
-            privacySettings: 1,
-            createdAt: 1,
-            updatedAt: 1,
-          }}
+          {
+            $project: {
+              _id: 1,
+              clerkId: 1,
+              username: 1,
+              name: 1,
+              email: 1,
+              bio: 1,
+              image: 1,
+              pronouns: 1,
+              location: 1,
+              website: 1,
+              socialLinks: 1,
+              interests: 1,
+              followingCount: 1,
+              followerCount: 1,
+              communityCount: 1,
+              communitiesInfo: 1,
+              privacySettings: 1,
+              createdAt: 1,
+              updatedAt: 1,
+            },
+          },
         ];
 
         const [userDoc] = await User.aggregate(pipeline);
@@ -105,20 +109,24 @@ async function getUserProfileHandler(
           interests: userDoc.interests || [],
           followingCount: userDoc.followingCount,
           followerCount: userDoc.followerCount,
-          communityCount: userDoc.communityCount,          communities: userDoc.communitiesInfo?.map((c: any) => ({
-            id: c._id.toString(),
-            name: c.name,
-            image: c.image || ""
-          })) || [],
+          communityCount: userDoc.communityCount,
+          communities:
+            userDoc.communitiesInfo?.map((c: any) => ({
+              id: c._id.toString(),
+              name: c.name,
+              image: c.image || "",
+            })) || [],
           isFollowing: false,
           createdAt: userDoc.createdAt.toISOString(),
           updatedAt: userDoc.updatedAt.toISOString(),
-        };        // Add email only if the user is the owner or if showEmail is true
-        if (isOwner || (userDoc.privacySettings?.showEmail)) {
+        }; // Add email only if the user is the owner or if showEmail is true
+        if (isOwner || userDoc.privacySettings?.showEmail) {
           (profile as any).email = userDoc.email;
-        }        // Check if the current user is following this profile
+        } // Check if the current user is following this profile
         if (clerkUserId && !isOwner) {
-          const currentUser = await User.findOne({ clerkId: clerkUserId }).select("following").lean() as { following?: mongoose.Types.ObjectId[] } | null;
+          const currentUser = (await User.findOne({ clerkId: clerkUserId })
+            .select("following")
+            .lean()) as { following?: mongoose.Types.ObjectId[] } | null;
           if (currentUser?.following) {
             profile.isFollowing = currentUser.following.some(
               (id: mongoose.Types.ObjectId) => id.toString() === userDoc._id.toString()
@@ -149,7 +157,7 @@ async function updateUserProfileHandler(
 
     if (!clerkUserId) {
       return ApiError.unauthorized();
-    }    // Sanitize and validate userId
+    } // Sanitize and validate userId
     if (!resolvedParams?.userId) {
       return ApiError.badRequest("Missing userId parameter");
     }
@@ -179,14 +187,14 @@ async function updateUserProfileHandler(
     const validationResult = profileUpdateSchema.safeParse(body);
 
     if (!validationResult.success) {
-      const errorMessage = validationResult.error.errors.map(err =>
-        `${err.path.join('.')}: ${err.message}`
-      ).join(', ');
+      const errorMessage = validationResult.error.errors
+        .map((err) => `${err.path.join(".")}: ${err.message}`)
+        .join(", ");
 
       return ApiError.badRequest("Validation error", { details: errorMessage });
     }
 
-    const { bio, pronouns, location, website, socialLinks, interests } = validationResult.data;    // Update the user document
+    const { bio, pronouns, location, website, socialLinks, interests } = validationResult.data; // Update the user document
     const updatedUser = await User.findByIdAndUpdate(
       resolvedParams.userId,
       {
@@ -204,15 +212,17 @@ async function updateUserProfileHandler(
     )
       .select("-email")
       .lean()
-      .exec();    if (!updatedUser) {
+      .exec();
+    if (!updatedUser) {
       return ApiError.notFound("User not found");
-    }    return NextResponse.json(
+    }
+    return NextResponse.json(
       {
         success: true,
         profile: {
           ...updatedUser,
           id: (updatedUser as any)._id.toString(),
-        }
+        },
       },
       { status: 200 }
     );
@@ -225,26 +235,26 @@ async function updateUserProfileHandler(
 // Export the handler functions with middleware
 export const GET = withApiMiddleware(
   async (req: NextRequest) => {
-    const userId = req.nextUrl.pathname.split('/')[3];
+    const userId = req.nextUrl.pathname.split("/")[3];
     return getUserProfileHandler(req, { params: Promise.resolve({ userId }) });
   },
   {
     enableRateLimit: true,
     maxRequests: 100,
     windowMs: 60000, // 1 minute
-    identifier: 'profile:get'
+    identifier: "profile:get",
   }
 );
 
 export const PUT = withApiMiddleware(
   async (req: NextRequest) => {
-    const userId = req.nextUrl.pathname.split('/')[3];
+    const userId = req.nextUrl.pathname.split("/")[3];
     return updateUserProfileHandler(req, { params: Promise.resolve({ userId }) });
   },
   {
     enableRateLimit: true,
     maxRequests: 20,
     windowMs: 60000, // 1 minute
-    identifier: 'profile:put'
+    identifier: "profile:put",
   }
 );

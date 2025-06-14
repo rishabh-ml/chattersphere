@@ -1,31 +1,31 @@
-describe('Home Page', () => {
+describe("Home Page", () => {
   beforeEach(() => {
     // Mock Clerk authentication
-    cy.intercept('GET', '/api/clerk/user', {
+    cy.intercept("GET", "/api/clerk/user", {
       statusCode: 200,
       body: {
-        id: 'test-user-id',
-        username: 'testuser',
-        firstName: 'Test',
-        lastName: 'User',
-        imageUrl: 'https://example.com/avatar.jpg',
+        id: "test-user-id",
+        username: "testuser",
+        firstName: "Test",
+        lastName: "User",
+        imageUrl: "https://example.com/avatar.jpg",
       },
     });
-    
+
     // Mock posts API
-    cy.intercept('GET', '/api/posts/feed*', {
+    cy.intercept("GET", "/api/posts/feed*", {
       statusCode: 200,
       body: {
         posts: [
           {
-            id: 'post-1',
+            id: "post-1",
             author: {
-              id: 'user-1',
-              username: 'testuser',
-              name: 'Test User',
-              image: 'https://example.com/avatar.jpg',
+              id: "user-1",
+              username: "testuser",
+              name: "Test User",
+              image: "https://example.com/avatar.jpg",
             },
-            content: 'This is a test post content',
+            content: "This is a test post content",
             upvoteCount: 10,
             downvoteCount: 2,
             voteCount: 8,
@@ -44,35 +44,35 @@ describe('Home Page', () => {
         },
       },
     });
-    
-    cy.visit('/');
+
+    cy.visit("/");
   });
 
-  it('displays the header', () => {
-    cy.get('header').should('be.visible');
-    cy.contains('ChatterSphere').should('be.visible');
+  it("displays the header", () => {
+    cy.get("header").should("be.visible");
+    cy.contains("ChatterSphere").should("be.visible");
   });
 
-  it('displays posts in the feed', () => {
-    cy.contains('This is a test post content').should('be.visible');
-    cy.contains('Test User').should('be.visible');
+  it("displays posts in the feed", () => {
+    cy.contains("This is a test post content").should("be.visible");
+    cy.contains("Test User").should("be.visible");
   });
 
-  it('allows upvoting a post', () => {
+  it("allows upvoting a post", () => {
     // Mock the upvote API
-    cy.intercept('POST', '/api/posts/*/upvote', {
+    cy.intercept("POST", "/api/posts/*/upvote", {
       statusCode: 200,
       body: { success: true },
     });
-    
+
     cy.get('[aria-label="Upvote"]').first().click();
-    
+
     // Verify the upvote button is active
-    cy.get('[aria-label="Upvote"]').first().should('have.class', 'text-green-500');
+    cy.get('[aria-label="Upvote"]').first().should("have.class", "text-green-500");
   });
 
-  it('navigates to user profile when clicking on author name', () => {
-    cy.contains('Test User').click();
-    cy.url().should('include', '/profile/user-1');
+  it("navigates to user profile when clicking on author name", () => {
+    cy.contains("Test User").click();
+    cy.url().should("include", "/profile/user-1");
   });
 });

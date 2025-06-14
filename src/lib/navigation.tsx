@@ -306,11 +306,7 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 export const NavigationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const navigation = useNavigation();
 
-  return (
-    <NavigationContext.Provider value={navigation}>
-      {children}
-    </NavigationContext.Provider>
-  );
+  return <NavigationContext.Provider value={navigation}>{children}</NavigationContext.Provider>;
 };
 
 /**
@@ -322,7 +318,7 @@ export const useNavigationContext = () => {
   const context = useContext(NavigationContext);
 
   if (context === undefined) {
-    throw new Error('useNavigationContext must be used within a NavigationProvider');
+    throw new Error("useNavigationContext must be used within a NavigationProvider");
   }
 
   return context;

@@ -28,14 +28,8 @@ interface Message {
 
 export default function ChannelPage() {
   const { channelId } = useParams<{ slug: string; channelId: string }>();
-  const {
-    community,
-    channels,
-    selectedChannel,
-    loading,
-    error,
-    selectChannel,
-  } = useSingleCommunity();
+  const { community, channels, selectedChannel, loading, error, selectChannel } =
+    useSingleCommunity();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageContent, setMessageContent] = useState("");
@@ -46,7 +40,7 @@ export default function ChannelPage() {
   // Select the channel when the page loads
   useEffect(() => {
     if (channelId && channels.length > 0) {
-      const channel = channels.find(c => c.id === channelId);
+      const channel = channels.find((c) => c.id === channelId);
       if (channel) {
         selectChannel(channelId as string);
       }
@@ -57,9 +51,9 @@ export default function ChannelPage() {
   useEffect(() => {
     const fetchMessages = async () => {
       if (!selectedChannel) return;
-      
+
       setIsLoadingMessages(true);
-      
+
       try {
         // In a real app, you would fetch messages from the API
         // For now, we'll use mock data
@@ -91,7 +85,7 @@ export default function ChannelPage() {
             isEdited: false,
           },
         ];
-        
+
         setMessages(mockMessages);
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -100,7 +94,7 @@ export default function ChannelPage() {
         setIsLoadingMessages(false);
       }
     };
-    
+
     fetchMessages();
   }, [selectedChannel]);
 
@@ -112,9 +106,9 @@ export default function ChannelPage() {
   // Handle sending a message
   const handleSendMessage = async () => {
     if (!messageContent.trim() || !selectedChannel) return;
-    
+
     setIsSendingMessage(true);
-    
+
     try {
       // In a real app, you would send the message to the API
       // For now, we'll just add it to the local state
@@ -131,7 +125,7 @@ export default function ChannelPage() {
         updatedAt: new Date().toISOString(),
         isEdited: false,
       };
-      
+
       setMessages([...messages, newMessage]);
       setMessageContent("");
     } catch (error) {
@@ -179,7 +173,9 @@ export default function ChannelPage() {
       <div className="flex flex-col items-center justify-center h-full p-4">
         <div className="text-red-500 text-center">
           <p className="text-lg font-semibold mb-2">Channel not found</p>
-          <p className="text-sm">The channel you're looking for doesn't exist or you don't have access to it.</p>
+          <p className="text-sm">
+            The channel you're looking for doesn't exist or you don't have access to it.
+          </p>
         </div>
       </div>
     );
@@ -199,12 +195,10 @@ export default function ChannelPage() {
           )}
         </div>
         {selectedChannel.description && (
-          <p className="text-sm text-gray-500 mt-1 ml-7">
-            {selectedChannel.description}
-          </p>
+          <p className="text-sm text-gray-500 mt-1 ml-7">{selectedChannel.description}</p>
         )}
       </div>
-      
+
       {/* Messages area */}
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-4">
@@ -224,9 +218,7 @@ export default function ChannelPage() {
                 This is the start of the {selectedChannel.name} channel.
               </p>
               {selectedChannel.description && (
-                <p className="text-gray-500 mt-4 max-w-md mx-auto">
-                  {selectedChannel.description}
-                </p>
+                <p className="text-gray-500 mt-4 max-w-md mx-auto">{selectedChannel.description}</p>
               )}
             </div>
           ) : (
@@ -241,12 +233,10 @@ export default function ChannelPage() {
                     </AvatarFallback>
                   )}
                 </Avatar>
-                
+
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <span className="font-semibold text-gray-900">
-                      {message.author.name}
-                    </span>
+                    <span className="font-semibold text-gray-900">{message.author.name}</span>
                     <span className="ml-2 text-xs text-gray-500">
                       {format(new Date(message.createdAt), "MMM d, yyyy 'at' h:mm a")}
                     </span>
@@ -254,10 +244,8 @@ export default function ChannelPage() {
                       <span className="ml-1 text-xs text-gray-500">(edited)</span>
                     )}
                   </div>
-                  
-                  <div className="mt-1 text-gray-800">
-                    {message.content}
-                  </div>
+
+                  <div className="mt-1 text-gray-800">{message.content}</div>
                 </div>
               </div>
             ))
@@ -265,18 +253,14 @@ export default function ChannelPage() {
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
-      
+
       {/* Message input */}
       <div className="p-4 border-t border-gray-200 bg-white">
         <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-gray-500 hover:text-gray-700"
-          >
+          <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700">
             <PlusCircle className="h-5 w-5" />
           </Button>
-          
+
           <div className="flex-1 mx-2 relative">
             <Textarea
               placeholder={`Message #${selectedChannel.name}`}
@@ -307,7 +291,7 @@ export default function ChannelPage() {
               </Button>
             </div>
           </div>
-          
+
           <Button
             variant="ghost"
             size="icon"

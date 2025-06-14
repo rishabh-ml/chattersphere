@@ -9,13 +9,15 @@ import { Analytics } from "./analytics";
 // We'll handle the EnableMock component in a client component instead
 
 // Initialize monitoring in production using dynamic import to avoid ESM/CJS conflicts
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   // Use dynamic import to avoid ESM/CJS conflicts during build time
-  import("@/lib/monitoring").then(({ initMonitoring }) => {
-    initMonitoring();
-  }).catch(error => {
-    console.warn("Failed to initialize monitoring:", error);
-  });
+  import("@/lib/monitoring")
+    .then(({ initMonitoring }) => {
+      initMonitoring();
+    })
+    .catch((error) => {
+      console.warn("Failed to initialize monitoring:", error);
+    });
 }
 
 const inter = Inter({
@@ -31,9 +33,10 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   title: "ChatterSphere | Connect Through Meaningful Conversations",
-  description: "ChatterSphere helps you build meaningful connections through real-time chat, thriving community, and global interactions in a secure environment.",
+  description:
+    "ChatterSphere helps you build meaningful connections through real-time chat, thriving community, and global interactions in a secure environment.",
   keywords: ["chat platform", "communities", "messaging", "social network"],
   authors: [{ name: "ChatterSphere Team" }],
   creator: "ChatterSphere",

@@ -1,9 +1,9 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export enum ChannelType {
-  TEXT = 'TEXT',
-  VOICE = 'VOICE',
-  ANNOUNCEMENT = 'ANNOUNCEMENT',
+  TEXT = "TEXT",
+  VOICE = "VOICE",
+  ANNOUNCEMENT = "ANNOUNCEMENT",
 }
 
 export interface IChannel extends Document {
@@ -28,13 +28,13 @@ const ChannelSchema = new Schema<IChannel>(
     type: {
       type: String,
       enum: Object.values(ChannelType),
-      default: ChannelType.TEXT
+      default: ChannelType.TEXT,
     },
-    community: { type: Schema.Types.ObjectId, ref: 'Community', required: true },
+    community: { type: Schema.Types.ObjectId, ref: "Community", required: true },
     isPrivate: { type: Boolean, default: false },
-    allowedRoles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
-    allowedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
+    allowedRoles: [{ type: Schema.Types.ObjectId, ref: "Role" }],
+    allowedUsers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    messages: [{ type: Schema.Types.ObjectId, ref: "Message" }],
   },
   { timestamps: true }
 );
@@ -53,12 +53,12 @@ ChannelSchema.index({ allowedRoles: 1 });
 ChannelSchema.index({ allowedUsers: 1 });
 
 // Virtual for message count
-ChannelSchema.virtual('messageCount').get(function() {
+ChannelSchema.virtual("messageCount").get(function () {
   return this.messages.length;
 });
 
 // Method to check if a user has access to this channel
-ChannelSchema.methods.hasAccess = async function(
+ChannelSchema.methods.hasAccess = async function (
   userId: mongoose.Types.ObjectId | string,
   userRoles: mongoose.Types.ObjectId[] | string[]
 ) {
@@ -79,4 +79,4 @@ ChannelSchema.methods.hasAccess = async function(
   return false;
 };
 
-export default mongoose.models.Channel || mongoose.model<IChannel>('Channel', ChannelSchema);
+export default mongoose.models.Channel || mongoose.model<IChannel>("Channel", ChannelSchema);

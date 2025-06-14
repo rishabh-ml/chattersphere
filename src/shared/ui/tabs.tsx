@@ -1,44 +1,44 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 const TabsContext = React.createContext<{
   value: string;
   onValueChange: (value: string) => void;
-} | null>(null)
+} | null>(null);
 
 interface TabsProps {
-  children: React.ReactNode
-  value: string
-  onValueChange: (value: string) => void
-  defaultValue?: string
-  className?: string
+  children: React.ReactNode;
+  value: string;
+  onValueChange: (value: string) => void;
+  defaultValue?: string;
+  className?: string;
 }
 
 interface TabsListProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }
 
 interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  value: string
-  children: React.ReactNode
-  className?: string
+  value: string;
+  children: React.ReactNode;
+  className?: string;
 }
 
 interface TabsContentProps {
-  value: string
-  children: React.ReactNode
-  className?: string
+  value: string;
+  children: React.ReactNode;
+  className?: string;
 }
 
 export function Tabs({ children, className, value, onValueChange, defaultValue }: TabsProps) {
-  const initialValue = value || defaultValue || ""
+  const initialValue = value || defaultValue || "";
 
   return (
     <TabsContext.Provider value={{ value: initialValue, onValueChange }}>
       <div className={cn("w-full", className)}>{children}</div>
     </TabsContext.Provider>
-  )
+  );
 }
 
 export function TabsList({ children, className }: TabsListProps) {
@@ -52,14 +52,14 @@ export function TabsList({ children, className }: TabsListProps) {
     >
       {children}
     </div>
-  )
+  );
 }
 
 export function TabsTrigger({ children, className, value, ...props }: TabsTriggerProps) {
-  const context = React.useContext(TabsContext)
-  if (!context) throw new Error("TabsTrigger must be used within a Tabs component")
+  const context = React.useContext(TabsContext);
+  if (!context) throw new Error("TabsTrigger must be used within a Tabs component");
 
-  const isActive = context.value === value
+  const isActive = context.value === value;
 
   return (
     <button
@@ -75,23 +75,20 @@ export function TabsTrigger({ children, className, value, ...props }: TabsTrigge
     >
       {children}
     </button>
-  )
+  );
 }
 
 export function TabsContent({ children, value, className }: TabsContentProps) {
-  const context = React.useContext(TabsContext)
-  if (!context) throw new Error("TabsContent must be used within a Tabs component")
+  const context = React.useContext(TabsContext);
+  if (!context) throw new Error("TabsContent must be used within a Tabs component");
 
-  const isActive = context.value === value
+  const isActive = context.value === value;
 
-  if (!isActive) return null
+  if (!isActive) return null;
 
   return (
-    <div
-      role="tabpanel"
-      className={cn("mt-2", className)}
-    >
+    <div role="tabpanel" className={cn("mt-2", className)}>
       {children}
     </div>
-  )
+  );
 }

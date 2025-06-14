@@ -108,9 +108,6 @@ export async function GET(
     });
   } catch (err) {
     console.error("[MEMBERSHIP-REQUESTS.GET] Error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch membership requests" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch membership requests" }, { status: 500 });
   }
 }

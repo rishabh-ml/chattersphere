@@ -10,9 +10,9 @@ import { withApiMiddleware } from "@/lib/apiUtils";
  * @apiName SearchUsers
  * @apiGroup Users
  * @apiDescription Search for users by name or username
- * 
+ *
  * @apiQuery {String} q Search query
- * 
+ *
  * @apiSuccess {Object[]} users List of users matching the search query
  * @apiSuccess {String} users.id User ID
  * @apiSuccess {String} users.username Username
@@ -30,7 +30,7 @@ async function searchUsersHandler(req: NextRequest) {
     // Get search query
     const url = new URL(req.url);
     const query = url.searchParams.get("q");
-    
+
     if (!query || query.length < 2) {
       return NextResponse.json({ users: [] }, { status: 200 });
     }
@@ -52,26 +52,24 @@ async function searchUsersHandler(req: NextRequest) {
         {
           $or: [
             { name: { $regex: sanitizedQuery, $options: "i" } },
-            { username: { $regex: sanitizedQuery, $options: "i" } }
-          ]
-        }
-      ]
+            { username: { $regex: sanitizedQuery, $options: "i" } },
+          ],
+        },
+      ],
     })
       .select("username name image privacySettings")
       .limit(20)
       .lean();
 
     // Filter out users who don't allow messages
-    const filteredUsers = users.filter(user => 
-      user.privacySettings?.allowMessages !== false
-    );
+    const filteredUsers = users.filter((user) => user.privacySettings?.allowMessages !== false);
 
     // Format users for response
-    const formattedUsers = filteredUsers.map(user => ({
+    const formattedUsers = filteredUsers.map((user) => ({
       id: user._id.toString(),
       username: user.username,
       name: user.name,
-      image: user.image
+      image: user.image,
     }));
 
     return NextResponse.json({ users: formattedUsers }, { status: 200 });
@@ -86,5 +84,5 @@ export const GET = withApiMiddleware(searchUsersHandler, {
   enableRateLimit: true,
   maxRequests: 50,
   windowMs: 60000, // 1 minute
-  identifier: 'users:search:get'
+  identifier: "users:search:get",
 });

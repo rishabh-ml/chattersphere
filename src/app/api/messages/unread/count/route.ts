@@ -11,7 +11,7 @@ import { withApiMiddleware } from "@/lib/apiUtils";
 async function getUnreadCountHandler(req: NextRequest) {
   try {
     // Get the authenticated user
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,7 +30,7 @@ async function getUnreadCountHandler(req: NextRequest) {
     // Count unread messages
     const unreadCount = await DirectMessage.countDocuments({
       recipient: user._id,
-      isRead: false
+      isRead: false,
     });
 
     return NextResponse.json({ count: unreadCount }, { status: 200 });
@@ -45,5 +45,5 @@ export const GET = withApiMiddleware(getUnreadCountHandler, {
   enableRateLimit: true,
   maxRequests: 60,
   windowMs: 60000, // 1 minute
-  identifier: 'messages:unread:count:get'
+  identifier: "messages:unread:count:get",
 });

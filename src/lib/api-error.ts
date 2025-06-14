@@ -57,8 +57,7 @@ export const ApiError = {
   unauthorized: (message = "Unauthorized") =>
     createErrorResponse(ErrorCodes.UNAUTHORIZED, message, 401),
 
-  forbidden: (message = "Forbidden") =>
-    createErrorResponse(ErrorCodes.FORBIDDEN, message, 403),
+  forbidden: (message = "Forbidden") => createErrorResponse(ErrorCodes.FORBIDDEN, message, 403),
 
   notFound: (message = "Resource not found") =>
     createErrorResponse(ErrorCodes.NOT_FOUND, message, 404),

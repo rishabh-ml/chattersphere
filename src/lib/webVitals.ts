@@ -1,5 +1,5 @@
-import { NextWebVitalsMetric } from 'next/app';
-import { captureException } from '@/lib/sentry';
+import { NextWebVitalsMetric } from "next/app";
+import { captureException } from "@/lib/sentry";
 
 /**
  * Report Web Vitals metrics
@@ -7,11 +7,11 @@ import { captureException } from '@/lib/sentry';
  */
 export function reportWebVitals(metric: NextWebVitalsMetric) {
   // Log to console in development
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     console.log(`Web Vital: ${metric.name} - ${metric.value}`);
     return;
   }
-  
+
   // In production, send to analytics service
   const body = JSON.stringify({
     name: metric.name,
@@ -20,20 +20,20 @@ export function reportWebVitals(metric: NextWebVitalsMetric) {
     startTime: metric.startTime,
     label: metric.label,
   });
-  
+
   // Send to analytics endpoint
   if (navigator.sendBeacon) {
-    navigator.sendBeacon('/api/analytics/vitals', body);
+    navigator.sendBeacon("/api/analytics/vitals", body);
   } else {
-    fetch('/api/analytics/vitals', {
+    fetch("/api/analytics/vitals", {
       body,
-      method: 'POST',
+      method: "POST",
       keepalive: true,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-    }).catch(error => {
-      captureException(error, { context: 'webVitals' });
+    }).catch((error) => {
+      captureException(error, { context: "webVitals" });
     });
   }
 }

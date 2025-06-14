@@ -51,7 +51,7 @@ npm run setup-supabase
 If you encounter issues connecting to Supabase, the application will automatically use a mock implementation in development mode. To enable the mock implementation, open your browser console and run:
 
 ```javascript
-localStorage.setItem('USE_SUPABASE_MOCK', 'true');
+localStorage.setItem("USE_SUPABASE_MOCK", "true");
 ```
 
 Or simply include this script tag in your HTML:
@@ -235,6 +235,7 @@ npm run db:seed
 ```
 
 The seed script creates:
+
 - Sample users with different roles
 - Communities with various privacy settings
 - Posts and comments

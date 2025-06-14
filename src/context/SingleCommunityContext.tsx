@@ -1,15 +1,22 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { toast } from 'sonner';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
+import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
 
 export interface Channel {
   id: string;
   name: string;
   slug: string;
   description?: string;
-  type: 'TEXT' | 'VOICE' | 'ANNOUNCEMENT';
+  type: "TEXT" | "VOICE" | "ANNOUNCEMENT";
   isPrivate: boolean;
   messageCount: number;
   createdAt: string;
@@ -89,7 +96,7 @@ const SingleCommunityContext = createContext<SingleCommunityContextType | undefi
 export const useSingleCommunity = () => {
   const context = useContext(SingleCommunityContext);
   if (context === undefined) {
-    throw new Error('useSingleCommunity must be used within a SingleCommunityProvider');
+    throw new Error("useSingleCommunity must be used within a SingleCommunityProvider");
   }
   return context;
 };
@@ -131,7 +138,7 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
 
         if (!res.ok) {
           const errorData = await res.json();
-          throw new Error(errorData.error || 'Failed to fetch community');
+          throw new Error(errorData.error || "Failed to fetch community");
         }
 
         const data = await res.json();
@@ -154,10 +161,10 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
 
             // Select the first channel by default if none is selected
             if (channelsData.channels.length > 0) {
-              setSelectedChannel(current => current || channelsData.channels[0]);
+              setSelectedChannel((current) => current || channelsData.channels[0]);
             }
           } else {
-            console.error('Error fetching channels:', await channelsRes.json());
+            console.error("Error fetching channels:", await channelsRes.json());
           }
 
           // Process members response
@@ -165,17 +172,17 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
             const membersData = await membersRes.json();
             setMembers(membersData.members);
           } else {
-            console.error('Error fetching members:', await membersRes.json());
+            console.error("Error fetching members:", await membersRes.json());
           }
         }
       } finally {
         clearTimeout(timeout);
       }
     } catch (err) {
-      console.error('Error fetching community:', err);
-      if (err.name === 'AbortError') {
-        setError('Request timed out. Please try again.');
-        toast.error('Request timed out. Please try again.');
+      console.error("Error fetching community:", err);
+      if (err.name === "AbortError") {
+        setError("Request timed out. Please try again.");
+        toast.error("Request timed out. Please try again.");
       } else {
         setError((err as Error).message);
         toast.error((err as Error).message);
@@ -192,7 +199,7 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to fetch channels');
+        throw new Error(errorData.error || "Failed to fetch channels");
       }
 
       const data = await res.json();
@@ -201,11 +208,11 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
       // Select the first channel by default if none is selected
       if (data.channels.length > 0) {
         // Use a functional update to avoid dependency on selectedChannel
-        setSelectedChannel(current => current || data.channels[0]);
+        setSelectedChannel((current) => current || data.channels[0]);
       }
     } catch (err) {
-      console.error('Error fetching channels:', err);
-      toast.error('Failed to load channels');
+      console.error("Error fetching channels:", err);
+      toast.error("Failed to load channels");
     }
   }, []); // No dependencies needed with functional updates
 
@@ -216,14 +223,14 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to fetch members');
+        throw new Error(errorData.error || "Failed to fetch members");
       }
 
       const data = await res.json();
       setMembers(data.members);
     } catch (err) {
-      console.error('Error fetching members:', err);
-      toast.error('Failed to load members');
+      console.error("Error fetching members:", err);
+      toast.error("Failed to load members");
     }
   }, []);
 
@@ -234,233 +241,259 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to fetch roles');
+        throw new Error(errorData.error || "Failed to fetch roles");
       }
 
       const data = await res.json();
       setRoles(data.roles);
     } catch (err) {
-      console.error('Error fetching roles:', err);
-      toast.error('Failed to load roles');
+      console.error("Error fetching roles:", err);
+      toast.error("Failed to load roles");
     }
   }, []);
 
   // Select a channel
-  const selectChannel = useCallback((channelId: string) => {
-    const channel = channels.find(c => c.id === channelId);
-    if (channel) {
-      setSelectedChannel(channel);
-    }
-  }, [channels]);
+  const selectChannel = useCallback(
+    (channelId: string) => {
+      const channel = channels.find((c) => c.id === channelId);
+      if (channel) {
+        setSelectedChannel(channel);
+      }
+    },
+    [channels]
+  );
 
   // Join a community
-  const joinCommunity = useCallback(async (communityId: string): Promise<boolean> => {
-    if (!isSignedIn) {
-      toast.error('You must be signed in to join a community');
-      return false;
-    }
-
-    try {
-      const res = await fetch(`/api/communities/${communityId}/membership`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action: 'join' }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to join community');
+  const joinCommunity = useCallback(
+    async (communityId: string): Promise<boolean> => {
+      if (!isSignedIn) {
+        toast.error("You must be signed in to join a community");
+        return false;
       }
 
-      const data = await res.json();
-
-      // Update the community data
-      if (community) {
-        setCommunity({
-          ...community,
-          isMember: true,
-          memberCount: data.memberCount,
+      try {
+        const res = await fetch(`/api/communities/${communityId}/membership`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action: "join" }),
         });
-      }
 
-      toast.success('Successfully joined the community');
-      return true;
-    } catch (err) {
-      console.error('Error joining community:', err);
-      toast.error((err as Error).message);
-      return false;
-    }
-  }, [community, isSignedIn]);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Failed to join community");
+        }
+
+        const data = await res.json();
+
+        // Update the community data
+        if (community) {
+          setCommunity({
+            ...community,
+            isMember: true,
+            memberCount: data.memberCount,
+          });
+        }
+
+        toast.success("Successfully joined the community");
+        return true;
+      } catch (err) {
+        console.error("Error joining community:", err);
+        toast.error((err as Error).message);
+        return false;
+      }
+    },
+    [community, isSignedIn]
+  );
 
   // Leave a community
-  const leaveCommunity = useCallback(async (communityId: string): Promise<boolean> => {
-    if (!isSignedIn) {
-      toast.error('You must be signed in to leave a community');
-      return false;
-    }
-
-    try {
-      const res = await fetch(`/api/communities/${communityId}/membership`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ action: 'leave' }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to leave community');
+  const leaveCommunity = useCallback(
+    async (communityId: string): Promise<boolean> => {
+      if (!isSignedIn) {
+        toast.error("You must be signed in to leave a community");
+        return false;
       }
 
-      const data = await res.json();
-
-      // Update the community data
-      if (community) {
-        setCommunity({
-          ...community,
-          isMember: false,
-          isModerator: false,
-          memberCount: data.memberCount,
+      try {
+        const res = await fetch(`/api/communities/${communityId}/membership`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action: "leave" }),
         });
-      }
 
-      toast.success('Successfully left the community');
-      return true;
-    } catch (err) {
-      console.error('Error leaving community:', err);
-      toast.error((err as Error).message);
-      return false;
-    }
-  }, [community, isSignedIn]);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Failed to leave community");
+        }
+
+        const data = await res.json();
+
+        // Update the community data
+        if (community) {
+          setCommunity({
+            ...community,
+            isMember: false,
+            isModerator: false,
+            memberCount: data.memberCount,
+          });
+        }
+
+        toast.success("Successfully left the community");
+        return true;
+      } catch (err) {
+        console.error("Error leaving community:", err);
+        toast.error((err as Error).message);
+        return false;
+      }
+    },
+    [community, isSignedIn]
+  );
 
   // Create a new channel
-  const createChannel = useCallback(async (data: Partial<Channel>): Promise<Channel | null> => {
-    if (!community) {
-      toast.error('No community selected');
-      return null;
-    }
-
-    try {
-      const res = await fetch(`/api/communities/${community.id}/channels`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to create channel');
+  const createChannel = useCallback(
+    async (data: Partial<Channel>): Promise<Channel | null> => {
+      if (!community) {
+        toast.error("No community selected");
+        return null;
       }
 
-      const responseData = await res.json();
-      const newChannel = responseData.channel;
+      try {
+        const res = await fetch(`/api/communities/${community.id}/channels`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
 
-      // Update the channels list
-      setChannels(prev => [...prev, newChannel]);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Failed to create channel");
+        }
 
-      // Update the community data
-      setCommunity(prev => prev ? {
-        ...prev,
-        channelCount: prev.channelCount + 1,
-      } : null);
+        const responseData = await res.json();
+        const newChannel = responseData.channel;
 
-      toast.success('Channel created successfully');
-      return newChannel;
-    } catch (err) {
-      console.error('Error creating channel:', err);
-      toast.error((err as Error).message);
-      return null;
-    }
-  }, [community]);
+        // Update the channels list
+        setChannels((prev) => [...prev, newChannel]);
+
+        // Update the community data
+        setCommunity((prev) =>
+          prev
+            ? {
+                ...prev,
+                channelCount: prev.channelCount + 1,
+              }
+            : null
+        );
+
+        toast.success("Channel created successfully");
+        return newChannel;
+      } catch (err) {
+        console.error("Error creating channel:", err);
+        toast.error((err as Error).message);
+        return null;
+      }
+    },
+    [community]
+  );
 
   // Update a channel
-  const updateChannel = useCallback(async (channelId: string, data: Partial<Channel>): Promise<Channel | null> => {
-    if (!community) {
-      toast.error('No community selected');
-      return null;
-    }
-
-    try {
-      const res = await fetch(`/api/communities/${community.id}/channels/${channelId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to update channel');
+  const updateChannel = useCallback(
+    async (channelId: string, data: Partial<Channel>): Promise<Channel | null> => {
+      if (!community) {
+        toast.error("No community selected");
+        return null;
       }
 
-      const responseData = await res.json();
-      const updatedChannel = responseData.channel;
+      try {
+        const res = await fetch(`/api/communities/${community.id}/channels/${channelId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
 
-      // Update the channels list
-      setChannels(prev => prev.map(channel =>
-        channel.id === channelId ? updatedChannel : channel
-      ));
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Failed to update channel");
+        }
 
-      // Update the selected channel if it's the one being updated
-      if (selectedChannel?.id === channelId) {
-        setSelectedChannel(updatedChannel);
+        const responseData = await res.json();
+        const updatedChannel = responseData.channel;
+
+        // Update the channels list
+        setChannels((prev) =>
+          prev.map((channel) => (channel.id === channelId ? updatedChannel : channel))
+        );
+
+        // Update the selected channel if it's the one being updated
+        if (selectedChannel?.id === channelId) {
+          setSelectedChannel(updatedChannel);
+        }
+
+        toast.success("Channel updated successfully");
+        return updatedChannel;
+      } catch (err) {
+        console.error("Error updating channel:", err);
+        toast.error((err as Error).message);
+        return null;
       }
-
-      toast.success('Channel updated successfully');
-      return updatedChannel;
-    } catch (err) {
-      console.error('Error updating channel:', err);
-      toast.error((err as Error).message);
-      return null;
-    }
-  }, [community, selectedChannel]);
+    },
+    [community, selectedChannel]
+  );
 
   // Delete a channel
-  const deleteChannel = useCallback(async (channelId: string): Promise<boolean> => {
-    if (!community) {
-      toast.error('No community selected');
-      return false;
-    }
-
-    try {
-      const res = await fetch(`/api/communities/${community.id}/channels/${channelId}`, {
-        method: 'DELETE',
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to delete channel');
+  const deleteChannel = useCallback(
+    async (channelId: string): Promise<boolean> => {
+      if (!community) {
+        toast.error("No community selected");
+        return false;
       }
 
-      // Update the channels list
-      setChannels(prev => prev.filter(channel => channel.id !== channelId));
+      try {
+        const res = await fetch(`/api/communities/${community.id}/channels/${channelId}`, {
+          method: "DELETE",
+        });
 
-      // Update the community data
-      setCommunity(prev => prev ? {
-        ...prev,
-        channelCount: prev.channelCount - 1,
-      } : null);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Failed to delete channel");
+        }
 
-      // If the deleted channel was selected, select another one
-      if (selectedChannel?.id === channelId) {
-        const remainingChannels = channels.filter(channel => channel.id !== channelId);
-        setSelectedChannel(remainingChannels.length > 0 ? remainingChannels[0] : null);
+        // Update the channels list
+        setChannels((prev) => prev.filter((channel) => channel.id !== channelId));
+
+        // Update the community data
+        setCommunity((prev) =>
+          prev
+            ? {
+                ...prev,
+                channelCount: prev.channelCount - 1,
+              }
+            : null
+        );
+
+        // If the deleted channel was selected, select another one
+        if (selectedChannel?.id === channelId) {
+          const remainingChannels = channels.filter((channel) => channel.id !== channelId);
+          setSelectedChannel(remainingChannels.length > 0 ? remainingChannels[0] : null);
+        }
+
+        toast.success("Channel deleted successfully");
+        return true;
+      } catch (err) {
+        console.error("Error deleting channel:", err);
+        toast.error((err as Error).message);
+        return false;
       }
-
-      toast.success('Channel deleted successfully');
-      return true;
-    } catch (err) {
-      console.error('Error deleting channel:', err);
-      toast.error((err as Error).message);
-      return false;
-    }
-  }, [community, selectedChannel, channels]);
+    },
+    [community, selectedChannel, channels]
+  );
 
   // Fetch initial community data if a slug is provided
   useEffect(() => {
@@ -490,8 +523,6 @@ export const SingleCommunityProvider: React.FC<SingleCommunityProviderProps> = (
   };
 
   return (
-    <SingleCommunityContext.Provider value={value}>
-      {children}
-    </SingleCommunityContext.Provider>
+    <SingleCommunityContext.Provider value={value}>{children}</SingleCommunityContext.Provider>
   );
 };

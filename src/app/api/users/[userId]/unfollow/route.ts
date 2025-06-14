@@ -10,16 +10,19 @@ import { invalidateCache, CacheKeys } from "@/lib/redis";
 
 /**
  * DELETE /api/users/[userId]/unfollow - Unfollow a user
- * 
+ *
  * Removes the target user from the current user's following list
  * and removes the current user from the target user's followers list
  */
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) {
   const resolvedParams = await params;
   try {
     // Get the target user ID from the URL params
     const targetUserId = sanitizeInput(resolvedParams.userId);
-    
+
     // Get the current user's Clerk ID
     const { userId: clerkUserId } = await auth();
 
@@ -41,8 +44,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ u
     }
 
     // Check if actually following
-    const isFollowing = currentUser.following.some(
-      (id: mongoose.Types.ObjectId) => id.equals(targetUser._id)
+    const isFollowing = currentUser.following.some((id: mongoose.Types.ObjectId) =>
+      id.equals(targetUser._id)
     );
 
     // If not following, return success without making changes
@@ -51,7 +54,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ u
         success: true,
         isFollowing: false,
         followerCount: targetUser.followers.length,
-        message: "Not following this user"
+        message: "Not following this user",
       });
     }
 
@@ -59,7 +62,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ u
     currentUser.following = currentUser.following.filter(
       (id: mongoose.Types.ObjectId) => !id.equals(targetUser._id)
     );
-    
+
     // Remove current user from target user's followers list
     targetUser.followers = targetUser.followers.filter(
       (id: mongoose.Types.ObjectId) => !id.equals(currentUser._id)
@@ -80,8 +83,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ u
         id: targetUser._id.toString(),
         username: targetUser.username,
         name: targetUser.name,
-        followerCount: targetUser.followers.length
-      }
+        followerCount: targetUser.followers.length,
+      },
     });
   } catch (err) {
     console.error("[UNFOLLOW] Error:", err);

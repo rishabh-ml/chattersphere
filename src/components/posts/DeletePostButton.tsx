@@ -42,8 +42,7 @@ export default function DeletePostButton({
   const router = useRouter();
 
   // Check if the current user can delete this post
-  const canDelete =
-    currentUserId === authorId || userRole === "ADMIN" || userRole === "MODERATOR";
+  const canDelete = currentUserId === authorId || userRole === "ADMIN" || userRole === "MODERATOR";
 
   if (!canDelete) {
     return null;
@@ -63,7 +62,7 @@ export default function DeletePostButton({
       }
 
       toast.success("Post deleted successfully");
-      
+
       // Call the onDeleted callback if provided
       if (onDeleted) {
         onDeleted();

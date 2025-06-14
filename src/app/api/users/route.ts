@@ -7,7 +7,7 @@ import User from "@/models/User";
 export async function GET(req: NextRequest) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -28,19 +28,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
-      user: {
-        id: user._id.toString(),
-        username: user.username,
-        name: user.name,
-        image: user.image,
-      }
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        user: {
+          id: user._id.toString(),
+          username: user.username,
+          name: user.name,
+          image: user.image,
+        },
+      },
+      { status: 200 }
+    );
   } catch (err) {
     console.error("[GET /api/users] Error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch user" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
   }
 }

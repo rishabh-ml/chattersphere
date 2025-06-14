@@ -45,22 +45,20 @@ export async function GET(req: NextRequest) {
           // Return empty result instead of throwing
           return {
             posts: [],
-            pagination: { page, limit, totalPosts: 0, hasMore: false }
+            pagination: { page, limit, totalPosts: 0, hasMore: false },
           };
         }
 
         const queryCondition =
-            currentUser.following.length > 0
-                ? { author: { $in: currentUser.following } }
-                : {}; // If no following, show all posts
+          currentUser.following.length > 0 ? { author: { $in: currentUser.following } } : {}; // If no following, show all posts
 
         const postsRaw = (await Post.find(queryCondition)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .populate("author", "username name image")
-            .populate("community", "name image")
-            .lean()) as unknown as RawPost[];
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .populate("author", "username name image")
+          .populate("community", "name image")
+          .lean()) as unknown as RawPost[];
 
         const totalPosts = await Post.countDocuments(queryCondition);
         const hasMore = totalPosts > skip + postsRaw.length;
@@ -106,12 +104,12 @@ export async function GET(req: NextRequest) {
     console.error("Error details:", errorMessage);
 
     return NextResponse.json(
-        {
-          error: "Failed to fetch home feed",
-          details: errorMessage,
-          timestamp: new Date().toISOString()
-        },
-        { status: 500 }
+      {
+        error: "Failed to fetch home feed",
+        details: errorMessage,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
     );
   }
 }

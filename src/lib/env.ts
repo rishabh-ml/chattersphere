@@ -49,47 +49,52 @@ const parseEnv = () => {
   // In development, we can use default values for some variables
   const isDev = process.env.NODE_ENV === "development" || !process.env.NODE_ENV;
 
-    // Set default values for development
-    if (isDev) {
-      // Set default values for required variables in development
-      if (!process.env.NODE_ENV) process.env = { ...process.env, NODE_ENV: "development" };
-      if (!process.env.NEXT_PUBLIC_APP_URL) process.env = { ...process.env, NEXT_PUBLIC_APP_URL: "http://localhost:3002" };
-      if (!process.env.MONGODB_URI && process.env.NODE_ENV === "development") {
-        process.env = {
-          ...process.env,
-          MONGODB_URI: "mongodb+srv://contactrishabhshukla:5AxuD9rSIoCd0DSB@chattersphere-cluster.iao9njh.mongodb.net/?retryWrites=true&w=majority&appName=ChatterSphere-Cluster"
-        };
-      }
-      if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-        process.env = {
-          ...process.env,
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2hvaWNlLW11ZGZpc2gtMS5jbGVyay5hY2NvdW50cy5kZXYk"
-        };
-      }
-      if (!process.env.CLERK_SECRET_KEY) {
-        process.env = {
-          ...process.env,
-          CLERK_SECRET_KEY: "sk_test_OzIu3sooY8vWJTMXMtyqw5Md3HiOMzcH9VpCQN0QU3"
-        };
-      }
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-        process.env = {
-          ...process.env,
-          NEXT_PUBLIC_SUPABASE_URL: "https://szviiyruknxtluzcmcik.supabase.co"
-        };
-      }
-      if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        process.env = {
-          ...process.env,
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6dmlpeXJ1a254dGx1emNtY2lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxMjE3NDQsImV4cCI6MjA2MDY5Nzc0NH0.mQmZZb_u5ZxMNhf6Wk7X1daAFCwxhA-1NCwzep0nUP4"
-        };
-      }
-      if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        process.env = {
-          ...process.env,
-          SUPABASE_SERVICE_ROLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6dmlpeXJ1a254dGx1emNtY2lrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTEyMTc0NCwiZXhwIjoyMDYwNjk3NzQ0fQ.example_service_role_key"
-        };
-      }
+  // Set default values for development
+  if (isDev) {
+    // Set default values for required variables in development
+    if (!process.env.NODE_ENV) process.env = { ...process.env, NODE_ENV: "development" };
+    if (!process.env.NEXT_PUBLIC_APP_URL)
+      process.env = { ...process.env, NEXT_PUBLIC_APP_URL: "http://localhost:3002" };
+    if (!process.env.MONGODB_URI && process.env.NODE_ENV === "development") {
+      process.env = {
+        ...process.env,
+        MONGODB_URI:
+          "mongodb+srv://contactrishabhshukla:5AxuD9rSIoCd0DSB@chattersphere-cluster.iao9njh.mongodb.net/?retryWrites=true&w=majority&appName=ChatterSphere-Cluster",
+      };
+    }
+    if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
+      process.env = {
+        ...process.env,
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+          "pk_test_Y2hvaWNlLW11ZGZpc2gtMS5jbGVyay5hY2NvdW50cy5kZXYk",
+      };
+    }
+    if (!process.env.CLERK_SECRET_KEY) {
+      process.env = {
+        ...process.env,
+        CLERK_SECRET_KEY: "sk_test_OzIu3sooY8vWJTMXMtyqw5Md3HiOMzcH9VpCQN0QU3",
+      };
+    }
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      process.env = {
+        ...process.env,
+        NEXT_PUBLIC_SUPABASE_URL: "https://szviiyruknxtluzcmcik.supabase.co",
+      };
+    }
+    if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      process.env = {
+        ...process.env,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6dmlpeXJ1a254dGx1emNtY2lrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUxMjE3NDQsImV4cCI6MjA2MDY5Nzc0NH0.mQmZZb_u5ZxMNhf6Wk7X1daAFCwxhA-1NCwzep0nUP4",
+      };
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      process.env = {
+        ...process.env,
+        SUPABASE_SERVICE_ROLE_KEY:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6dmlpeXJ1a254dGx1emNtY2lrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTEyMTc0NCwiZXhwIjoyMDYwNjk3NzQ0fQ.example_service_role_key",
+      };
+    }
   }
 
   // If Redis is not set in development, we'll use a mock implementation

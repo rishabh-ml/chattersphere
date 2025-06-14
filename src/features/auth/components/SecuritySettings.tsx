@@ -2,7 +2,14 @@
 
 import { useAuthManager } from "../hooks/useAuthManager";
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
 import { Separator } from "@/shared/ui/separator";
 import { Switch } from "@/shared/ui/switch";
 import { Label } from "@/shared/ui/label";
@@ -12,19 +19,14 @@ import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 
 export default function SecuritySettings() {
-  const { 
-    sessions, 
-    isLoadingSessions, 
-    terminateSession,
-    enableTwoFactor,
-    disableTwoFactor
-  } = useAuthManager();
-  
+  const { sessions, isLoadingSessions, terminateSession, enableTwoFactor, disableTwoFactor } =
+    useAuthManager();
+
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
   const [isEnabling2FA, setIsEnabling2FA] = useState(false);
   const [isDisabling2FA, setIsDisabling2FA] = useState(false);
   const [isLoadingTerminate, setIsLoadingTerminate] = useState<string | null>(null);
-  
+
   // Handler for toggling 2FA
   const handleToggleTwoFactor = async (enabled: boolean) => {
     if (enabled) {
@@ -53,14 +55,14 @@ export default function SecuritySettings() {
       }
     }
   };
-  
+
   // Handler for terminating a session
   const handleTerminateSession = async (sessionId: string, isCurrent: boolean) => {
     if (isCurrent) {
       toast.info("You cannot terminate your current session");
       return;
     }
-    
+
     setIsLoadingTerminate(sessionId);
     try {
       await terminateSession(sessionId);
@@ -72,34 +74,34 @@ export default function SecuritySettings() {
       setIsLoadingTerminate(null);
     }
   };
-  
+
   // Get device name from user agent
   const getDeviceName = (userAgent?: string): string => {
     if (!userAgent) return "Unknown device";
-    
+
     if (userAgent.includes("iPhone")) return "iPhone";
     if (userAgent.includes("iPad")) return "iPad";
     if (userAgent.includes("Android")) return "Android device";
     if (userAgent.includes("Windows")) return "Windows computer";
     if (userAgent.includes("Mac")) return "Mac computer";
     if (userAgent.includes("Linux")) return "Linux computer";
-    
+
     return "Unknown device";
   };
-  
+
   // Get browser name from user agent
   const getBrowserName = (userAgent?: string): string => {
     if (!userAgent) return "Unknown browser";
-    
+
     if (userAgent.includes("Chrome")) return "Chrome";
     if (userAgent.includes("Firefox")) return "Firefox";
     if (userAgent.includes("Safari")) return "Safari";
     if (userAgent.includes("Edge")) return "Edge";
     if (userAgent.includes("Opera")) return "Opera";
-    
+
     return "Unknown browser";
   };
-  
+
   return (
     <div className="space-y-6">
       <Card>
@@ -107,9 +109,7 @@ export default function SecuritySettings() {
           <CardTitle className="flex items-center">
             <ShieldAlert className="mr-2 h-5 w-5" /> Security Settings
           </CardTitle>
-          <CardDescription>
-            Manage your account's security and active sessions
-          </CardDescription>
+          <CardDescription>Manage your account's security and active sessions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-4">
@@ -129,7 +129,7 @@ export default function SecuritySettings() {
                 disabled={isEnabling2FA || isDisabling2FA}
               />
             </div>
-            
+
             {(isEnabling2FA || isDisabling2FA) && (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-5 w-5 animate-spin text-gray-400 mr-2" />
@@ -139,15 +139,15 @@ export default function SecuritySettings() {
               </div>
             )}
           </div>
-          
+
           <Separator className="my-4" />
-          
+
           <div>
             <h3 className="text-base font-medium mb-2">Active sessions</h3>
             <p className="text-sm text-gray-500 mb-4">
               These are the devices that are currently logged into your account
             </p>
-            
+
             {isLoadingSessions ? (
               <div className="flex items-center justify-center p-6">
                 <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
@@ -158,7 +158,7 @@ export default function SecuritySettings() {
                   const isCurrent = session.isActive;
                   const deviceName = getDeviceName(session.userAgent);
                   const browserName = getBrowserName(session.userAgent);
-                  
+
                   return (
                     <div
                       key={session.sessionId}
@@ -166,7 +166,9 @@ export default function SecuritySettings() {
                     >
                       <div className="flex items-center">
                         <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-                          {deviceName.includes("phone") || deviceName.includes("iPhone") || deviceName.includes("Android") ? (
+                          {deviceName.includes("phone") ||
+                          deviceName.includes("iPhone") ||
+                          deviceName.includes("Android") ? (
                             <Smartphone className="h-5 w-5 text-gray-500" />
                           ) : (
                             <Globe className="h-5 w-5 text-gray-500" />
@@ -184,9 +186,7 @@ export default function SecuritySettings() {
                           <div className="flex items-center text-sm text-gray-500">
                             <span>{browserName}</span>
                             <span className="mx-1">•</span>
-                            <span>
-                              {session.ipAddress || "Unknown location"}
-                            </span>
+                            <span>{session.ipAddress || "Unknown location"}</span>
                           </div>
                           <div className="flex items-center text-xs text-gray-400 mt-1">
                             <Clock className="h-3 w-3 mr-1" />
@@ -198,7 +198,7 @@ export default function SecuritySettings() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <Button
                         variant="outline"
                         size="sm"
@@ -218,7 +218,7 @@ export default function SecuritySettings() {
                     </div>
                   );
                 })}
-                
+
                 {sessions.length === 0 && (
                   <p className="text-center text-gray-500 py-4">No active sessions found</p>
                 )}

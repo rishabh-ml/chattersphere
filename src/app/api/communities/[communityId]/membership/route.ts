@@ -47,7 +47,7 @@ export async function POST(
     }
 
     // 5) Parse body safely
-    const body: ActionBody = (await req.json().catch(() => ({} as ActionBody)));
+    const body: ActionBody = await req.json().catch(() => ({}) as ActionBody);
     let action = body.action;
     const existing = await Membership.findOne({ user: me, community: community._id });
     const isActive = existing?.status === MembershipStatus.ACTIVE;
@@ -77,10 +77,7 @@ export async function POST(
 
         // Already pending?
         if (membershipExists && existing!.status === MembershipStatus.PENDING) {
-          return NextResponse.json(
-            { error: "Request already pending" },
-            { status: 400 }
-          );
+          return NextResponse.json({ error: "Request already pending" }, { status: 400 });
         }
 
         // If an old request existed but wasn’t active, reopen it
@@ -173,9 +170,6 @@ export async function POST(
     );
   } catch (err) {
     console.error("[MEMBERSHIP.POST] Error:", err);
-    return NextResponse.json(
-      { error: "Failed to update membership" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update membership" }, { status: 500 });
   }
 }

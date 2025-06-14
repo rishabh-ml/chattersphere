@@ -43,10 +43,7 @@ export async function GET(
     // 2) Validate & sanitize communityId
     const rawId = sanitizeInput(resolvedParams.communityId || "");
     if (!mongoose.isValidObjectId(rawId)) {
-      return NextResponse.json(
-        { error: "Missing or invalid communityId" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing or invalid communityId" }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -122,9 +119,6 @@ export async function GET(
     return NextResponse.json({ community: payload }, { status: 200 });
   } catch (err) {
     console.error("[COMMUNITY.GET] Error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch community" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch community" }, { status: 500 });
   }
 }

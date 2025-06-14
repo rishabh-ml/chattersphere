@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -24,7 +24,7 @@ interface DeleteAccountButtonProps {
 export default function DeleteAccountButton({ userId, username }: DeleteAccountButtonProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [confirmUsername, setConfirmUsername] = useState('');
+  const [confirmUsername, setConfirmUsername] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteAccount = async () => {
@@ -37,7 +37,7 @@ export default function DeleteAccountButton({ userId, username }: DeleteAccountB
 
     try {
       const response = await fetch(`/api/users/${userId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
@@ -55,11 +55,7 @@ export default function DeleteAccountButton({ userId, username }: DeleteAccountB
 
   return (
     <>
-      <Button 
-        variant="destructive" 
-        onClick={() => setIsOpen(true)}
-        className="w-full sm:w-auto"
-      >
+      <Button variant="destructive" onClick={() => setIsOpen(true)} className="w-full sm:w-auto">
         Delete Account
       </Button>
 
@@ -68,11 +64,11 @@ export default function DeleteAccountButton({ userId, username }: DeleteAccountB
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will permanently delete your account and all your data. 
-              This action cannot be undone.
+              This action will permanently delete your account and all your data. This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
+
           <div className="py-4">
             <p className="text-sm font-medium mb-2">
               Type your username <span className="font-bold">{username}</span> to confirm:
@@ -84,7 +80,7 @@ export default function DeleteAccountButton({ userId, username }: DeleteAccountB
               className="mb-2"
             />
           </div>
-          
+
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction

@@ -42,58 +42,60 @@ export default function CommentList({ postId }: CommentListProps) {
   const { isSignedIn } = useUser();
 
   // Fetch top-level comments
-  const fetchComments = useCallback(async (pageNum: number = 1) => {
-    try {
-      const response = await fetch(
-        `/api/posts/${postId}/comments?page=${pageNum}&limit=10`
-      );
+  const fetchComments = useCallback(
+    async (pageNum: number = 1) => {
+      try {
+        const response = await fetch(`/api/posts/${postId}/comments?page=${pageNum}&limit=10`);
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch comments");
-      }
+        if (!response.ok) {
+          throw new Error("Failed to fetch comments");
+        }
 
-      const data = await response.json();
-      
-      if (pageNum === 1) {
-        setComments(data.comments);
-      } else {
-        setComments(prev => [...prev, ...data.comments]);
+        const data = await response.json();
+
+        if (pageNum === 1) {
+          setComments(data.comments);
+        } else {
+          setComments((prev) => [...prev, ...data.comments]);
+        }
+
+        setHasMore(data.pagination.hasMore);
+        setPage(pageNum);
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+        setError("Failed to load comments. Please try again later.");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-      
-      setHasMore(data.pagination.hasMore);
-      setPage(pageNum);
-      setError(null);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-      setError("Failed to load comments. Please try again later.");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [postId]);
+    },
+    [postId]
+  );
 
   // Fetch replies for a specific comment
-  const fetchReplies = useCallback(async (commentId: string) => {
-    try {
-      const response = await fetch(
-        `/api/posts/${postId}/comments?parentCommentId=${commentId}`
-      );
+  const fetchReplies = useCallback(
+    async (commentId: string) => {
+      try {
+        const response = await fetch(`/api/posts/${postId}/comments?parentCommentId=${commentId}`);
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch replies");
+        if (!response.ok) {
+          throw new Error("Failed to fetch replies");
+        }
+
+        const data = await response.json();
+
+        setRepliesMap((prev) => ({
+          ...prev,
+          [commentId]: data.comments,
+        }));
+      } catch (error) {
+        console.error("Error fetching replies:", error);
+        toast.error("Failed to load replies");
       }
-
-      const data = await response.json();
-      
-      setRepliesMap(prev => ({
-        ...prev,
-        [commentId]: data.comments
-      }));
-    } catch (error) {
-      console.error("Error fetching replies:", error);
-      toast.error("Failed to load replies");
-    }
-  }, [postId]);
+    },
+    [postId]
+  );
 
   // Initial load
   useEffect(() => {
@@ -103,7 +105,7 @@ export default function CommentList({ postId }: CommentListProps) {
   // Load more comments
   const handleLoadMore = () => {
     if (loadingMore || !hasMore) return;
-    
+
     setLoadingMore(true);
     fetchComments(page + 1);
   };
@@ -112,37 +114,37 @@ export default function CommentList({ postId }: CommentListProps) {
   const handleCommentAdded = (newComment: Comment) => {
     if (newComment.parentComment) {
       // If it's a reply, add it to the replies map
-      setRepliesMap(prev => {
+      setRepliesMap((prev) => {
         const parentId = newComment.parentComment as string;
         const currentReplies = prev[parentId] || [];
         return {
           ...prev,
-          [parentId]: [newComment, ...currentReplies]
+          [parentId]: [newComment, ...currentReplies],
         };
       });
     } else {
       // If it's a top-level comment, add it to the main comments list
-      setComments(prev => [newComment, ...prev]);
+      setComments((prev) => [newComment, ...prev]);
     }
   };
 
   // Handle comment deleted
   const handleCommentDeleted = (commentId: string) => {
     // Remove from main comments list
-    setComments(prev => prev.filter(comment => comment.id !== commentId));
-    
+    setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+
     // Remove from replies map
-    setRepliesMap(prev => {
+    setRepliesMap((prev) => {
       const newMap = { ...prev };
-      
+
       // Remove the comment from all reply lists
-      Object.keys(newMap).forEach(parentId => {
-        newMap[parentId] = newMap[parentId].filter(reply => reply.id !== commentId);
+      Object.keys(newMap).forEach((parentId) => {
+        newMap[parentId] = newMap[parentId].filter((reply) => reply.id !== commentId);
       });
-      
+
       // Remove the comment's replies if it was a parent
       delete newMap[commentId];
-      
+
       return newMap;
     });
   };
@@ -199,7 +201,7 @@ export default function CommentList({ postId }: CommentListProps) {
         </div>
       ) : (
         <div className="divide-y divide-gray-100">
-          {comments.map(comment => (
+          {comments.map((comment) => (
             <div key={comment.id}>
               <CommentItem
                 comment={comment}
@@ -207,7 +209,7 @@ export default function CommentList({ postId }: CommentListProps) {
                 onReplyAdded={handleCommentAdded}
                 onCommentDeleted={handleCommentDeleted}
               />
-              
+
               {/* Show/hide replies button if comment has replies */}
               {comment.commentCount > 0 && (
                 <Button
@@ -216,16 +218,16 @@ export default function CommentList({ postId }: CommentListProps) {
                   className="ml-12 mb-2 text-xs text-indigo-600 hover:text-indigo-800"
                   onClick={() => handleToggleReplies(comment.id)}
                 >
-                  {repliesMap[comment.id] 
-                    ? "Hide replies" 
-                    : `Show ${comment.commentCount} ${comment.commentCount === 1 ? 'reply' : 'replies'}`}
+                  {repliesMap[comment.id]
+                    ? "Hide replies"
+                    : `Show ${comment.commentCount} ${comment.commentCount === 1 ? "reply" : "replies"}`}
                 </Button>
               )}
-              
+
               {/* Render replies if loaded */}
               {repliesMap[comment.id] && (
                 <div className="ml-12 border-l-2 border-gray-100 pl-4">
-                  {repliesMap[comment.id].map(reply => (
+                  {repliesMap[comment.id].map((reply) => (
                     <CommentItem
                       key={reply.id}
                       comment={reply}

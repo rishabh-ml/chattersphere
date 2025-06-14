@@ -6,15 +6,15 @@
  */
 
 // Import Sentry with dynamic import to avoid ESM/CJS conflicts
-let Sentry: typeof import('@sentry/nextjs');
+let Sentry: typeof import("@sentry/nextjs");
 
 // Use try-catch to handle potential import errors
 try {
   // Use require for CommonJS compatibility
-  Sentry = require('@sentry/nextjs');
+  Sentry = require("@sentry/nextjs");
 } catch (error) {
   // Fallback empty implementation if Sentry fails to load
-  console.warn('Failed to load Sentry, using fallback implementation');
+  console.warn("Failed to load Sentry, using fallback implementation");
   Sentry = {
     captureException: (err: Error) => console.error(err),
     captureMessage: (msg: string) => console.log(msg),
@@ -28,8 +28,8 @@ try {
   } as any;
 }
 
-import { getPerformanceMetrics, getSlowestRoutes } from '@/middleware/performanceMonitoring';
-import { getCacheStats, getCacheHitRate } from '@/lib/redis';
+import { getPerformanceMetrics, getSlowestRoutes } from "@/middleware/performanceMonitoring";
+import { getCacheStats, getCacheHitRate } from "@/lib/redis";
 
 // Performance thresholds in milliseconds
 export const PerformanceThresholds = {
@@ -47,7 +47,7 @@ export function initMonitoring() {
   // This function is for any additional setup
 
   // Set up periodic performance reporting
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     // Report performance metrics every 5 minutes
     setInterval(reportPerformanceMetrics, 5 * 60 * 1000);
   }
@@ -67,19 +67,25 @@ export async function reportPerformanceMetrics() {
     const cacheHitRate = getCacheHitRate();
 
     // Report to Sentry
-    Sentry.setTag('cache.hitRate', cacheHitRate.toFixed(2));
-    Sentry.setTag('performance.averageResponseTime', metrics.length > 0
-      ? (metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length).toFixed(2)
-      : '0');
+    Sentry.setTag("cache.hitRate", cacheHitRate.toFixed(2));
+    Sentry.setTag(
+      "performance.averageResponseTime",
+      metrics.length > 0
+        ? (metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length).toFixed(2)
+        : "0"
+    );
 
     // Report slowest routes
     slowestRoutes.forEach((route, index) => {
-      Sentry.setTag(`performance.slowestRoute.${index + 1}`, `${route.route} (${route.avgDuration}ms)`);
+      Sentry.setTag(
+        `performance.slowestRoute.${index + 1}`,
+        `${route.route} (${route.avgDuration}ms)`
+      );
     });
 
     // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Performance metrics:', {
+    if (process.env.NODE_ENV === "development") {
+      console.log("Performance metrics:", {
         metrics: metrics.slice(0, 5),
         slowestRoutes,
         cacheStats,
@@ -87,7 +93,7 @@ export async function reportPerformanceMetrics() {
       });
     }
   } catch (error) {
-    console.error('Error reporting performance metrics:', error);
+    console.error("Error reporting performance metrics:", error);
     Sentry.captureException(error);
   }
 }
@@ -113,22 +119,25 @@ export async function monitorFunction<T>(
     // Report if the function is slow
     if (duration > threshold) {
       Sentry.addBreadcrumb({
-        category: 'performance',
+        category: "performance",
         message: `Slow function: ${name} took ${duration}ms`,
-        level: 'warning',
-      });      // Create a performance span
-      const transaction = Sentry.startSpan({
-        name: `function.${name}`,
-        op: 'function',
-      }, () => {
-        // Span operations here
-      });
+        level: "warning",
+      }); // Create a performance span
+      const transaction = Sentry.startSpan(
+        {
+          name: `function.${name}`,
+          op: "function",
+        },
+        () => {
+          // Span operations here
+        }
+      );
 
-      Sentry.setMeasurement('duration', duration, 'millisecond');
+      Sentry.setMeasurement("duration", duration, "millisecond");
       // transaction.finish(); // Not needed with startSpan
 
       // Log to console in development
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         console.warn(`Slow function: ${name} took ${duration}ms`);
       }
     }
@@ -171,22 +180,25 @@ export async function monitorQuery<T>(
     // Report if the query is slow
     if (duration > threshold) {
       Sentry.addBreadcrumb({
-        category: 'database',
+        category: "database",
         message: `Slow query: ${name} took ${duration}ms`,
-        level: 'warning',
-      });      // Create a performance span
-      const transaction = Sentry.startSpan({
-        name: `query.${name}`,
-        op: 'db',
-      }, () => {
-        // Span operations here
-      });
+        level: "warning",
+      }); // Create a performance span
+      const transaction = Sentry.startSpan(
+        {
+          name: `query.${name}`,
+          op: "db",
+        },
+        () => {
+          // Span operations here
+        }
+      );
 
-      Sentry.setMeasurement('duration', duration, 'millisecond');
+      Sentry.setMeasurement("duration", duration, "millisecond");
       // transaction.finish(); // Not needed with startSpan
 
       // Log to console in development
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         console.warn(`Slow query: ${name} took ${duration}ms`);
       }
     }
@@ -212,10 +224,12 @@ export async function monitorQuery<T>(
  * Set up performance budget alerts
  * @param budgets Performance budgets
  */
-export function setupPerformanceBudgets(budgets: {
-  route: string;
-  budget: number;
-}[]) {
+export function setupPerformanceBudgets(
+  budgets: {
+    route: string;
+    budget: number;
+  }[]
+) {
   // Check performance budgets every minute
   setInterval(() => {
     try {
@@ -224,7 +238,7 @@ export function setupPerformanceBudgets(budgets: {
       // Group metrics by route
       const routeMetrics = new Map<string, number[]>();
 
-      metrics.forEach(metric => {
+      metrics.forEach((metric) => {
         if (!routeMetrics.has(metric.route)) {
           routeMetrics.set(metric.route, []);
         }
@@ -232,7 +246,7 @@ export function setupPerformanceBudgets(budgets: {
       });
 
       // Check each budget
-      budgets.forEach(budget => {
+      budgets.forEach((budget) => {
         const routeDurations = routeMetrics.get(budget.route);
 
         if (routeDurations && routeDurations.length > 0) {
@@ -240,24 +254,29 @@ export function setupPerformanceBudgets(budgets: {
 
           if (avgDuration > budget.budget) {
             // Report budget violation
-            Sentry.captureMessage(`Performance budget exceeded: ${budget.route} (${avgDuration.toFixed(2)}ms > ${budget.budget}ms)`, {
-              level: 'warning',
-              tags: {
-                route: budget.route,
-                budget: budget.budget.toString(),
-                actual: avgDuration.toFixed(2),
-              },
-            });
+            Sentry.captureMessage(
+              `Performance budget exceeded: ${budget.route} (${avgDuration.toFixed(2)}ms > ${budget.budget}ms)`,
+              {
+                level: "warning",
+                tags: {
+                  route: budget.route,
+                  budget: budget.budget.toString(),
+                  actual: avgDuration.toFixed(2),
+                },
+              }
+            );
 
             // Log to console in development
-            if (process.env.NODE_ENV === 'development') {
-              console.warn(`Performance budget exceeded: ${budget.route} (${avgDuration.toFixed(2)}ms > ${budget.budget}ms)`);
+            if (process.env.NODE_ENV === "development") {
+              console.warn(
+                `Performance budget exceeded: ${budget.route} (${avgDuration.toFixed(2)}ms > ${budget.budget}ms)`
+              );
             }
           }
         }
       });
     } catch (error) {
-      console.error('Error checking performance budgets:', error);
+      console.error("Error checking performance budgets:", error);
     }
   }, 60 * 1000); // Check every minute
 }

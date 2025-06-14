@@ -31,7 +31,7 @@ export default function OptimizedImage({
     // Reset states when src changes
     setLoading(!priority);
     setError(false);
-    
+
     // If src is a string, use it directly
     if (typeof src === "string") {
       setImageSrc(src);
@@ -41,7 +41,7 @@ export default function OptimizedImage({
   return (
     <div className={cn("relative overflow-hidden", className)}>
       <Image
-        src={error ? fallbackSrc : (imageSrc || src)}
+        src={error ? fallbackSrc : imageSrc || src}
         alt={alt}
         className={cn(
           "transition-opacity duration-300",
@@ -57,10 +57,8 @@ export default function OptimizedImage({
         priority={priority}
         {...props}
       />
-      
-      {loading && (
-        <div className="absolute inset-0 bg-gray-100 animate-pulse" />
-      )}
+
+      {loading && <div className="absolute inset-0 bg-gray-100 animate-pulse" />}
     </div>
   );
 }

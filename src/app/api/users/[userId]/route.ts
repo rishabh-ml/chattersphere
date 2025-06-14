@@ -38,10 +38,7 @@ interface UserDocument {
   updatedAt: Date;
 }
 
-export async function GET(
-    _req: NextRequest,
-    { params }: { params: Promise<{ userId: string }> }
-) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
@@ -50,10 +47,11 @@ export async function GET(
       return NextResponse.json({ error: "Invalid or missing userId" }, { status: 400 });
     }
 
-    await connectToDatabase();    const userDoc = await User.findById(resolvedParams.userId)
-        .populate("communities", "name image")
-        .lean()
-        .exec() as any;
+    await connectToDatabase();
+    const userDoc = (await User.findById(resolvedParams.userId)
+      .populate("communities", "name image")
+      .lean()
+      .exec()) as any;
 
     if (!userDoc) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -69,11 +67,12 @@ export async function GET(
       communityCount: userDoc.communities.length,
       joinedDate: userDoc.createdAt.toISOString(),
       isFollowing: false,
-    };    if (clerkUserId) {
-      const me = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
+    };
+    if (clerkUserId) {
+      const me = (await User.findOne({ clerkId: clerkUserId }).lean().exec()) as any;
       if (me) {
         user.isFollowing = me.following.some(
-            (id: mongoose.Types.ObjectId) => id.toString() === userDoc._id.toString()
+          (id: mongoose.Types.ObjectId) => id.toString() === userDoc._id.toString()
         );
       }
     }
@@ -95,7 +94,7 @@ export async function DELETE(
     const { userId: clerkUserId } = await auth();
     if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }    // Sanitize and validate userId
+    } // Sanitize and validate userId
     if (!resolvedParams?.userId) {
       return NextResponse.json({ error: "Missing userId parameter" }, { status: 400 });
     }
@@ -135,7 +134,7 @@ export async function DELETE(
 
       // 2. Delete all posts by the user
       const userPosts = await Post.find({ author: sanitizedUserId });
-      const postIds = userPosts.map(post => post._id);
+      const postIds = userPosts.map((post) => post._id);
 
       // Delete comments on user's posts
       await Comment.deleteMany({ post: { $in: postIds } }, { session });
@@ -160,7 +159,7 @@ export async function DELETE(
       );
 
       // 5. Delete the user from MongoDB
-      await User.findByIdAndDelete(sanitizedUserId, { session });      // 6. Delete the user from Clerk (if possible)
+      await User.findByIdAndDelete(sanitizedUserId, { session }); // 6. Delete the user from Clerk (if possible)
       try {
         if (userToDelete.clerkId) {
           const client = await clerkClient();
@@ -177,12 +176,15 @@ export async function DELETE(
 
       // Invalidate caches
       await invalidateCache(`user:${sanitizedUserId}`);
-      await invalidateCache('posts:feed');
+      await invalidateCache("posts:feed");
 
-      return NextResponse.json({
-        success: true,
-        message: "User account and all associated data deleted successfully"
-      }, { status: 200 });
+      return NextResponse.json(
+        {
+          success: true,
+          message: "User account and all associated data deleted successfully",
+        },
+        { status: 200 }
+      );
     } catch (transactionError) {
       // If anything fails, abort the transaction
       await session.abortTransaction();

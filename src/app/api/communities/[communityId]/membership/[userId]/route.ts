@@ -32,10 +32,7 @@ export async function PATCH(
     // 2) Sanitize & validate params
     const rawCommunityId = sanitizeInput(resolvedParams.communityId || "");
     const rawUserId = sanitizeInput(resolvedParams.userId || "");
-    if (
-      !mongoose.isValidObjectId(rawCommunityId) ||
-      !mongoose.isValidObjectId(rawUserId)
-    ) {
+    if (!mongoose.isValidObjectId(rawCommunityId) || !mongoose.isValidObjectId(rawUserId)) {
       return ApiError.badRequest("Invalid parameter format");
     }
 
@@ -135,9 +132,6 @@ export async function PATCH(
   } catch (error) {
     console.error("[MEMBERSHIP.PATCH] Error:", error);
     // Return a plain JSON 500 if ApiError.serverError doesn't exist
-    return NextResponse.json(
-      { error: "Failed to process membership request" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to process membership request" }, { status: 500 });
   }
 }

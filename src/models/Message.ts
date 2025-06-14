@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface Attachment {
   url: string;
@@ -42,7 +42,7 @@ const ReactionSchema = new Schema<Reaction>(
   {
     emoji: { type: String, required: true },
     count: { type: Number, default: 0 },
-    users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    users: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { _id: false }
 );
@@ -50,13 +50,13 @@ const ReactionSchema = new Schema<Reaction>(
 const MessageSchema = new Schema<IMessage>(
   {
     content: { type: String, required: true },
-    author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    channel: { type: Schema.Types.ObjectId, ref: 'Channel', required: true },
-    community: { type: Schema.Types.ObjectId, ref: 'Community', required: true },
+    author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    channel: { type: Schema.Types.ObjectId, ref: "Channel", required: true },
+    community: { type: Schema.Types.ObjectId, ref: "Community", required: true },
     attachments: [AttachmentSchema],
     reactions: [ReactionSchema],
-    mentions: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    replyTo: { type: Schema.Types.ObjectId, ref: 'Message' },
+    mentions: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    replyTo: { type: Schema.Types.ObjectId, ref: "Message" },
     isEdited: { type: Boolean, default: false },
     isPinned: { type: Boolean, default: false },
   },
@@ -69,12 +69,12 @@ MessageSchema.index({ author: 1, createdAt: -1 });
 MessageSchema.index({ community: 1, createdAt: -1 });
 
 // Virtual for reaction count
-MessageSchema.virtual('reactionCount').get(function() {
+MessageSchema.virtual("reactionCount").get(function () {
   return this.reactions.reduce((total, reaction) => total + reaction.count, 0);
 });
 
 // Method to add a reaction
-MessageSchema.methods.addReaction = async function(
+MessageSchema.methods.addReaction = async function (
   emoji: string,
   userId: mongoose.Types.ObjectId | string
 ) {
@@ -102,7 +102,7 @@ MessageSchema.methods.addReaction = async function(
 };
 
 // Method to remove a reaction
-MessageSchema.methods.removeReaction = async function(
+MessageSchema.methods.removeReaction = async function (
   emoji: string,
   userId: mongoose.Types.ObjectId | string
 ) {
@@ -111,7 +111,9 @@ MessageSchema.methods.removeReaction = async function(
 
   if (reactionIndex !== -1) {
     const reaction = this.reactions[reactionIndex];
-    const userIndex = reaction.users.findIndex((id: mongoose.Types.ObjectId) => id.toString() === userIdStr);
+    const userIndex = reaction.users.findIndex(
+      (id: mongoose.Types.ObjectId) => id.toString() === userIdStr
+    );
 
     if (userIndex !== -1) {
       reaction.users.splice(userIndex, 1);
@@ -129,4 +131,4 @@ MessageSchema.methods.removeReaction = async function(
   return this;
 };
 
-export default mongoose.models.Message || mongoose.model<IMessage>('Message', MessageSchema);
+export default mongoose.models.Message || mongoose.model<IMessage>("Message", MessageSchema);

@@ -13,9 +13,9 @@ import { sanitizeInput } from "@/lib/security";
  * @apiName MarkMessageRead
  * @apiGroup Messages
  * @apiDescription Mark a specific message as read
- * 
+ *
  * @apiParam {String} messageId ID of the message to mark as read
- * 
+ *
  * @apiSuccess {Object} message The updated message
  * @apiSuccess {String} message.id Message ID
  * @apiSuccess {Boolean} message.isRead Whether the message has been read
@@ -59,17 +59,23 @@ async function markMessageReadHandler(
 
     // Check if the user is the recipient of the message
     if (message.recipient.toString() !== currentUser._id.toString()) {
-      return NextResponse.json({ error: "You can only mark messages sent to you as read" }, { status: 403 });
+      return NextResponse.json(
+        { error: "You can only mark messages sent to you as read" },
+        { status: 403 }
+      );
     }
 
     // If the message is already read, return success
     if (message.isRead) {
-      return NextResponse.json({ 
-        message: {
-          id: message._id.toString(),
-          isRead: true
-        }
-      }, { status: 200 });
+      return NextResponse.json(
+        {
+          message: {
+            id: message._id.toString(),
+            isRead: true,
+          },
+        },
+        { status: 200 }
+      );
     }
 
     // Mark the message as read
@@ -80,12 +86,15 @@ async function markMessageReadHandler(
     await invalidateCache(`messages:${currentUser._id}:${message.sender}:*`);
     await invalidateCache(`messages:conversations:${currentUser._id}:*`);
 
-    return NextResponse.json({ 
-      message: {
-        id: message._id.toString(),
-        isRead: true
-      }
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        message: {
+          id: message._id.toString(),
+          isRead: true,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("[PUT /api/messages/read/[messageId]] Error:", error);
     return NextResponse.json({ error: "Failed to mark message as read" }, { status: 500 });
@@ -94,11 +103,14 @@ async function markMessageReadHandler(
 
 // Export the handler function with middleware
 export const PUT = withApiMiddleware(
-  (req: NextRequest) => markMessageReadHandler(req, { params: { messageId: req.nextUrl.pathname.split('/')[4] } }),
+  async (req: NextRequest) => {
+    const messageId = req.nextUrl.pathname.split("/")[4];
+    return markMessageReadHandler(req, { params: Promise.resolve({ messageId }) });
+  },
   {
     enableRateLimit: true,
     maxRequests: 100,
     windowMs: 60000, // 1 minute
-    identifier: 'messages:read:put'
+    identifier: "messages:read:put",
   }
 );

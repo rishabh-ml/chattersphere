@@ -63,6 +63,7 @@ GET /api/posts
 ```
 
 Query parameters:
+
 - `page`: Page number (default: 1)
 - `limit`: Number of items per page (default: 10)
 - `communityId`: Filter by community ID
@@ -296,6 +297,7 @@ GET /api/posts/:postId/comments
 ```
 
 Query parameters:
+
 - `page`: Page number (default: 1)
 - `limit`: Number of items per page (default: 20)
 
@@ -481,6 +483,7 @@ GET /api/communities
 ```
 
 Query parameters:
+
 - `page`: Page number (default: 1)
 - `limit`: Number of items per page (default: 20)
 - `search`: Search term
@@ -867,6 +870,7 @@ GET /api/users/search
 ```
 
 Query parameters:
+
 - `q`: Search query
 - `page`: Page number (default: 1)
 - `limit`: Number of items per page (default: 20)
@@ -895,6 +899,7 @@ GET /api/messages
 ```
 
 Query parameters:
+
 - `page`: Page number (default: 1)
 - `limit`: Number of items per page (default: 20)
 
@@ -924,6 +929,7 @@ GET /api/messages/:userId
 ```
 
 Query parameters:
+
 - `page`: Page number (default: 1)
 - `limit`: Number of items per page (default: 50)
 
@@ -1040,6 +1046,7 @@ GET /api/notifications
 ```
 
 Query parameters:
+
 - `page`: Page number (default: 1)
 - `limit`: Number of items per page (default: 20)
 - `unreadOnly`: Set to `true` to get only unread notifications

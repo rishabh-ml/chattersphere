@@ -62,10 +62,7 @@ async function getCommunityPostsHandler(
   // 2) Validate & sanitize communityId
   const rawCommunityId = sanitizeInput(resolvedParams.communityId || "");
   if (!mongoose.isValidObjectId(rawCommunityId)) {
-    return NextResponse.json(
-      { error: "Missing or invalid communityId" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing or invalid communityId" }, { status: 400 });
   }
 
   await connectToDatabase();
@@ -150,9 +147,7 @@ async function getCommunityPostsHandler(
       );
 
       // c) Run aggregation with explicit generic
-      const [aggResult] = await Post.aggregate<AggregationResult>(
-        pipeline as PipelineStage[]
-      );
+      const [aggResult] = await Post.aggregate<AggregationResult>(pipeline as PipelineStage[]);
 
       const totalCount = aggResult.metadata[0]?.total ?? 0;
       const pagedPosts = aggResult.data;
@@ -176,12 +171,8 @@ async function getCommunityPostsHandler(
       currentUser?.savedPosts !== undefined
         ? p.upvotes.some((id) => id.equals(currentUser._id))
         : false;
-    const isDownvoted = currentUser
-      ? p.downvotes.some((id) => id.equals(currentUser._id))
-      : false;
-    const isSaved = currentUser
-      ? currentUser.savedPosts.some((id) => id.equals(p._id))
-      : false;
+    const isDownvoted = currentUser ? p.downvotes.some((id) => id.equals(currentUser._id)) : false;
+    const isSaved = currentUser ? currentUser.savedPosts.some((id) => id.equals(p._id)) : false;
 
     return {
       id: p._id.toString(),
@@ -220,12 +211,15 @@ async function getCommunityPostsHandler(
 }
 
 // 10) Wrap with middleware
-export const GET = withApiMiddleware(async (req) => {
-  const communityId = req.nextUrl.pathname.split('/')[3];
-  return getCommunityPostsHandler(req, { params: Promise.resolve({ communityId }) });
-}, {
-  enableRateLimit: true,
-  maxRequests: 100,
-  windowMs: 60_000,
-  identifier: "community:posts:get",
-});
+export const GET = withApiMiddleware(
+  async (req) => {
+    const communityId = req.nextUrl.pathname.split("/")[3];
+    return getCommunityPostsHandler(req, { params: Promise.resolve({ communityId }) });
+  },
+  {
+    enableRateLimit: true,
+    maxRequests: 100,
+    windowMs: 60_000,
+    identifier: "community:posts:get",
+  }
+);

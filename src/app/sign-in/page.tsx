@@ -20,7 +20,7 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 
 // Define form validation schema
@@ -79,7 +79,9 @@ export default function SignInPage() {
       }
     } catch (error: any) {
       console.error("Sign-in error:", error);
-      setAuthError(error.errors?.[0]?.message || "Failed to sign in. Please check your credentials.");
+      setAuthError(
+        error.errors?.[0]?.message || "Failed to sign in. Please check your credentials."
+      );
       toast.error("Sign-in failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -102,11 +104,7 @@ export default function SignInPage() {
         <Card className="border-gray-200 shadow-lg">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
-              <img
-                src="/logo.png"
-                alt="ChatterSphere Logo"
-                className="h-12 w-auto"
-              />
+              <img src="/logo.png" alt="ChatterSphere Logo" className="h-12 w-auto" />
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">Welcome back</CardTitle>
             <CardDescription className="text-gray-500">
@@ -133,9 +131,7 @@ export default function SignInPage() {
                   className="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
                 {form.formState.errors.email && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {form.formState.errors.email.message}
-                  </p>
+                  <p className="text-red-500 text-xs mt-1">{form.formState.errors.email.message}</p>
                 )}
               </div>
 
@@ -164,11 +160,7 @@ export default function SignInPage() {
                     onClick={togglePasswordVisibility}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {form.formState.errors.password && (
@@ -179,14 +171,8 @@ export default function SignInPage() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="rememberMe"
-                  {...form.register("rememberMe")}
-                />
-                <Label
-                  htmlFor="rememberMe"
-                  className="text-sm text-gray-600 font-normal"
-                >
+                <Checkbox id="rememberMe" {...form.register("rememberMe")} />
+                <Label htmlFor="rememberMe" className="text-sm text-gray-600 font-normal">
                   Remember me for 30 days
                 </Label>
               </div>
@@ -220,11 +206,13 @@ export default function SignInPage() {
                   type="button"
                   variant="outline"
                   disabled={isLoading}
-                  onClick={() => signIn.authenticateWithRedirect({
-                    strategy: "oauth_google",
-                    redirectUrl: "/sso-callback",
-                    redirectUrlComplete: "/home"
-                  })}
+                  onClick={() =>
+                    signIn.authenticateWithRedirect({
+                      strategy: "oauth_google",
+                      redirectUrl: "/sso-callback",
+                      redirectUrlComplete: "/home",
+                    })
+                  }
                   className="w-full border-gray-300 hover:bg-gray-50"
                 >
                   <img src="/google-icon.svg" alt="Google" className="h-5 w-5 mr-2" />

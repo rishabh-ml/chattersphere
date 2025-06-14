@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Bell, Heart, MessageSquare, UserPlus, Users, Star, Settings, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useUser } from "@clerk/nextjs"
-import { formatDistanceToNow } from "date-fns"
-import { Avatar } from "@/components/ui/avatar"
-import { toast } from "sonner"
-import { NotificationType } from "@/models/Notification"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bell, Heart, MessageSquare, UserPlus, Users, Star, Settings, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUser } from "@clerk/nextjs";
+import { formatDistanceToNow } from "date-fns";
+import { Avatar } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import { NotificationType } from "@/models/Notification";
 
 interface Notification {
   id: string;
@@ -39,14 +39,14 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
-  const [activeTab, setActiveTab] = useState("all")
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const { isSignedIn } = useUser()
+  const [activeTab, setActiveTab] = useState("all");
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const { isSignedIn } = useUser();
 
   // Fetch notifications
   const fetchNotifications = async (pageNum: number = 1, filter?: string) => {
@@ -71,7 +71,7 @@ export default function NotificationsPage() {
       if (pageNum === 1) {
         setNotifications(data.notifications);
       } else {
-        setNotifications(prev => [...prev, ...data.notifications]);
+        setNotifications((prev) => [...prev, ...data.notifications]);
       }
 
       setHasMore(data.pagination.hasMore);
@@ -94,24 +94,25 @@ export default function NotificationsPage() {
   }, [isSignedIn, activeTab]);
 
   // Filter notifications based on active tab
-  const filteredNotifications = activeTab === "all"
-    ? notifications
-    : activeTab === "unread"
-      ? notifications.filter(n => !n.read)
-      : notifications.filter(n => {
-          switch (activeTab) {
-            case "comments":
-              return n.type === "comment" || n.type === "reply";
-            case "likes":
-              return n.type === "post_like" || n.type === "comment_like";
-            case "follows":
-              return n.type === "follow";
-            case "communities":
-              return n.type === "community_invite" || n.type === "community_join";
-            default:
-              return true;
-          }
-        });
+  const filteredNotifications =
+    activeTab === "all"
+      ? notifications
+      : activeTab === "unread"
+        ? notifications.filter((n) => !n.read)
+        : notifications.filter((n) => {
+            switch (activeTab) {
+              case "comments":
+                return n.type === "comment" || n.type === "reply";
+              case "likes":
+                return n.type === "post_like" || n.type === "comment_like";
+              case "follows":
+                return n.type === "follow";
+              case "communities":
+                return n.type === "community_invite" || n.type === "community_join";
+              default:
+                return true;
+            }
+          });
 
   // Mark all notifications as read
   const markAllAsRead = async () => {
@@ -127,7 +128,7 @@ export default function NotificationsPage() {
       }
 
       // Update local state
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       toast.success("All notifications marked as read");
     } catch (error) {
       console.error("Error marking notifications as read:", error);
@@ -149,11 +150,9 @@ export default function NotificationsPage() {
       }
 
       // Update local state
-      setNotifications(prev =>
-        prev.map(notification =>
-          notification.id === notificationId
-            ? { ...notification, read: true }
-            : notification
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId ? { ...notification, read: true } : notification
         )
       );
     } catch (error) {
@@ -188,7 +187,7 @@ export default function NotificationsPage() {
       default:
         return <Bell className="h-4 w-4 text-gray-500" />;
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -208,16 +207,12 @@ export default function NotificationsPage() {
             size="sm"
             onClick={markAllAsRead}
             className="text-sm"
-            disabled={!isSignedIn || notifications.filter(n => !n.read).length === 0}
+            disabled={!isSignedIn || notifications.filter((n) => !n.read).length === 0}
           >
             Mark all as read
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-gray-500"
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500">
             <Settings className="h-4 w-4" />
             <span className="sr-only">Notification Settings</span>
           </Button>
@@ -226,11 +221,21 @@ export default function NotificationsPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-5 md:w-fit">
-          <TabsTrigger value="all" aria-selected={activeTab === "all"}>All</TabsTrigger>
-          <TabsTrigger value="unread" aria-selected={activeTab === "unread"}>Unread</TabsTrigger>
-          <TabsTrigger value="likes" aria-selected={activeTab === "likes"}>Likes</TabsTrigger>
-          <TabsTrigger value="comments" aria-selected={activeTab === "comments"}>Comments</TabsTrigger>
-          <TabsTrigger value="follows" aria-selected={activeTab === "follows"}>Follows</TabsTrigger>
+          <TabsTrigger value="all" aria-selected={activeTab === "all"}>
+            All
+          </TabsTrigger>
+          <TabsTrigger value="unread" aria-selected={activeTab === "unread"}>
+            Unread
+          </TabsTrigger>
+          <TabsTrigger value="likes" aria-selected={activeTab === "likes"}>
+            Likes
+          </TabsTrigger>
+          <TabsTrigger value="comments" aria-selected={activeTab === "comments"}>
+            Comments
+          </TabsTrigger>
+          <TabsTrigger value="follows" aria-selected={activeTab === "follows"}>
+            Follows
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -255,7 +260,7 @@ export default function NotificationsPage() {
                 {filteredNotifications.map((notification, index) => (
                   <motion.div
                     key={notification.id}
-                    className={`p-4 hover:bg-gray-50 transition-colors ${!notification.read ? 'bg-blue-50/30' : ''}`}
+                    className={`p-4 hover:bg-gray-50 transition-colors ${!notification.read ? "bg-blue-50/30" : ""}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
@@ -279,11 +284,11 @@ export default function NotificationsPage() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-800">
-                          {notification.message}
-                        </p>
+                        <p className="text-sm text-gray-800">{notification.message}</p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(notification.createdAt), {
+                            addSuffix: true,
+                          })}
                         </p>
                       </div>
 
@@ -298,12 +303,7 @@ export default function NotificationsPage() {
 
                 {hasMore && (
                   <div className="p-4 text-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={loadMore}
-                      disabled={loadingMore}
-                    >
+                    <Button variant="outline" size="sm" onClick={loadMore} disabled={loadingMore}>
                       {loadingMore ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -331,5 +331,5 @@ export default function NotificationsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -80,7 +80,7 @@ export default function NotificationList({
         `/api/notifications?page=${pageNum}&limit=${limit}&_=${timestamp}`,
         {
           headers: {
-            'Cache-Control': 'no-cache',
+            "Cache-Control": "no-cache",
           },
         }
       );
@@ -101,7 +101,7 @@ export default function NotificationList({
       if (pageNum === 1) {
         setNotifications(data.notifications);
       } else {
-        setNotifications(prev => [...prev, ...data.notifications]);
+        setNotifications((prev) => [...prev, ...data.notifications]);
       }
 
       setHasMore(data.pagination?.hasMore || false);
@@ -133,11 +133,9 @@ export default function NotificationList({
       }
 
       // Update local state
-      setNotifications(prev =>
-        prev.map(notification =>
-          notification.id === notificationId
-            ? { ...notification, read: true }
-            : notification
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId ? { ...notification, read: true } : notification
         )
       );
 
@@ -176,7 +174,7 @@ export default function NotificationList({
       case "community_join":
         if (notification.relatedCommunity) {
           navigation.goToCommunity(
-            notification.relatedCommunity.slug,
+            notification.relatedCommunity.id,
             notification.relatedCommunity.id
           );
         }
@@ -250,7 +248,7 @@ export default function NotificationList({
       </div>
 
       <div className={isDropdown ? "max-h-[400px] overflow-y-auto" : ""}>
-        {notifications.map(notification => (
+        {notifications.map((notification) => (
           <div
             key={notification.id}
             className={`p-3 ${isDropdown ? "hover:bg-gray-50" : "border-b border-gray-100 py-4"} cursor-pointer ${
@@ -276,9 +274,7 @@ export default function NotificationList({
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-800 mb-1">
-                  {notification.message}
-                </p>
+                <p className="text-sm text-gray-800 mb-1">{notification.message}</p>
                 <div className="flex items-center text-xs text-gray-500">
                   <span>
                     {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}

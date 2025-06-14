@@ -16,40 +16,43 @@ interface HomeFeedProps {
 
 export default function HomeFeed({ emptyMessage = "No posts to show" }: HomeFeedProps) {
   const { isSignedIn } = useUser();
-  const { 
-    posts, 
-    loading, 
-    error, 
-    hasMore, 
-    fetchMorePosts, 
-    votePost, 
+  const {
+    posts,
+    loading,
+    error,
+    hasMore,
+    fetchMorePosts,
+    votePost,
     savePost,
     feedType,
     setFeedType,
     sortOption,
-    setSortOption
+    setSortOption,
   } = useHomeFeed();
-  
+
   const observer = useRef<IntersectionObserver | null>(null);
 
   // Set up the intersection observer for infinite scrolling
-  const lastPostRef = useCallback((node: HTMLDivElement | null) => {
-    if (loading) return;
+  const lastPostRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (loading) return;
 
-    if (observer.current) {
-      observer.current.disconnect();
-    }
-
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        fetchMorePosts();
+      if (observer.current) {
+        observer.current.disconnect();
       }
-    });
 
-    if (node) {
-      observer.current.observe(node);
-    }
-  }, [loading, hasMore, fetchMorePosts]);
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchMorePosts();
+        }
+      });
+
+      if (node) {
+        observer.current.observe(node);
+      }
+    },
+    [loading, hasMore, fetchMorePosts]
+  );
 
   // Clean up observer on unmount
   useEffect(() => {
@@ -82,11 +85,7 @@ export default function HomeFeed({ emptyMessage = "No posts to show" }: HomeFeed
     <div className="space-y-6">
       {/* Feed Type Tabs */}
       <div className="bg-white rounded-lg border border-gray-100 p-4 mb-6">
-        <Tabs 
-          value={feedType} 
-          onValueChange={handleFeedTypeChange}
-          className="w-full"
-        >
+        <Tabs value={feedType} onValueChange={handleFeedTypeChange} className="w-full">
           <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="all" className="flex items-center gap-1">
               <Sparkles className="h-4 w-4" />
@@ -107,28 +106,28 @@ export default function HomeFeed({ emptyMessage = "No posts to show" }: HomeFeed
       {/* Sort Options */}
       <div className="flex flex-wrap gap-2 mb-6">
         <Button
-          variant={sortOption === 'new' ? 'default' : 'outline'}
+          variant={sortOption === "new" ? "default" : "outline"}
           size="sm"
-          onClick={() => setSortOption('new')}
-          className={sortOption === 'new' ? 'bg-[#00AEEF] hover:bg-[#00AEEF]/90' : ''}
+          onClick={() => setSortOption("new")}
+          className={sortOption === "new" ? "bg-[#00AEEF] hover:bg-[#00AEEF]/90" : ""}
         >
           <Clock className="h-4 w-4 mr-2" />
           New
         </Button>
         <Button
-          variant={sortOption === 'top' ? 'default' : 'outline'}
+          variant={sortOption === "top" ? "default" : "outline"}
           size="sm"
-          onClick={() => setSortOption('top')}
-          className={sortOption === 'top' ? 'bg-[#00AEEF] hover:bg-[#00AEEF]/90' : ''}
+          onClick={() => setSortOption("top")}
+          className={sortOption === "top" ? "bg-[#00AEEF] hover:bg-[#00AEEF]/90" : ""}
         >
           <TrendingUp className="h-4 w-4 mr-2" />
           Top
         </Button>
         <Button
-          variant={sortOption === 'trending' ? 'default' : 'outline'}
+          variant={sortOption === "trending" ? "default" : "outline"}
           size="sm"
-          onClick={() => setSortOption('trending')}
-          className={sortOption === 'trending' ? 'bg-[#00AEEF] hover:bg-[#00AEEF]/90' : ''}
+          onClick={() => setSortOption("trending")}
+          className={sortOption === "trending" ? "bg-[#00AEEF] hover:bg-[#00AEEF]/90" : ""}
         >
           <Sparkles className="h-4 w-4 mr-2" />
           Trending
@@ -139,8 +138,8 @@ export default function HomeFeed({ emptyMessage = "No posts to show" }: HomeFeed
       {posts.length === 0 && !loading ? (
         <div className="bg-white rounded-lg border border-gray-100 p-8 text-center">
           <p className="text-gray-500">
-            {isSignedIn 
-              ? "Your feed is empty. Follow users or join communities to see posts here!" 
+            {isSignedIn
+              ? "Your feed is empty. Follow users or join communities to see posts here!"
               : "Sign in to see a personalized feed!"}
           </p>
         </div>

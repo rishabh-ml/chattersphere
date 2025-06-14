@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { RefreshCw, Home } from 'lucide-react';
-import Link from 'next/link';
-import { captureException } from '@/lib/sentry';
+import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, Home } from "lucide-react";
+import Link from "next/link";
+import { captureException } from "@/lib/sentry";
 
 export default function MainError({
   error,
@@ -15,11 +15,11 @@ export default function MainError({
 }) {
   useEffect(() => {
     // Log the error to Sentry
-    captureException(error, { context: 'main-error-boundary' });
-    
+    captureException(error, { context: "main-error-boundary" });
+
     // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error caught by main error boundary:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error caught by main error boundary:", error);
     }
   }, [error]);
 
@@ -30,18 +30,16 @@ export default function MainError({
         <p className="text-gray-500">
           We encountered an error while loading this page. Our team has been notified.
         </p>
-        
-        {process.env.NODE_ENV === 'development' && (
+
+        {process.env.NODE_ENV === "development" && (
           <div className="p-4 bg-red-50 rounded-md text-left">
             <p className="text-red-700 font-medium">Error: {error.message}</p>
             {error.stack && (
-              <pre className="mt-2 text-xs text-red-600 overflow-auto max-h-40">
-                {error.stack}
-              </pre>
+              <pre className="mt-2 text-xs text-red-600 overflow-auto max-h-40">{error.stack}</pre>
             )}
           </div>
         )}
-        
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
           <Button
             variant="outline"
@@ -52,13 +50,8 @@ export default function MainError({
             <RefreshCw size={16} />
             Try Again
           </Button>
-          
-          <Button
-            variant="default"
-            size="sm"
-            className="flex items-center gap-2"
-            asChild
-          >
+
+          <Button variant="default" size="sm" className="flex items-center gap-2" asChild>
             <Link href="/home">
               <Home size={16} />
               Home Page

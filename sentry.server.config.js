@@ -42,18 +42,18 @@ Sentry.init({
   tracesSampler: (samplingContext) => {
     // Adjust sampling based on transaction name
     const transactionName = samplingContext.transactionContext?.name;
-    
+
     if (!transactionName) return 0.5;
-    
+
     // Sample health checks and static assets at a lower rate
-    if (transactionName.includes('/api/health')) return 0.01;
-    if (transactionName.includes('/_next/static')) return 0.01;
-    
+    if (transactionName.includes("/api/health")) return 0.01;
+    if (transactionName.includes("/_next/static")) return 0.01;
+
     // Sample important API endpoints at a higher rate
-    if (transactionName.includes('/api/posts')) return 0.8;
-    if (transactionName.includes('/api/communities')) return 0.8;
-    if (transactionName.includes('/api/profile')) return 0.8;
-    
+    if (transactionName.includes("/api/posts")) return 0.8;
+    if (transactionName.includes("/api/communities")) return 0.8;
+    if (transactionName.includes("/api/profile")) return 0.8;
+
     // Default sampling rate
     return 0.5;
   },

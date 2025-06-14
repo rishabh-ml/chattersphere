@@ -29,25 +29,25 @@ export default function ConversationView({ userId, userName }: ConversationViewP
     sendMessage,
     markMessageAsRead,
   } = useDirectMessages();
-  
+
   const { user } = useUser();
   const [messageContent, setMessageContent] = useState("");
   const [userInfo, setUserInfo] = useState<{ name: string; image?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  
+
   // Fetch messages when the component mounts
   useEffect(() => {
     if (userId) {
       fetchMessages(userId);
     }
   }, [userId]);
-  
+
   // Fetch user info if not provided
   useEffect(() => {
     if (userId && !userName && messages.length > 0) {
-      const otherUserMessage = messages.find(m => m.sender.id !== user?.id);
+      const otherUserMessage = messages.find((m) => m.sender.id !== user?.id);
       if (otherUserMessage) {
         setUserInfo({
           name: otherUserMessage.sender.name,
@@ -58,44 +58,44 @@ export default function ConversationView({ userId, userName }: ConversationViewP
       setUserInfo({ name: userName });
     }
   }, [userId, userName, messages, user?.id]);
-  
+
   // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current && !isLoadingMessages) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isLoadingMessages]);
-  
+
   // Handle scroll to detect when to show scroll button
   useEffect(() => {
     const scrollArea = scrollAreaRef.current;
     if (!scrollArea) return;
-    
+
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollArea;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
       setShowScrollButton(!isNearBottom);
     };
-    
+
     scrollArea.addEventListener("scroll", handleScroll);
     return () => scrollArea.removeEventListener("scroll", handleScroll);
   }, []);
-  
+
   // Mark unread messages as read
   useEffect(() => {
     if (messages.length > 0) {
-      messages.forEach(message => {
+      messages.forEach((message) => {
         if (!message.isRead && message.sender.id !== user?.id) {
           markMessageAsRead(message.id);
         }
       });
     }
   }, [messages, user?.id]);
-  
+
   // Handle sending a message
   const handleSendMessage = async () => {
     if (!messageContent.trim() || isSendingMessage) return;
-    
+
     try {
       await sendMessage(userId, messageContent);
       setMessageContent("");
@@ -103,56 +103,54 @@ export default function ConversationView({ userId, userName }: ConversationViewP
       console.error("Error sending message:", error);
     }
   };
-  
+
   // Handle loading more messages
   const handleLoadMore = () => {
     if (hasMoreMessages && !isLoadingMessages) {
       fetchMessages(userId, messagesPage + 1);
     }
   };
-  
+
   // Scroll to bottom
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
-  
+
   // Group messages by date
   const groupedMessages: { [date: string]: Message[] } = {};
-  messages.forEach(message => {
+  messages.forEach((message) => {
     const date = new Date(message.createdAt).toLocaleDateString();
     if (!groupedMessages[date]) {
       groupedMessages[date] = [];
     }
     groupedMessages[date].push(message);
   });
-  
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center">
         <Avatar className="h-10 w-10 mr-3">
           <img
-            src={userInfo?.image || `https://placehold.co/200x200?text=${userInfo?.name?.charAt(0) || "?"}`}
+            src={
+              userInfo?.image ||
+              `https://placehold.co/200x200?text=${userInfo?.name?.charAt(0) || "?"}`
+            }
             alt={userInfo?.name || "User"}
           />
         </Avatar>
         <div>
-          <h2 className="font-semibold">
-            {userInfo?.name || "Loading..."}
-          </h2>
+          <h2 className="font-semibold">{userInfo?.name || "Loading..."}</h2>
           {userId && (
-            <Link
-              href={`/profile/${userId}`}
-              className="text-xs text-[#00AEEF] hover:underline"
-            >
+            <Link href={`/profile/${userId}`} className="text-xs text-[#00AEEF] hover:underline">
               View Profile
             </Link>
           )}
         </div>
       </div>
-      
+
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         {isLoadingMessages && messagesPage === 1 ? (
@@ -180,35 +178,36 @@ export default function ConversationView({ userId, userName }: ConversationViewP
                 </Button>
               </div>
             )}
-            
-            {Object.keys(groupedMessages).map(date => (
+
+            {Object.keys(groupedMessages).map((date) => (
               <div key={date}>
                 <div className="text-center my-4">
                   <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full">
                     {date === new Date().toLocaleDateString() ? "Today" : date}
                   </span>
                 </div>
-                
-                {groupedMessages[date].map(message => (
+
+                {groupedMessages[date].map((message) => (
                   <div
                     key={message.id}
                     className={cn(
                       "mb-4 max-w-[80%]",
-                      message.sender.id === user?.id
-                        ? "ml-auto"
-                        : "mr-auto"
+                      message.sender.id === user?.id ? "ml-auto" : "mr-auto"
                     )}
                   >
                     <div className="flex items-start">
                       {message.sender.id !== user?.id && (
                         <Avatar className="h-8 w-8 mr-2 mt-1">
                           <img
-                            src={message.sender.image || `https://placehold.co/200x200?text=${message.sender.name.charAt(0)}`}
+                            src={
+                              message.sender.image ||
+                              `https://placehold.co/200x200?text=${message.sender.name.charAt(0)}`
+                            }
                             alt={message.sender.name}
                           />
                         </Avatar>
                       )}
-                      
+
                       <div
                         className={cn(
                           "rounded-lg p-3",
@@ -218,7 +217,7 @@ export default function ConversationView({ userId, userName }: ConversationViewP
                         )}
                       >
                         <p className="whitespace-pre-wrap">{message.content}</p>
-                        
+
                         {message.attachments && message.attachments.length > 0 && (
                           <div className="mt-2 space-y-2">
                             {message.attachments.map((attachment, index) => (
@@ -237,9 +236,7 @@ export default function ConversationView({ userId, userName }: ConversationViewP
                                     className="flex items-center p-2 bg-white bg-opacity-10 rounded"
                                   >
                                     <ImageIcon className="h-4 w-4 mr-2" />
-                                    <span className="text-sm truncate">
-                                      {attachment.name}
-                                    </span>
+                                    <span className="text-sm truncate">{attachment.name}</span>
                                   </a>
                                 )}
                               </div>
@@ -248,7 +245,7 @@ export default function ConversationView({ userId, userName }: ConversationViewP
                         )}
                       </div>
                     </div>
-                    
+
                     <div
                       className={cn(
                         "text-xs text-gray-500 mt-1",
@@ -259,21 +256,19 @@ export default function ConversationView({ userId, userName }: ConversationViewP
                         addSuffix: true,
                       })}
                       {message.sender.id === user?.id && (
-                        <span className="ml-2">
-                          {message.isRead ? "Read" : "Sent"}
-                        </span>
+                        <span className="ml-2">{message.isRead ? "Read" : "Sent"}</span>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
             ))}
-            
+
             <div ref={messagesEndRef} />
           </>
         )}
       </ScrollArea>
-      
+
       {/* Scroll to bottom button */}
       {showScrollButton && (
         <Button
@@ -283,7 +278,7 @@ export default function ConversationView({ userId, userName }: ConversationViewP
           <ArrowDown className="h-5 w-5" />
         </Button>
       )}
-      
+
       {/* Message input */}
       <div className="p-4 border-t border-gray-200">
         <div className="flex items-end gap-2">
@@ -310,7 +305,7 @@ export default function ConversationView({ userId, userName }: ConversationViewP
               </Button>
             </div>
           </div>
-          
+
           <Button
             className="bg-[#00AEEF] hover:bg-[#0099d6] text-white h-10 w-10 rounded-full p-0"
             onClick={handleSendMessage}

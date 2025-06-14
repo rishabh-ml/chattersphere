@@ -6,11 +6,14 @@ export class MockNextRequest {
   nextUrl: { searchParams: URLSearchParams };
   private body: any;
 
-  constructor(url: string, options: { method?: string; headers?: Record<string, string>; body?: string } = {}) {
+  constructor(
+    url: string,
+    options: { method?: string; headers?: Record<string, string>; body?: string } = {}
+  ) {
     this.url = url;
-    this.method = options.method || 'GET';
+    this.method = options.method || "GET";
     this.headers = new Map(Object.entries(options.headers || {}));
-    this.nextUrl = { searchParams: new URLSearchParams(url.split('?')[1] || '') };
+    this.nextUrl = { searchParams: new URLSearchParams(url.split("?")[1] || "") };
     this.body = options.body ? JSON.parse(options.body) : {};
   }
 
@@ -56,7 +59,7 @@ export const mockMongoose = {
 
 // Mock Clerk auth
 export const mockAuth = jest.fn().mockResolvedValue({
-  userId: 'user_123',
+  userId: "user_123",
 });
 
 // Mock database connection
@@ -117,13 +120,13 @@ export const mockNotificationModel = {
 // Setup function to reset all mocks
 export function resetAllMocks() {
   jest.clearAllMocks();
-  
+
   // Reset auth mock
-  mockAuth.mockResolvedValue({ userId: 'user_123' });
-  
+  mockAuth.mockResolvedValue({ userId: "user_123" });
+
   // Reset database connection mock
   mockDbConnect.mockResolvedValue(undefined);
-  
+
   // Reset mongoose mock
   mockMongoose.Types.ObjectId.isValid.mockReturnValue(true);
 }

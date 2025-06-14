@@ -36,16 +36,10 @@ interface CommunityHeaderProps {
 export default function CommunityHeader({
   onToggleChannels,
   onToggleMembers,
-  isMobile = false
+  isMobile = false,
 }: CommunityHeaderProps) {
   const router = useRouter();
-  const {
-    community,
-    loading,
-    error,
-    joinCommunity,
-    leaveCommunity,
-  } = useSingleCommunity();
+  const { community, loading, error, joinCommunity, leaveCommunity } = useSingleCommunity();
 
   const handleJoinCommunity = async () => {
     if (community) {
@@ -122,7 +116,9 @@ export default function CommunityHeader({
             )}
           </Avatar>
 
-          <h1 className="font-semibold text-lg truncate max-w-[150px] sm:max-w-xs">{community.name}</h1>
+          <h1 className="font-semibold text-lg truncate max-w-[150px] sm:max-w-xs">
+            {community.name}
+          </h1>
         </div>
       </div>
 
@@ -174,11 +170,7 @@ export default function CommunityHeader({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-gray-500 hover:text-gray-700"
-                >
+                <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-700">
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>

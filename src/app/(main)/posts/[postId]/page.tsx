@@ -42,7 +42,7 @@ export default function PostDetailPage() {
     }
   }, [postId]);
 
-  const handleVote = async (postId: string, voteType: 'upvote' | 'downvote') => {
+  const handleVote = async (postId: string, voteType: "upvote" | "downvote") => {
     try {
       const response = await fetch(`/api/posts/${postId}/vote`, {
         method: "POST",
@@ -58,7 +58,7 @@ export default function PostDetailPage() {
 
       const data = await response.json();
 
-      setPost(prev => {
+      setPost((prev) => {
         if (!prev) return null;
 
         return {

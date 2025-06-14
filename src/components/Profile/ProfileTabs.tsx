@@ -25,33 +25,29 @@ export default function ProfileTabs({
   const [activeTab, setActiveTab] = useState("about");
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      transition={{ delay: 0.6 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.6 }}
       className="mt-8 px-4 md:px-6"
     >
-      <Tabs 
-        defaultValue="about" 
-        value={activeTab} 
-        onValueChange={(value) => setActiveTab(value)}
-      >
+      <Tabs defaultValue="about" value={activeTab} onValueChange={(value) => setActiveTab(value)}>
         <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto">
-          <TabsTrigger 
-            value="about" 
+          <TabsTrigger
+            value="about"
             className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700"
           >
             <Info className="h-4 w-4 mr-2" /> About
           </TabsTrigger>
-          <TabsTrigger 
-            value="activity" 
+          <TabsTrigger
+            value="activity"
             className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700"
           >
             <Activity className="h-4 w-4 mr-2" /> Activity
           </TabsTrigger>
           {isOwner && (
-            <TabsTrigger 
-              value="privacy" 
+            <TabsTrigger
+              value="privacy"
               className="data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700"
             >
               <Shield className="h-4 w-4 mr-2" /> Privacy
@@ -69,10 +65,10 @@ export default function ProfileTabs({
 
         {isOwner && (
           <TabsContent value="privacy" className="mt-6">
-            <PrivacyTab 
-              userId={user.id} 
-              privacySettings={user.privacySettings} 
-              onPrivacyUpdate={onPrivacyUpdate} 
+            <PrivacyTab
+              userId={user.id}
+              privacySettings={user.privacySettings}
+              onPrivacyUpdate={onPrivacyUpdate}
             />
           </TabsContent>
         )}

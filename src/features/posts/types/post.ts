@@ -38,7 +38,7 @@ export interface PostCreateInput {
 export interface PostsQueryParams {
   page?: number;
   limit?: number;
-  sort?: 'newest' | 'popular' | 'controversial' | 'oldest';
+  sort?: "newest" | "popular" | "controversial" | "oldest";
   communityId?: string;
   userId?: string;
 }

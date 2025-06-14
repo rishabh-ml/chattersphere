@@ -11,10 +11,12 @@ export class MessagesService {
    */
   static async getConversations(): Promise<Conversation[]> {
     try {
-      const response = await ApiClient.get<{ conversations: Conversation[] }>('/api/messages/conversations');
+      const response = await ApiClient.get<{ conversations: Conversation[] }>(
+        "/api/messages/conversations"
+      );
       return response.conversations;
     } catch (error) {
-      console.error('Error fetching conversations:', error);
+      console.error("Error fetching conversations:", error);
       return [];
     }
   }
@@ -26,13 +28,21 @@ export class MessagesService {
    * @param limit Optional limit for number of messages
    * @returns Messages and pagination info
    */
-  static async getMessages(recipientId: string, cursor?: string, limit: number = 20): Promise<{ messages: Message[], nextCursor?: string, hasMore: boolean }> {
+  static async getMessages(
+    recipientId: string,
+    cursor?: string,
+    limit: number = 20
+  ): Promise<{ messages: Message[]; nextCursor?: string; hasMore: boolean }> {
     try {
       const params = new URLSearchParams();
-      if (cursor) params.append('cursor', cursor);
-      if (limit) params.append('limit', limit.toString());
-      
-      const response = await ApiClient.get<{ messages: Message[], nextCursor?: string, hasMore: boolean }>(`/api/messages/${recipientId}?${params.toString()}`);
+      if (cursor) params.append("cursor", cursor);
+      if (limit) params.append("limit", limit.toString());
+
+      const response = await ApiClient.get<{
+        messages: Message[];
+        nextCursor?: string;
+        hasMore: boolean;
+      }>(`/api/messages/${recipientId}?${params.toString()}`);
       return response;
     } catch (error) {
       console.error(`Error fetching messages with user ${recipientId}:`, error);
@@ -47,28 +57,34 @@ export class MessagesService {
    * @param attachments Optional file attachments
    * @returns The sent message if successful
    */
-  static async sendMessage(recipientId: string, content: string, attachments: File[] = []): Promise<Message | null> {
+  static async sendMessage(
+    recipientId: string,
+    content: string,
+    attachments: File[] = []
+  ): Promise<Message | null> {
     try {
       // Handle attachments first if any
-      let attachmentData: Array<{ url: string, type: string, name: string, size: number }> = [];
-      
+      let attachmentData: Array<{ url: string; type: string; name: string; size: number }> = [];
+
       if (attachments.length > 0) {
         // Upload attachments and get their details
         const formData = new FormData();
-        attachments.forEach(file => formData.append('files', file));
-        
-        const uploadResponse = await ApiClient.post<{ files: Array<{ url: string, type: string, name: string, size: number }> }>('/api/upload', formData);
+        attachments.forEach((file) => formData.append("files", file));
+
+        const uploadResponse = await ApiClient.post<{
+          files: Array<{ url: string; type: string; name: string; size: number }>;
+        }>("/api/upload", formData);
         attachmentData = uploadResponse.files;
       }
-      
+
       const response = await ApiClient.post<{ message: Message }>(`/api/messages/${recipientId}`, {
         content,
-        attachments: attachmentData
+        attachments: attachmentData,
       });
-      
+
       return response.message;
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
       return null;
     }
   }
@@ -83,7 +99,7 @@ export class MessagesService {
       await ApiClient.put(`/api/messages/${senderId}/read`, {});
       return true;
     } catch (error) {
-      console.error('Error marking messages as read:', error);
+      console.error("Error marking messages as read:", error);
       return false;
     }
   }
@@ -94,10 +110,10 @@ export class MessagesService {
    */
   static async getUnreadCount(): Promise<number> {
     try {
-      const response = await ApiClient.get<{ count: number }>('/api/messages/unread');
+      const response = await ApiClient.get<{ count: number }>("/api/messages/unread");
       return response.count;
     } catch (error) {
-      console.error('Error fetching unread count:', error);
+      console.error("Error fetching unread count:", error);
       return 0;
     }
   }
@@ -112,7 +128,7 @@ export class MessagesService {
       await ApiClient.delete(`/api/messages/message/${messageId}`);
       return true;
     } catch (error) {
-      console.error('Error deleting message:', error);
+      console.error("Error deleting message:", error);
       return false;
     }
   }
@@ -125,15 +141,18 @@ export class MessagesService {
   static async searchMessages(filters: MessageFilters): Promise<Message[]> {
     try {
       const params = new URLSearchParams();
-      if (filters.search) params.append('search', filters.search);
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-      if (filters.hasAttachments !== undefined) params.append('hasAttachments', filters.hasAttachments.toString());
-      
-      const response = await ApiClient.get<{ messages: Message[] }>(`/api/messages/search?${params.toString()}`);
+      if (filters.search) params.append("search", filters.search);
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+      if (filters.hasAttachments !== undefined)
+        params.append("hasAttachments", filters.hasAttachments.toString());
+
+      const response = await ApiClient.get<{ messages: Message[] }>(
+        `/api/messages/search?${params.toString()}`
+      );
       return response.messages;
     } catch (error) {
-      console.error('Error searching messages:', error);
+      console.error("Error searching messages:", error);
       return [];
     }
   }

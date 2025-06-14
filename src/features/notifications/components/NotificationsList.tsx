@@ -4,18 +4,18 @@ import { useState } from "react";
 import { useNotifications } from "../hooks/useNotifications";
 import { Button } from "@/shared/ui/button";
 import { ScrollArea } from "@/shared/ui/scroll-area";
-import { 
-  User, 
-  MessageSquare, 
-  Heart, 
-  UserPlus, 
-  Users, 
-  Mail, 
+import {
+  User,
+  MessageSquare,
+  Heart,
+  UserPlus,
+  Users,
+  Mail,
   Bell,
   CheckCheck,
   Loader2,
   X,
-  ExternalLink
+  ExternalLink,
 } from "lucide-react";
 import { Avatar } from "@/shared/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -33,12 +33,12 @@ export default function NotificationsList() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    isFetchingNextPage
+    isFetchingNextPage,
   } = useNotifications();
-  
+
   const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false);
   const router = useRouter();
-  
+
   // Get icon based on notification type
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -65,7 +65,7 @@ export default function NotificationsList() {
   // Get notification text based on type
   const getNotificationText = (notification: Notification) => {
     const actor = notification.actor?.name || "Someone";
-    
+
     switch (notification.type) {
       case NotificationType.POST_MENTION:
         return `${actor} mentioned you in a post`;
@@ -91,7 +91,7 @@ export default function NotificationsList() {
         return "New notification";
     }
   };
-  
+
   // Handle click on a notification
   const handleNotificationClick = async (notification: Notification) => {
     try {
@@ -99,7 +99,7 @@ export default function NotificationsList() {
       if (!notification.isRead) {
         await markAsRead(notification.id);
       }
-      
+
       // Navigate to the target
       if (notification.target.url) {
         router.push(notification.target.url);
@@ -108,7 +108,7 @@ export default function NotificationsList() {
       console.error("Error handling notification click:", error);
     }
   };
-  
+
   // Handle mark all as read
   const handleMarkAllAsRead = async () => {
     setIsMarkingAllAsRead(true);
@@ -122,7 +122,7 @@ export default function NotificationsList() {
       setIsMarkingAllAsRead(false);
     }
   };
-  
+
   // Handle delete notification
   const handleDeleteNotification = async (notificationId: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -134,13 +134,13 @@ export default function NotificationsList() {
       console.error("Error deleting notification:", error);
     }
   };
-  
+
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
       {/* Header */}
       <div className="border-b border-gray-100 p-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
-        
+
         <Button
           variant="outline"
           size="sm"
@@ -155,7 +155,7 @@ export default function NotificationsList() {
           Mark all read
         </Button>
       </div>
-      
+
       {/* Notifications List */}
       <ScrollArea className="flex-1">
         {isLoadingNotifications && notifications.length === 0 ? (
@@ -170,7 +170,9 @@ export default function NotificationsList() {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">            {notifications.map((notification: any) => (
+          <div className="divide-y divide-gray-100">
+            {" "}
+            {notifications.map((notification: any) => (
               <div
                 key={notification.id}
                 className={cn(
@@ -194,7 +196,7 @@ export default function NotificationsList() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Content */}
                 <div className="min-w-0 flex-1">
                   <div className="flex justify-between items-start">
@@ -206,30 +208,32 @@ export default function NotificationsList() {
                     >
                       {getNotificationText(notification)}
                     </p>
-                    
+
                     <div className="flex items-center ml-2">
                       <p className="text-xs text-gray-500 whitespace-nowrap">
                         {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                       </p>
-                      
+
                       <Button
                         variant="ghost"
                         size="sm"
                         className="ml-2 h-6 w-6 p-0"
-                        onClick={(e: React.MouseEvent) => handleDeleteNotification(notification.id, e)}
+                        onClick={(e: React.MouseEvent) =>
+                          handleDeleteNotification(notification.id, e)
+                        }
                       >
                         <X className="h-4 w-4 text-gray-400" />
                         <span className="sr-only">Delete</span>
                       </Button>
                     </div>
                   </div>
-                  
+
                   {notification.target.content && (
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                       {notification.target.content}
                     </p>
                   )}
-                  
+
                   {notification.target.url && (
                     <div className="mt-1 flex items-center">
                       <ExternalLink className="h-3 w-3 text-gray-400 mr-1" />
@@ -241,7 +245,7 @@ export default function NotificationsList() {
             ))}
           </div>
         )}
-        
+
         {hasMoreNotifications && (
           <div className="p-4 flex justify-center">
             <Button
@@ -250,11 +254,7 @@ export default function NotificationsList() {
               onClick={() => loadMoreNotifications()}
               disabled={isFetchingNextPage}
             >
-              {isFetchingNextPage ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                "Load more"
-              )}
+              {isFetchingNextPage ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Load more"}
             </Button>
           </div>
         )}

@@ -45,16 +45,16 @@ export interface CommunityMember {
     name: string;
     image?: string;
   };
-  role: 'ADMIN' | 'MODERATOR' | 'MEMBER';
+  role: "ADMIN" | "MODERATOR" | "MEMBER";
   joinedAt: string;
 }
 
-export type MemberRole = 'ADMIN' | 'MODERATOR' | 'MEMBER';
+export type MemberRole = "ADMIN" | "MODERATOR" | "MEMBER";
 
 export interface CommunitiesQueryParams {
   page?: number;
   limit?: number;
-  sort?: 'newest' | 'popular' | 'alphabetical';
+  sort?: "newest" | "popular" | "alphabetical";
   query?: string;
 }
 

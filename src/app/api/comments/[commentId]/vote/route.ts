@@ -71,13 +71,13 @@ export async function POST(
     const { voteType } = validationResult.data;
 
     // Get the Vote model
-    const Vote = mongoose.model('Vote');
+    const Vote = mongoose.model("Vote");
 
     // Find existing vote
     const existingVote = await Vote.findOne({
       user: user._id,
       target: comment._id,
-      targetType: 'Comment'
+      targetType: "Comment",
     });
 
     // Initialize vote status
@@ -104,8 +104,8 @@ export async function POST(
           await Vote.create({
             user: user._id,
             target: comment._id,
-            targetType: 'Comment',
-            voteType: VoteType.UPVOTE
+            targetType: "Comment",
+            voteType: VoteType.UPVOTE,
           });
           // Increment upvote count
           comment.upvoteCount += 1;
@@ -116,18 +116,18 @@ export async function POST(
         try {
           // Only create notification if the voter is not the comment author
           if (comment.author.toString() !== user._id.toString()) {
-            const Notification = mongoose.model('Notification');
+            const Notification = mongoose.model("Notification");
             const commentAuthor = await User.findById(comment.author);
 
             if (commentAuthor) {
               await Notification.create({
                 recipient: comment.author,
                 sender: user._id,
-                type: 'comment_like',
+                type: "comment_like",
                 message: `${user.name} liked your comment`,
                 read: false,
                 relatedPost: comment.post,
-                relatedComment: comment._id
+                relatedComment: comment._id,
               });
             }
           }
@@ -155,8 +155,8 @@ export async function POST(
           await Vote.create({
             user: user._id,
             target: comment._id,
-            targetType: 'Comment',
-            voteType: VoteType.DOWNVOTE
+            targetType: "Comment",
+            voteType: VoteType.DOWNVOTE,
           });
           // Increment downvote count
           comment.downvoteCount += 1;
@@ -173,7 +173,7 @@ export async function POST(
       const currentVote = await Vote.findOne({
         user: user._id,
         target: comment._id,
-        targetType: 'Comment'
+        targetType: "Comment",
       });
 
       if (currentVote) {

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 export default function MaintenancePage() {
   const [countdown, setCountdown] = useState(30);
-  
+
   useEffect(() => {
     // Auto-refresh countdown
     if (countdown > 0) {
@@ -16,7 +16,7 @@ export default function MaintenancePage() {
       window.location.reload();
     }
   }, [countdown]);
-  
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 text-center bg-gray-50">
       <div className="space-y-6 max-w-md">
@@ -36,19 +36,20 @@ export default function MaintenancePage() {
             />
           </svg>
         </div>
-        
+
         <h1 className="text-4xl font-bold text-gray-900">We'll be right back!</h1>
         <p className="text-gray-600">
-          ChatterSphere is currently undergoing scheduled maintenance. 
-          We apologize for the inconvenience and should be back online shortly.
+          ChatterSphere is currently undergoing scheduled maintenance. We apologize for the
+          inconvenience and should be back online shortly.
         </p>
-        
+
         <div className="p-4 bg-blue-50 rounded-md">
           <p className="text-blue-700">
-            The site will automatically refresh in <span className="font-bold">{countdown}</span> seconds.
+            The site will automatically refresh in <span className="font-bold">{countdown}</span>{" "}
+            seconds.
           </p>
         </div>
-        
+
         <Button
           variant="outline"
           size="lg"

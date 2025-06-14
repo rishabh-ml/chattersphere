@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function usePostActions() {
   const [isUpvoting, setIsUpvoting] = useState(false);
@@ -11,20 +11,20 @@ export function usePostActions() {
     setIsUpvoting(true);
     try {
       const response = await fetch(`/api/posts/${postId}/upvote`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to upvote post');
+        throw new Error(error.error || "Failed to upvote post");
       }
 
       return await response.json();
     } catch (error) {
-      console.error('Error upvoting post:', error);
+      console.error("Error upvoting post:", error);
       throw error;
     } finally {
       setIsUpvoting(false);
@@ -35,20 +35,20 @@ export function usePostActions() {
     setIsDownvoting(true);
     try {
       const response = await fetch(`/api/posts/${postId}/downvote`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to downvote post');
+        throw new Error(error.error || "Failed to downvote post");
       }
 
       return await response.json();
     } catch (error) {
-      console.error('Error downvoting post:', error);
+      console.error("Error downvoting post:", error);
       throw error;
     } finally {
       setIsDownvoting(false);
@@ -59,20 +59,20 @@ export function usePostActions() {
     setIsSaving(true);
     try {
       const response = await fetch(`/api/posts/${postId}/save`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to save post');
+        throw new Error(error.error || "Failed to save post");
       }
 
       return await response.json();
     } catch (error) {
-      console.error('Error saving post:', error);
+      console.error("Error saving post:", error);
       throw error;
     } finally {
       setIsSaving(false);
@@ -83,20 +83,20 @@ export function usePostActions() {
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/posts/${postId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete post');
+        throw new Error(error.error || "Failed to delete post");
       }
 
       return await response.json();
     } catch (error) {
-      console.error('Error deleting post:', error);
+      console.error("Error deleting post:", error);
       throw error;
     } finally {
       setIsDeleting(false);

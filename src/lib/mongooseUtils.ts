@@ -31,7 +31,7 @@ export function getPaginationOptions(page: number = 1, limit: number = 10) {
   const validPage = Math.max(1, page);
   const validLimit = Math.min(100, Math.max(1, limit));
   const skip = (validPage - 1) * validLimit;
-  
+
   return {
     skip,
     limit: validLimit,
@@ -73,18 +73,14 @@ export function buildPaginatedAggregation(
   lookupStages: Record<string, any>[] = []
 ) {
   const { skip, limit: validLimit } = getPaginationOptions(page, limit);
-  
+
   return [
     { $match: matchStage },
     { $sort: sortStage },
     {
       $facet: {
-        metadata: [{ $count: 'total' }],
-        data: [
-          { $skip: skip },
-          { $limit: validLimit },
-          ...lookupStages,
-        ],
+        metadata: [{ $count: "total" }],
+        data: [{ $skip: skip }, { $limit: validLimit }, ...lookupStages],
       },
     },
   ];

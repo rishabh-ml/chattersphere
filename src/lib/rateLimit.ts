@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest } from "next/server";
 
 interface RateLimitStore {
   [key: string]: {
@@ -17,7 +17,9 @@ class RateLimit {
     this.maxRequests = maxRequests;
   }
 
-  async check(identifier: string): Promise<{ success: boolean; limit: number; remaining: number; resetTime: number }> {
+  async check(
+    identifier: string
+  ): Promise<{ success: boolean; limit: number; remaining: number; resetTime: number }> {
     const now = Date.now();
     const key = identifier;
 
@@ -56,9 +58,9 @@ export const uploadRateLimit = new RateLimit(60000, 10); // 10 uploads per minut
 
 // Helper function to get client identifier
 export function getClientIdentifier(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  const realIp = request.headers.get('x-real-ip');
-  const ip = forwarded ? forwarded.split(',')[0] : realIp || 'unknown';
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  const ip = forwarded ? forwarded.split(",")[0] : realIp || "unknown";
   return ip;
 }
 
@@ -74,18 +76,18 @@ export async function rateLimit(
     if (!result.success) {
       return new Response(
         JSON.stringify({
-          error: 'Too Many Requests',
-          message: 'Rate limit exceeded. Please try again later.',
+          error: "Too Many Requests",
+          message: "Rate limit exceeded. Please try again later.",
           retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000),
         }),
         {
           status: 429,
           headers: {
-            'Content-Type': 'application/json',
-            'X-RateLimit-Limit': result.limit.toString(),
-            'X-RateLimit-Remaining': result.remaining.toString(),
-            'X-RateLimit-Reset': new Date(result.resetTime).toISOString(),
-            'Retry-After': Math.ceil((result.resetTime - Date.now()) / 1000).toString(),
+            "Content-Type": "application/json",
+            "X-RateLimit-Limit": result.limit.toString(),
+            "X-RateLimit-Remaining": result.remaining.toString(),
+            "X-RateLimit-Reset": new Date(result.resetTime).toISOString(),
+            "Retry-After": Math.ceil((result.resetTime - Date.now()) / 1000).toString(),
           },
         }
       );
@@ -93,7 +95,7 @@ export async function rateLimit(
 
     return null; // No rate limit exceeded
   } catch (error) {
-    console.error('Rate limit error:', error);
+    console.error("Rate limit error:", error);
     return null; // Allow request on error
   }
 }

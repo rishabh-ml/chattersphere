@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface PageView {
   path: string;
@@ -32,7 +32,7 @@ const PageViewSchema = new Schema<PageView>(
 
 const AnalyticsSchema = new Schema<IAnalytics>(
   {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
     pageViews: [PageViewSchema],
     totalVisits: { type: Number, default: 0 },
     lastVisit: { type: Date, default: Date.now },
@@ -54,30 +54,31 @@ AnalyticsSchema.index({ user: 1 }, { unique: true });
 AnalyticsSchema.index({ lastVisit: -1 });
 
 // Method to add a page view
-AnalyticsSchema.methods.addPageView = function(pageView: PageView) {
+AnalyticsSchema.methods.addPageView = function (pageView: PageView) {
   this.pageViews.push(pageView);
   this.totalVisits += 1;
   this.lastVisit = new Date();
-    // Update most visited pages
+  // Update most visited pages
   const existingPage = this.mostVisitedPages.find((p: any) => p.path === pageView.path);
   if (existingPage) {
     existingPage.count += 1;
   } else {
     this.mostVisitedPages.push({ path: pageView.path, count: 1 });
   }
-  
+
   // Sort most visited pages by count in descending order
   this.mostVisitedPages.sort((a: any, b: any) => b.count - a.count);
-  
+
   // Keep only top 10 most visited pages
   if (this.mostVisitedPages.length > 10) {
     this.mostVisitedPages = this.mostVisitedPages.slice(0, 10);
   }
-    // Calculate average session duration
+  // Calculate average session duration
   const totalDuration = this.pageViews.reduce((sum: any, view: any) => sum + view.duration, 0);
   this.avgSessionDuration = totalDuration / this.pageViews.length;
-  
+
   return this.save();
 };
 
-export default mongoose.models.Analytics || mongoose.model<IAnalytics>('Analytics', AnalyticsSchema);
+export default mongoose.models.Analytics ||
+  mongoose.model<IAnalytics>("Analytics", AnalyticsSchema);

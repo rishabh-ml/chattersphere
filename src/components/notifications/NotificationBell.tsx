@@ -24,7 +24,7 @@ export default function NotificationBell() {
     try {
       // Check if the API endpoint exists by using a HEAD request first
       try {
-        const checkResponse = await fetch("/api/notifications", { method: 'HEAD' });
+        const checkResponse = await fetch("/api/notifications", { method: "HEAD" });
         if (!checkResponse.ok) {
           // If the endpoint doesn't exist, silently fail without error
           console.log("Notifications API not available");
@@ -48,7 +48,9 @@ export default function NotificationBell() {
       setUnreadCount(data.unreadCount);
     } catch (error) {
       // Log the error but don't propagate it to the UI
-      console.log("Error fetching notification count - this is expected if the API doesn't exist yet");
+      console.log(
+        "Error fetching notification count - this is expected if the API doesn't exist yet"
+      );
     }
   };
 
@@ -81,7 +83,7 @@ export default function NotificationBell() {
     try {
       // Check if the API endpoint exists
       try {
-        const checkResponse = await fetch("/api/notifications/read-all", { method: 'HEAD' });
+        const checkResponse = await fetch("/api/notifications/read-all", { method: "HEAD" });
         if (!checkResponse.ok) {
           // If the endpoint doesn't exist, just update the UI state
           setUnreadCount(0);
@@ -106,7 +108,9 @@ export default function NotificationBell() {
       setUnreadCount(0);
     } catch (error) {
       // Log the error but still update the UI state
-      console.log("Error marking notifications as read - this is expected if the API doesn't exist yet");
+      console.log(
+        "Error marking notifications as read - this is expected if the API doesn't exist yet"
+      );
       setUnreadCount(0);
     }
   };
@@ -133,7 +137,7 @@ export default function NotificationBell() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <NotificationList onMarkAsRead={() => setUnreadCount(prev => Math.max(0, prev - 1))} />
+        <NotificationList onMarkAsRead={() => setUnreadCount((prev) => Math.max(0, prev - 1))} />
       </DropdownMenuContent>
     </DropdownMenu>
   );

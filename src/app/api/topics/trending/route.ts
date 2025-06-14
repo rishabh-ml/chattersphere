@@ -12,8 +12,8 @@ export async function GET() {
       // Only consider posts from the last 7 days
       {
         $match: {
-          createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-        }
+          createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        },
       },
       // Unwind the tags array to work with individual tags
       { $unwind: "$tags" },
@@ -21,8 +21,8 @@ export async function GET() {
       {
         $group: {
           _id: "$tags",
-          posts: { $sum: 1 }
-        }
+          posts: { $sum: 1 },
+        },
       },
       // Sort by post count descending
       { $sort: { posts: -1 } },
@@ -34,17 +34,14 @@ export async function GET() {
           _id: 0,
           id: { $toString: "$_id" },
           topic: "$_id",
-          posts: 1
-        }
-      }
+          posts: 1,
+        },
+      },
     ]);
 
     return NextResponse.json({ topics: trendingTopics });
   } catch (error) {
     console.error("Error fetching trending topics:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch trending topics" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch trending topics" }, { status: 500 });
   }
 }

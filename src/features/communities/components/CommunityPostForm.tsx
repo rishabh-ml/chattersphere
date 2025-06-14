@@ -32,7 +32,7 @@ export default function CommunityPostForm({ onSuccess }: CommunityPostFormProps)
 
     try {
       setIsSubmitting(true);
-      
+
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: {
@@ -43,14 +43,14 @@ export default function CommunityPostForm({ onSuccess }: CommunityPostFormProps)
           communityId: community.id,
         }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to create post");
       }
-      
+
       const data = await response.json();
-      
+
       toast.success("Post created successfully!");
       setContent("");
       onSuccess?.();
@@ -69,7 +69,7 @@ export default function CommunityPostForm({ onSuccess }: CommunityPostFormProps)
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
       <h2 className="text-lg font-semibold mb-4">Create a Post in {community.name}</h2>
-      
+
       <form onSubmit={handleSubmit}>
         <PostEditor
           value={content}
@@ -78,7 +78,7 @@ export default function CommunityPostForm({ onSuccess }: CommunityPostFormProps)
           minHeight="120px"
           enableMediaUpload={true}
         />
-        
+
         <div className="flex justify-end mt-4">
           <Button
             type="submit"

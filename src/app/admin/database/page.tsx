@@ -1,23 +1,23 @@
-'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/shared/ui/checkbox';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
-import { Database, Archive, AlertTriangle, RefreshCw } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Database, Archive, AlertTriangle, RefreshCw } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 export default function DatabaseDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('archiving');
+  const [activeTab, setActiveTab] = useState("archiving");
   const [collections, setCollections] = useState({
     posts: true,
     comments: true,
@@ -30,7 +30,7 @@ export default function DatabaseDashboard() {
 
   // Check authentication
   if (isLoaded && !userId) {
-    router.push('/sign-in?redirect_url=/admin/database');
+    router.push("/sign-in?redirect_url=/admin/database");
     return null;
   }
 
@@ -39,41 +39,41 @@ export default function DatabaseDashboard() {
     setLoading(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       // Build the collections parameter
       const selectedCollections = Object.entries(collections)
         .filter(([_, selected]) => selected)
         .map(([name]) => name);
-      
+
       if (selectedCollections.length === 0) {
-        setError('Please select at least one collection to archive');
+        setError("Please select at least one collection to archive");
         setLoading(false);
         return;
       }
-      
+
       // Call the API to run the archiving task
-      const response = await fetch('/api/admin/database/archive', {
-        method: 'POST',
+      const response = await fetch("/api/admin/database/archive", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           collections: selectedCollections,
           thresholdDays,
         }),
       });
-      
+
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to archive data');
+        throw new Error(data.error || "Failed to archive data");
       }
-      
+
       const data = await response.json();
       setSuccess(`Successfully archived data: ${JSON.stringify(data.results)}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Error archiving data:', err);
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      console.error("Error archiving data:", err);
     } finally {
       setLoading(false);
     }
@@ -111,13 +111,14 @@ export default function DatabaseDashboard() {
             Database Stats
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="archiving" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Archive Old Data</CardTitle>
               <CardDescription>
-                Archive old data to improve database performance. Archived data is moved to separate collections and can be restored if needed.
+                Archive old data to improve database performance. Archived data is moved to separate
+                collections and can be restored if needed.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -129,7 +130,9 @@ export default function DatabaseDashboard() {
                       <Checkbox
                         id="posts"
                         checked={collections.posts}
-                        onCheckedChange={(checked: boolean) => setCollections({ ...collections, posts: !!checked })}
+                        onCheckedChange={(checked: boolean) =>
+                          setCollections({ ...collections, posts: !!checked })
+                        }
                       />
                       <Label htmlFor="posts">Posts</Label>
                     </div>
@@ -137,7 +140,9 @@ export default function DatabaseDashboard() {
                       <Checkbox
                         id="comments"
                         checked={collections.comments}
-                        onCheckedChange={(checked: boolean) => setCollections({ ...collections, comments: !!checked })}
+                        onCheckedChange={(checked: boolean) =>
+                          setCollections({ ...collections, comments: !!checked })
+                        }
                       />
                       <Label htmlFor="comments">Comments</Label>
                     </div>
@@ -145,7 +150,9 @@ export default function DatabaseDashboard() {
                       <Checkbox
                         id="notifications"
                         checked={collections.notifications}
-                        onCheckedChange={(checked: boolean) => setCollections({ ...collections, notifications: !!checked })}
+                        onCheckedChange={(checked: boolean) =>
+                          setCollections({ ...collections, notifications: !!checked })
+                        }
                       />
                       <Label htmlFor="notifications">Notifications</Label>
                     </div>
@@ -153,13 +160,15 @@ export default function DatabaseDashboard() {
                       <Checkbox
                         id="activities"
                         checked={collections.activities}
-                        onCheckedChange={(checked: boolean) => setCollections({ ...collections, activities: !!checked })}
+                        onCheckedChange={(checked: boolean) =>
+                          setCollections({ ...collections, activities: !!checked })
+                        }
                       />
                       <Label htmlFor="activities">Activities</Label>
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-medium mb-2">Archive Threshold</h3>
                   <div className="flex items-center space-x-2">
@@ -177,13 +186,9 @@ export default function DatabaseDashboard() {
                     Data older than this threshold will be archived.
                   </p>
                 </div>
-                
+
                 <div>
-                  <Button
-                    onClick={handleArchive}
-                    disabled={loading}
-                    className="w-full md:w-auto"
-                  >
+                  <Button onClick={handleArchive} disabled={loading} className="w-full md:w-auto">
                     {loading ? (
                       <>
                         <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -201,14 +206,12 @@ export default function DatabaseDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="stats" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Database Statistics</CardTitle>
-              <CardDescription>
-                View statistics about your database collections.
-              </CardDescription>
+              <CardDescription>View statistics about your database collections.</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">

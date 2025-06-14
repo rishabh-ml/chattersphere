@@ -90,109 +90,81 @@ export default function ProfileDropdown() {
           aria-label="User menu"
         >
           <Avatar className="h-7 w-7">
-            <AvatarImage
-              src={user?.imageUrl}
-              alt={user?.fullName || "User"}
-            />
+            <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User"} />
             <AvatarFallback>
               {user?.firstName?.charAt(0)}
               {user?.lastName?.charAt(0)}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium hidden sm:inline">
-            {user?.firstName}
-          </span>
+          <span className="text-sm font-medium hidden sm:inline">{user?.firstName}</span>
           <ChevronDown className="h-4 w-4 text-gray-500" />
         </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel className="flex flex-col">
+          <div className="font-medium">{user?.fullName}</div>
+          <div className="text-xs text-gray-500 truncate">
+            {user?.primaryEmailAddress?.emailAddress}
+          </div>
+        </DropdownMenuLabel>
 
-              <DropdownMenuLabel className="flex flex-col">
-                <div className="font-medium">{user?.fullName}</div>
-                <div className="text-xs text-gray-500 truncate">
-                  {user?.primaryEmailAddress?.emailAddress}
-                </div>
-              </DropdownMenuLabel>
+        <DropdownMenuSeparator />
 
-              <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href={`/profile/${user?.id}`} className="flex items-center cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
 
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/profile/${user?.id}`}
-                  className="flex items-center cursor-pointer"
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/notifications" className="flex items-center cursor-pointer">
+            <Bell className="mr-2 h-4 w-4" />
+            <span>Notifications</span>
+          </Link>
+        </DropdownMenuItem>
 
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/notifications"
-                  className="flex items-center cursor-pointer"
-                >
-                  <Bell className="mr-2 h-4 w-4" />
-                  <span>Notifications</span>
-                </Link>
-              </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/saved" className="flex items-center cursor-pointer">
+            <Bookmark className="mr-2 h-4 w-4" />
+            <span>Saved Posts</span>
+          </Link>
+        </DropdownMenuItem>
 
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/saved"
-                  className="flex items-center cursor-pointer"
-                >
-                  <Bookmark className="mr-2 h-4 w-4" />
-                  <span>Saved Posts</span>
-                </Link>
-              </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex items-center cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </DropdownMenuItem>
 
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/settings"
-                  className="flex items-center cursor-pointer"
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
+        <DropdownMenuSeparator />
 
-              <DropdownMenuSeparator />
+        <div className="px-2 py-1.5 flex items-center justify-between">
+          <div className="flex items-center">
+            {isDarkMode ? <Moon className="mr-2 h-4 w-4" /> : <Sun className="mr-2 h-4 w-4" />}
+            <span className="text-sm">Dark Mode</span>
+          </div>
+          <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />
+        </div>
 
-              <div className="px-2 py-1.5 flex items-center justify-between">
-                <div className="flex items-center">
-                  {isDarkMode ? (
-                    <Moon className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Sun className="mr-2 h-4 w-4" />
-                  )}
-                  <span className="text-sm">Dark Mode</span>
-                </div>
-                <Switch
-                  checked={isDarkMode}
-                  onCheckedChange={toggleDarkMode}
-                />
-              </div>
+        <DropdownMenuItem asChild>
+          <Link href="/help" className="flex items-center cursor-pointer">
+            <HelpCircle className="mr-2 h-4 w-4" />
+            <span>Help & Support</span>
+          </Link>
+        </DropdownMenuItem>
 
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/help"
-                  className="flex items-center cursor-pointer"
-                >
-                  <HelpCircle className="mr-2 h-4 w-4" />
-                  <span>Help & Support</span>
-                </Link>
-              </DropdownMenuItem>
+        <DropdownMenuSeparator />
 
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                onClick={handleSignOut}
-                className="text-red-600 focus:text-red-600 cursor-pointer"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign Out</span>
-              </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          className="text-red-600 focus:text-red-600 cursor-pointer"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Sign Out</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

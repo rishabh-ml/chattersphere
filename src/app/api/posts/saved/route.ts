@@ -59,19 +59,19 @@ export async function GET(req: NextRequest) {
       .lean<RawPost[]>();
 
     // Transform posts for the frontend
-    const posts = rawPosts.map(p => {
+    const posts = rawPosts.map((p) => {
       const authorInfo = {
         id: p.author._id.toString(),
         username: p.author.username,
         name: p.author.name,
-        image: p.author.image
+        image: p.author.image,
       };
 
       const communityInfo = p.community
         ? {
             id: p.community._id.toString(),
             name: p.community.name,
-            image: p.community.image
+            image: p.community.image,
           }
         : undefined;
 
@@ -79,8 +79,8 @@ export async function GET(req: NextRequest) {
       const downvotes = p.downvotes || [];
       const comments = p.comments || [];
 
-      const isUpvoted = upvotes.some(id => id.equals(user._id));
-      const isDownvoted = downvotes.some(id => id.equals(user._id));
+      const isUpvoted = upvotes.some((id) => id.equals(user._id));
+      const isDownvoted = downvotes.some((id) => id.equals(user._id));
 
       return {
         id: p._id.toString(),
@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
         isDownvoted,
         isSaved: true, // These are saved posts, so they're all saved
         createdAt: p.createdAt.toISOString(),
-        updatedAt: p.updatedAt.toISOString()
+        updatedAt: p.updatedAt.toISOString(),
       };
     });
 
@@ -105,14 +105,11 @@ export async function GET(req: NextRequest) {
         page,
         limit,
         totalPosts: total,
-        hasMore: total > skip + posts.length
-      }
+        hasMore: total > skip + posts.length,
+      },
     });
   } catch (error) {
     console.error("[SAVED POSTS] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch saved posts" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch saved posts" }, { status: 500 });
   }
 }

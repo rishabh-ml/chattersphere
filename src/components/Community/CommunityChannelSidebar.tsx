@@ -64,27 +64,33 @@ export default function CommunityChannelSidebar({ onClose }: CommunityChannelSid
   const [newChannelPrivate, setNewChannelPrivate] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    "TEXT": true,
-    "VOICE": true,
-    "ANNOUNCEMENT": true,
+    TEXT: true,
+    VOICE: true,
+    ANNOUNCEMENT: true,
   });
 
   // Group channels by type - memoized to prevent unnecessary recalculations
   const groupedChannels = useMemo(() => {
-    return channels.reduce((acc, channel) => {
-      if (!acc[channel.type]) {
-        acc[channel.type] = [];
-      }
-      acc[channel.type].push(channel);
-      return acc;
-    }, {} as Record<string, typeof channels>);
+    return channels.reduce(
+      (acc, channel) => {
+        if (!acc[channel.type]) {
+          acc[channel.type] = [];
+        }
+        acc[channel.type].push(channel);
+        return acc;
+      },
+      {} as Record<string, typeof channels>
+    );
   }, [channels]);
 
   // Handle channel selection - memoized to prevent unnecessary recreations
-  const handleChannelSelect = useCallback((channelId: string) => {
-    selectChannel(channelId);
-    router.push(`/communities/${community?.slug}/channels/${channelId}`);
-  }, [selectChannel, router, community?.slug]);
+  const handleChannelSelect = useCallback(
+    (channelId: string) => {
+      selectChannel(channelId);
+      router.push(`/communities/${community?.slug}/channels/${channelId}`);
+    },
+    [selectChannel, router, community?.slug]
+  );
 
   // Handle channel creation - memoized to prevent unnecessary recreations
   const handleCreateChannel = useCallback(async () => {
@@ -119,11 +125,19 @@ export default function CommunityChannelSidebar({ onClose }: CommunityChannelSid
     } finally {
       setIsSubmitting(false);
     }
-  }, [newChannelName, newChannelDescription, newChannelType, newChannelPrivate, createChannel, community?.slug, router]);
+  }, [
+    newChannelName,
+    newChannelDescription,
+    newChannelType,
+    newChannelPrivate,
+    createChannel,
+    community?.slug,
+    router,
+  ]);
 
   // Toggle category expansion - memoized to prevent unnecessary recreations
   const toggleCategory = useCallback((category: string) => {
-    setExpandedCategories(prev => ({
+    setExpandedCategories((prev) => ({
       ...prev,
       [category]: !prev[category],
     }));
@@ -176,9 +190,7 @@ export default function CommunityChannelSidebar({ onClose }: CommunityChannelSid
   if (error || !community) {
     return (
       <div className="w-60 bg-gray-100 border-r border-gray-200 flex flex-col p-4">
-        <div className="text-red-500 text-sm">
-          Error loading channels
-        </div>
+        <div className="text-red-500 text-sm">Error loading channels</div>
       </div>
     );
   }
@@ -214,7 +226,8 @@ export default function CommunityChannelSidebar({ onClose }: CommunityChannelSid
               <DialogHeader>
                 <DialogTitle>Create Channel</DialogTitle>
                 <DialogDescription>
-                  Add a new channel to your community. Channels are where members can communicate with each other.
+                  Add a new channel to your community. Channels are where members can communicate
+                  with each other.
                 </DialogDescription>
               </DialogHeader>
 
@@ -241,10 +254,7 @@ export default function CommunityChannelSidebar({ onClose }: CommunityChannelSid
 
                 <div className="space-y-2">
                   <Label htmlFor="type">Channel Type</Label>
-                  <Select
-                    value={newChannelType}
-                    onValueChange={setNewChannelType}
-                  >
+                  <Select value={newChannelType} onValueChange={setNewChannelType}>
                     <SelectTrigger id="type">
                       <SelectValue placeholder="Select channel type" />
                     </SelectTrigger>
@@ -300,8 +310,10 @@ export default function CommunityChannelSidebar({ onClose }: CommunityChannelSid
                   <Hash className="h-6 w-6" />
                 </div>
               </div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">No channels have been created in this community.</h3>
-              {(community.isCreator || community.isModerator) ? (
+              <h3 className="text-sm font-medium text-gray-700 mb-2">
+                No channels have been created in this community.
+              </h3>
+              {community.isCreator || community.isModerator ? (
                 <Button
                   onClick={() => setIsCreateDialogOpen(true)}
                   variant="outline"
@@ -344,9 +356,7 @@ export default function CommunityChannelSidebar({ onClose }: CommunityChannelSid
                       >
                         {getChannelIcon(channel.type)}
                         <span className="truncate">{channel.name}</span>
-                        {channel.isPrivate && (
-                          <Lock className="h-3 w-3 ml-1 text-gray-400" />
-                        )}
+                        {channel.isPrivate && <Lock className="h-3 w-3 ml-1 text-gray-400" />}
                       </button>
                     ))}
                   </div>

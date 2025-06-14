@@ -37,7 +37,7 @@ export default function ProfileHeader({
     if (!file) return;
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!validTypes.includes(file.type)) {
       toast.error("Invalid file type. Supported formats: JPEG, PNG, WEBP, GIF");
       return;
@@ -63,15 +63,17 @@ export default function ProfileHeader({
   };
 
   const handleShareProfile = () => {
-    if (typeof navigator.share === 'function') {
-      navigator.share({
-        title: `${user.name}'s Profile on ChatterSphere`,
-        text: `Check out ${user.name}'s profile on ChatterSphere!`,
-        url: window.location.href,
-      }).catch((error) => {
-        console.error('Error sharing:', error);
-        copyProfileLink();
-      });
+    if (typeof navigator.share === "function") {
+      navigator
+        .share({
+          title: `${user.name}'s Profile on ChatterSphere`,
+          text: `Check out ${user.name}'s profile on ChatterSphere!`,
+          url: window.location.href,
+        })
+        .catch((error) => {
+          console.error("Error sharing:", error);
+          copyProfileLink();
+        });
     } else {
       copyProfileLink();
     }
@@ -108,7 +110,10 @@ export default function ProfileHeader({
 
             {isOwner && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                <label htmlFor="avatar-upload" className="cursor-pointer flex items-center justify-center w-full h-full">
+                <label
+                  htmlFor="avatar-upload"
+                  className="cursor-pointer flex items-center justify-center w-full h-full"
+                >
                   <Upload className="h-6 w-6 text-white" />
                   <span className="sr-only">Upload avatar</span>
                 </label>
@@ -145,7 +150,8 @@ export default function ProfileHeader({
                 <span className="text-gray-300 px-1">•</span>
                 <span className="text-sm flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  Joined {user.createdAt ? format(new Date(user.createdAt), 'MMM yyyy') : 'recently'}
+                  Joined{" "}
+                  {user.createdAt ? format(new Date(user.createdAt), "MMM yyyy") : "recently"}
                 </span>
               </p>
 
@@ -206,9 +212,10 @@ export default function ProfileHeader({
                 <Button
                   disabled={followLoading}
                   onClick={onFollowToggle}
-                  className={user.isFollowing
-                    ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                    : "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
+                  className={
+                    user.isFollowing
+                      ? "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                      : "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
                   }
                 >
                   {followLoading ? (
@@ -249,7 +256,8 @@ export default function ProfileHeader({
             </Button>
             <Badge variant="secondary" className="px-4 py-2 rounded-full">
               <Users className="h-3.5 w-3.5 mr-1 text-indigo-500" />
-              <span className="font-semibold text-indigo-700">{user.communityCount}</span> Communities
+              <span className="font-semibold text-indigo-700">{user.communityCount}</span>{" "}
+              Communities
             </Badge>
           </div>
         </motion.div>

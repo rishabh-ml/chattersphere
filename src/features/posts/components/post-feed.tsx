@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useInfiniteScroll } from '@/lib/swr';
-import { useEffect, useRef } from 'react';
-import { Post } from '@/types/post';
-import PostCard from '@/components/posts/PostCard';
-import { Spinner } from '@/components/ui/spinner';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { useInfiniteScroll } from "@/lib/swr";
+import { useEffect, useRef } from "react";
+import { Post } from "@/types/post";
+import PostCard from "@/components/posts/PostCard";
+import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 interface PostFeedProps {
   communityId?: string;
@@ -77,7 +77,7 @@ export function PostFeed({ communityId, userId, initialData }: PostFeedProps) {
           loadMore();
         }
       },
-      { rootMargin: '200px' }
+      { rootMargin: "200px" }
     );
 
     observerRef.current.observe(loadMoreRef.current);
@@ -122,13 +122,8 @@ export function PostFeed({ communityId, userId, initialData }: PostFeedProps) {
     <div className="space-y-4">
       {/* Refresh button */}
       <div className="flex justify-end mb-4">
-        <Button
-          onClick={refresh}
-          variant="outline"
-          size="sm"
-          disabled={isRefreshing}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+        <Button onClick={refresh} variant="outline" size="sm" disabled={isRefreshing}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
@@ -153,26 +148,26 @@ export function PostFeed({ communityId, userId, initialData }: PostFeedProps) {
             onVote={async (postId, voteType) => {
               try {
                 const response = await fetch(`/api/posts/${postId}/vote`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ type: voteType }),
                 });
-                if (!response.ok) throw new Error('Failed to vote');
+                if (!response.ok) throw new Error("Failed to vote");
                 return await response.json();
               } catch (error) {
-                console.error('Error voting:', error);
+                console.error("Error voting:", error);
                 throw error;
               }
             }}
             onSave={async (postId) => {
               try {
                 const response = await fetch(`/api/posts/${postId}/save`, {
-                  method: 'POST',
+                  method: "POST",
                 });
-                if (!response.ok) throw new Error('Failed to save post');
+                if (!response.ok) throw new Error("Failed to save post");
                 return await response.json();
               } catch (error) {
-                console.error('Error saving post:', error);
+                console.error("Error saving post:", error);
                 throw error;
               }
             }}
@@ -189,15 +184,11 @@ export function PostFeed({ communityId, userId, initialData }: PostFeedProps) {
       )}
 
       {/* Load more trigger */}
-      {!isReachingEnd && !isLoadingMore && (
-        <div ref={loadMoreRef} className="h-10" />
-      )}
+      {!isReachingEnd && !isLoadingMore && <div ref={loadMoreRef} className="h-10" />}
 
       {/* End of posts */}
       {isReachingEnd && posts.length > 0 && (
-        <div className="text-center p-4 text-muted-foreground">
-          No more posts to load
-        </div>
+        <div className="text-center p-4 text-muted-foreground">No more posts to load</div>
       )}
     </div>
   );

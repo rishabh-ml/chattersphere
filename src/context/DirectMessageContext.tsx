@@ -92,8 +92,14 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
         await fetchConversations(abortControllerRef.current?.signal);
       } catch (error: any) {
         // Only retry if it's not an abort error and component is still mounted
-        if (isMounted && retryCount < 3 &&
-            !(error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError'))) {
+        if (
+          isMounted &&
+          retryCount < 3 &&
+          !(
+            error instanceof DOMException &&
+            (error.name === "AbortError" || error.name === "TimeoutError")
+          )
+        ) {
           // Exponential backoff: 2s, 4s, 8s
           const delay = Math.pow(2, retryCount + 1) * 1000;
           console.log(`Retrying conversation fetch in ${delay}ms (attempt ${retryCount + 1}/3)`);
@@ -128,7 +134,7 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
         abortControllerRef.current = null;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn]); // Only depend on isSignedIn to avoid re-creating the effect on every render
 
   // Fetch conversations
@@ -145,7 +151,7 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
       // Set up timeout if we're using a local controller
       if (localController) {
         timeoutId = setTimeout(() => {
-          localController.abort(new DOMException('Timeout exceeded', 'TimeoutError'));
+          localController.abort(new DOMException("Timeout exceeded", "TimeoutError"));
         }, 10000); // 10 second timeout
       }
 
@@ -153,9 +159,9 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`/api/messages?_=${timestamp}`, {
         signal: effectiveSignal,
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       });
 
       // Clear the timeout as soon as the response is received
@@ -180,32 +186,44 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
       return data.conversations;
     } catch (error: any) {
       // Don't log abort errors as they're expected when navigating away
-      if (!(error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError'))) {
+      if (
+        !(
+          error instanceof DOMException &&
+          (error.name === "AbortError" || error.name === "TimeoutError")
+        )
+      ) {
         console.error("Error fetching conversations:", error);
       }
 
       // Only show toast error if it's not an abort error or if it's a timeout
-      if (!(error instanceof DOMException && error.name === 'AbortError') ||
-          (error instanceof DOMException && error.message === 'Timeout exceeded')) {
+      if (
+        !(error instanceof DOMException && error.name === "AbortError") ||
+        (error instanceof DOMException && error.message === "Timeout exceeded")
+      ) {
         // Prevent multiple identical toasts
         toast.dismiss();
 
         // Show a more specific message for timeouts
-        if (error instanceof DOMException && error.message === 'Timeout exceeded') {
+        if (error instanceof DOMException && error.message === "Timeout exceeded") {
           toast.error("Request timed out. Please try again later.", {
             id: "conversation-timeout-error",
-            duration: 3000
+            duration: 3000,
           });
         } else {
           toast.error("Failed to load conversations", {
             id: "conversation-error",
-            duration: 3000
+            duration: 3000,
           });
         }
       }
 
       // Don't rethrow the error if it's an abort error
-      if (!(error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError'))) {
+      if (
+        !(
+          error instanceof DOMException &&
+          (error.name === "AbortError" || error.name === "TimeoutError")
+        )
+      ) {
         throw error;
       }
     } finally {
@@ -231,16 +249,16 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
     try {
       // Create a timeout that adds a reason to the abort
       timeoutId = setTimeout(() => {
-        controller.abort(new DOMException('Timeout exceeded', 'TimeoutError'));
+        controller.abort(new DOMException("Timeout exceeded", "TimeoutError"));
       }, 10000); // 10 second timeout
 
       const timestamp = new Date().getTime();
       const response = await fetch(`/api/messages/${userId}?page=${page}&limit=50&_=${timestamp}`, {
         signal: controller.signal,
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       });
 
       // Clear the timeout as soon as the response is received
@@ -258,7 +276,7 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
       if (page === 1) {
         setMessages(data.messages || []);
       } else {
-        setMessages(prev => [...prev, ...(data.messages || [])]);
+        setMessages((prev) => [...prev, ...(data.messages || [])]);
       }
 
       setHasMoreMessages(data.pagination?.hasMore || false);
@@ -267,36 +285,39 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
 
       // Update unread count in conversations
       if (data.messages && data.messages.length > 0) {
-        setConversations(prev =>
-          prev.map(conv =>
-            conv.userId === userId
-              ? { ...conv, unreadCount: 0 }
-              : conv
-          )
+        setConversations((prev) =>
+          prev.map((conv) => (conv.userId === userId ? { ...conv, unreadCount: 0 } : conv))
         );
       }
     } catch (error: any) {
       // Don't log abort errors as they're expected when navigating away
-      if (!(error instanceof DOMException && (error.name === 'AbortError' || error.name === 'TimeoutError'))) {
+      if (
+        !(
+          error instanceof DOMException &&
+          (error.name === "AbortError" || error.name === "TimeoutError")
+        )
+      ) {
         console.error("Error fetching messages:", error);
       }
 
       // Only show toast error if it's not an abort error or if it's a timeout
-      if (!(error instanceof DOMException && error.name === 'AbortError') ||
-          (error instanceof DOMException && error.message === 'Timeout exceeded')) {
+      if (
+        !(error instanceof DOMException && error.name === "AbortError") ||
+        (error instanceof DOMException && error.message === "Timeout exceeded")
+      ) {
         // Prevent multiple identical toasts
         toast.dismiss();
 
         // Show a more specific message for timeouts
-        if (error instanceof DOMException && error.message === 'Timeout exceeded') {
+        if (error instanceof DOMException && error.message === "Timeout exceeded") {
           toast.error("Request timed out. Please try again later.", {
             id: "messages-timeout-error",
-            duration: 3000
+            duration: 3000,
           });
         } else {
           toast.error("Failed to load messages", {
             id: "messages-error",
-            duration: 3000
+            duration: 3000,
           });
         }
       }
@@ -335,11 +356,11 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
 
       // Add the new message to the messages list
-      setMessages(prev => [data.message, ...prev]);
+      setMessages((prev) => [data.message, ...prev]);
 
       // Update the conversation list
       const now = new Date().toISOString();
-      const existingConversationIndex = conversations.findIndex(c => c.userId === userId);
+      const existingConversationIndex = conversations.findIndex((c) => c.userId === userId);
 
       if (existingConversationIndex >= 0) {
         // Update existing conversation
@@ -396,21 +417,15 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
       }
 
       // Update the message in the messages list
-      setMessages(prev =>
-        prev.map(message =>
-          message.id === messageId
-            ? { ...message, isRead: true }
-            : message
-        )
+      setMessages((prev) =>
+        prev.map((message) => (message.id === messageId ? { ...message, isRead: true } : message))
       );
 
       // Update unread count in conversations if active conversation is set
       if (activeConversation) {
-        setConversations(prev =>
-          prev.map(conv =>
-            conv.userId === activeConversation
-              ? { ...conv, unreadCount: 0 }
-              : conv
+        setConversations((prev) =>
+          prev.map((conv) =>
+            conv.userId === activeConversation ? { ...conv, unreadCount: 0 } : conv
           )
         );
       }
@@ -442,11 +457,7 @@ export function DirectMessageProvider({ children }: { children: ReactNode }) {
     getUnreadCount,
   };
 
-  return (
-    <DirectMessageContext.Provider value={value}>
-      {children}
-    </DirectMessageContext.Provider>
-  );
+  return <DirectMessageContext.Provider value={value}>{children}</DirectMessageContext.Provider>;
 }
 
 export function useDirectMessages() {

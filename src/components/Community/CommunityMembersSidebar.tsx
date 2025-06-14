@@ -15,38 +15,38 @@ interface CommunityMembersSidebarProps {
 }
 
 export default function CommunityMembersSidebar({ onClose }: CommunityMembersSidebarProps) {
-  const {
-    community,
-    members,
-    loading,
-    error,
-    fetchMembers,
-  } = useSingleCommunity();
+  const { community, members, loading, error, fetchMembers } = useSingleCommunity();
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMembers, setFilteredMembers] = useState(members);
 
   // Group members by role
-  const groupedMembers = filteredMembers.reduce((acc, member) => {
-    // Find the highest position role
-    const highestRole = member.roles.reduce((highest, role) => {
-      return role.position > highest.position ? role : highest;
-    }, { position: -1, name: "", color: "" });
+  const groupedMembers = filteredMembers.reduce(
+    (acc, member) => {
+      // Find the highest position role
+      const highestRole = member.roles.reduce(
+        (highest, role) => {
+          return role.position > highest.position ? role : highest;
+        },
+        { position: -1, name: "", color: "" }
+      );
 
-    const roleGroup = highestRole.name || "Members";
+      const roleGroup = highestRole.name || "Members";
 
-    if (!acc[roleGroup]) {
-      acc[roleGroup] = [];
-    }
+      if (!acc[roleGroup]) {
+        acc[roleGroup] = [];
+      }
 
-    acc[roleGroup].push({
-      ...member,
-      highestRole,
-    });
+      acc[roleGroup].push({
+        ...member,
+        highestRole,
+      });
 
-    return acc;
-  }, {} as Record<string, any[]>);
+      return acc;
+    },
+    {} as Record<string, any[]>
+  );
 
   // Sort role groups by importance
   const sortedRoleGroups = Object.entries(groupedMembers).sort((a, b) => {
@@ -104,9 +104,7 @@ export default function CommunityMembersSidebar({ onClose }: CommunityMembersSid
   if (error || !community) {
     return (
       <div className="w-60 bg-gray-100 border-l border-gray-200 flex flex-col p-4">
-        <div className="text-red-500 text-sm">
-          Error loading members
-        </div>
+        <div className="text-red-500 text-sm">Error loading members</div>
       </div>
     );
   }
@@ -164,23 +162,27 @@ export default function CommunityMembersSidebar({ onClose }: CommunityMembersSid
                   <div className="flex items-center">
                     <Avatar className="h-8 w-8 mr-2">
                       {community.creatorImage ? (
-                        <AvatarImage src={community.creatorImage} alt={community.creatorName || 'Creator'} />
+                        <AvatarImage
+                          src={community.creatorImage}
+                          alt={community.creatorName || "Creator"}
+                        />
                       ) : (
                         <AvatarFallback className="bg-indigo-600 text-white">
-                          {community.creatorName?.charAt(0) || 'C'}
+                          {community.creatorName?.charAt(0) || "C"}
                         </AvatarFallback>
                       )}
                     </Avatar>
                     <div>
                       <div className="text-sm font-medium text-gray-700 flex items-center">
-                        {community.creatorName || 'Creator'}
-                        <Badge variant="outline" className="ml-2 bg-amber-50 text-amber-700 text-xs border-amber-200">
+                        {community.creatorName || "Creator"}
+                        <Badge
+                          variant="outline"
+                          className="ml-2 bg-amber-50 text-amber-700 text-xs border-amber-200"
+                        >
                           Admin
                         </Badge>
                       </div>
-                      <div className="text-xs text-gray-500">
-                        Community Creator
-                      </div>
+                      <div className="text-xs text-gray-500">Community Creator</div>
                     </div>
                   </div>
                 </div>

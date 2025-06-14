@@ -1,6 +1,6 @@
 /**
  * Performance Testing Utilities
- * 
+ *
  * This file contains utilities for testing the performance of API endpoints
  * and database operations.
  */
@@ -40,7 +40,7 @@ export async function runPerformanceTest<T>(
   results: { executionTime: number; success: boolean; error?: any }[];
 }> {
   const results: { executionTime: number; success: boolean; error?: any }[] = [];
-  
+
   for (let i = 0; i < iterations; i++) {
     try {
       const startTime = Date.now();
@@ -51,15 +51,15 @@ export async function runPerformanceTest<T>(
       results.push({ executionTime: 0, success: false, error });
     }
   }
-  
-  const successfulResults = results.filter(r => r.success);
-  const executionTimes = successfulResults.map(r => r.executionTime);
-  
+
+  const successfulResults = results.filter((r) => r.success);
+  const executionTimes = successfulResults.map((r) => r.executionTime);
+
   const totalTime = executionTimes.reduce((sum, time) => sum + time, 0);
   const averageTime = totalTime / executionTimes.length || 0;
   const minTime = Math.min(...executionTimes, Infinity);
   const maxTime = Math.max(...executionTimes, 0);
-  
+
   return {
     averageTime,
     minTime,
@@ -99,18 +99,23 @@ export async function comparePerformance<T>(
     averageTime: number;
     percentage: number;
   };
-  fasterFunction: 'A' | 'B';
+  fasterFunction: "A" | "B";
 }> {
   const resultA = await runPerformanceTest(fnA, args, iterations);
   const resultB = await runPerformanceTest(fnB, args, iterations);
-  
+
   const difference = {
     averageTime: Math.abs(resultA.averageTime - resultB.averageTime),
-    percentage: resultA.averageTime > 0 && resultB.averageTime > 0
-      ? Math.abs((resultA.averageTime - resultB.averageTime) / Math.min(resultA.averageTime, resultB.averageTime) * 100)
-      : 0,
+    percentage:
+      resultA.averageTime > 0 && resultB.averageTime > 0
+        ? Math.abs(
+            ((resultA.averageTime - resultB.averageTime) /
+              Math.min(resultA.averageTime, resultB.averageTime)) *
+              100
+          )
+        : 0,
   };
-  
+
   return {
     fnA: {
       averageTime: resultA.averageTime,
@@ -125,7 +130,7 @@ export async function comparePerformance<T>(
       totalTime: resultB.totalTime,
     },
     difference,
-    fasterFunction: resultA.averageTime <= resultB.averageTime ? 'A' : 'B',
+    fasterFunction: resultA.averageTime <= resultB.averageTime ? "A" : "B",
   };
 }
 
@@ -159,51 +164,54 @@ export async function simulateLoadTest(
   }[] = [];
   const statusCodes: Record<number, number> = {};
   const errors: any[] = [];
-  
+
   // Create batches of concurrent requests
   const batches = Math.ceil(totalRequests / concurrentRequests);
-  
+
   for (let i = 0; i < batches; i++) {
     const batchSize = Math.min(concurrentRequests, totalRequests - i * concurrentRequests);
-    const batchPromises = Array(batchSize).fill(0).map(async () => {
-      try {
-        const requestStartTime = Date.now();
-        const response = await fetch(url, options);
-        const responseTime = Date.now() - requestStartTime;
-        
-        // Track status codes
-        statusCodes[response.status] = (statusCodes[response.status] || 0) + 1;
-        
-        results.push({
-          responseTime,
-          status: response.status,
-          success: response.ok,
-        });
-        
-        return { success: response.ok, status: response.status };
-      } catch (error) {
-        errors.push(error);
-        results.push({
-          responseTime: 0,
-          status: 0,
-          success: false,
-          error,
-        });
-        
-        return { success: false, error };
-      }
-    });
-    
+    const batchPromises = Array(batchSize)
+      .fill(0)
+      .map(async () => {
+        try {
+          const requestStartTime = Date.now();
+          const response = await fetch(url, options);
+          const responseTime = Date.now() - requestStartTime;
+
+          // Track status codes
+          statusCodes[response.status] = (statusCodes[response.status] || 0) + 1;
+
+          results.push({
+            responseTime,
+            status: response.status,
+            success: response.ok,
+          });
+
+          return { success: response.ok, status: response.status };
+        } catch (error) {
+          errors.push(error);
+          results.push({
+            responseTime: 0,
+            status: 0,
+            success: false,
+            error,
+          });
+
+          return { success: false, error };
+        }
+      });
+
     await Promise.all(batchPromises);
   }
-  
+
   const totalTime = Date.now() - startTime;
-  const successfulRequests = results.filter(r => r.success);
+  const successfulRequests = results.filter((r) => r.success);
   const successRate = (successfulRequests.length / totalRequests) * 100;
-  const responseTimes = results.filter(r => r.responseTime > 0).map(r => r.responseTime);
-  const averageResponseTime = responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length || 0;
+  const responseTimes = results.filter((r) => r.responseTime > 0).map((r) => r.responseTime);
+  const averageResponseTime =
+    responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length || 0;
   const requestsPerSecond = (totalRequests / totalTime) * 1000;
-  
+
   return {
     totalTime,
     averageResponseTime,
@@ -261,10 +269,10 @@ export async function compareDatabaseQueries<T>(
     averageTime: number;
     percentage: number;
   };
-  fasterQuery: 'A' | 'B';
+  fasterQuery: "A" | "B";
 }> {
   const result = await comparePerformance(queryA, queryB, [], iterations);
-  
+
   return {
     queryA: result.fnA,
     queryB: result.fnB,

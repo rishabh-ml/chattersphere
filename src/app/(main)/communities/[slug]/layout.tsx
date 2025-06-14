@@ -40,10 +40,10 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
     checkMobile();
 
     // Add event listener
-    window.addEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
 
     // Cleanup
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   if (!slug) {
@@ -104,21 +104,15 @@ export default function CommunityLayout({ children }: CommunityLayoutProps) {
 
             {/* Left sidebar - Channels */}
             {showChannelSidebar && (
-              <CommunityChannelSidebar
-                onClose={() => isMobile && setShowChannelSidebar(false)}
-              />
+              <CommunityChannelSidebar onClose={() => isMobile && setShowChannelSidebar(false)} />
             )}
 
             {/* Main content area */}
-            <div className="flex-1 overflow-y-auto bg-gray-50">
-              {children}
-            </div>
+            <div className="flex-1 overflow-y-auto bg-gray-50">{children}</div>
 
             {/* Right sidebar - Members */}
             {showMembersSidebar && (
-              <CommunityMembersSidebar
-                onClose={() => isMobile && setShowMembersSidebar(false)}
-              />
+              <CommunityMembersSidebar onClose={() => isMobile && setShowMembersSidebar(false)} />
             )}
           </div>
         </div>

@@ -14,58 +14,55 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function ConversationsList() {
-  const {
-    conversations,
-    isLoadingConversations,
-    refetchConversations,
-  } = useMessagesContext();
-  
+  const { conversations, isLoadingConversations, refetchConversations } = useMessagesContext();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredConversations, setFilteredConversations] = useState(conversations);
   const router = useRouter();
-  
+
   // Filter conversations based on search query
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredConversations(conversations);
       return;
     }
-    
+
     const query = searchQuery.toLowerCase();
     const filtered = conversations.filter(
       (conversation) =>
         conversation.participant.name.toLowerCase().includes(query) ||
         conversation.participant.username.toLowerCase().includes(query)
     );
-    
+
     setFilteredConversations(filtered);
   }, [searchQuery, conversations]);
-  
+
   // Refresh conversations list periodically
   useEffect(() => {
     const intervalId = setInterval(() => {
       refetchConversations();
     }, 60000); // Refresh every minute
-    
+
     return () => clearInterval(intervalId);
   }, [refetchConversations]);
-  
+
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
       {/* Header */}
       <div className="border-b border-gray-100 p-4">
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Messages</h2>
-        
+
         <div className="flex items-center">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />            <Input
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />{" "}
+            <Input
               placeholder="Search conversations..."
               className="pl-10"
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             />
           </div>
-          
+
           <Link href="/messages/new" passHref>
             <Button size="icon" className="ml-2">
               <Plus className="h-5 w-5" />
@@ -74,7 +71,7 @@ export default function ConversationsList() {
           </Link>
         </div>
       </div>
-      
+
       {/* Conversations List */}
       <ScrollArea className="flex-1">
         {isLoadingConversations ? (
@@ -119,7 +116,7 @@ export default function ConversationsList() {
                         alt={conversation.participant.name}
                       />
                     </Avatar>
-                    
+
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
                         <h3
@@ -132,7 +129,7 @@ export default function ConversationsList() {
                         >
                           {conversation.participant.name}
                         </h3>
-                        
+
                         <p className="text-xs text-gray-500 ml-2 whitespace-nowrap">
                           {format(
                             new Date(conversation.lastMessage.createdAt),
@@ -143,7 +140,7 @@ export default function ConversationsList() {
                           )}
                         </p>
                       </div>
-                      
+
                       <div className="flex items-center justify-between mt-1">
                         <p
                           className={cn(
@@ -155,7 +152,7 @@ export default function ConversationsList() {
                         >
                           {conversation.lastMessage.content}
                         </p>
-                        
+
                         {conversation.unreadCount > 0 && (
                           <Badge variant="primary" className="ml-2 whitespace-nowrap">
                             {conversation.unreadCount}

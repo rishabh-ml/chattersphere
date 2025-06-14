@@ -14,11 +14,7 @@ interface PrivacyTabProps {
   onPrivacyUpdate: (data: { privacySettings: PrivacySettings }) => Promise<void>;
 }
 
-export default function PrivacyTab({
-  userId,
-  privacySettings,
-  onPrivacyUpdate,
-}: PrivacyTabProps) {
+export default function PrivacyTab({ userId, privacySettings, onPrivacyUpdate }: PrivacyTabProps) {
   const [settings, setSettings] = useState<PrivacySettings>({
     showEmail: privacySettings?.showEmail ?? false,
     showActivity: privacySettings?.showActivity ?? true,
@@ -54,29 +50,29 @@ export default function PrivacyTab({
       const res = await fetch(`/api/profile/${userId}/export`, {
         method: "POST",
       });
-      
+
       if (!res.ok) {
         throw new Error("Failed to export data");
       }
-      
+
       const data = await res.json();
-      
+
       // Create a downloadable file
       const blob = new Blob([JSON.stringify(data.data, null, 2)], {
         type: "application/json",
       });
-      
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `chattersphere-data-export-${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(a);
       a.click();
-      
+
       // Clean up
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       toast.success("Data exported successfully");
     } catch (error) {
       toast.error("Failed to export data");
@@ -96,9 +92,7 @@ export default function PrivacyTab({
               <Label htmlFor="showEmail" className="font-medium">
                 Show Email Address
               </Label>
-              <p className="text-sm text-gray-500">
-                Allow other users to see your email address
-              </p>
+              <p className="text-sm text-gray-500">Allow other users to see your email address</p>
             </div>
             <Switch
               id="showEmail"
@@ -106,7 +100,7 @@ export default function PrivacyTab({
               onCheckedChange={() => handleToggle("showEmail")}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="showActivity" className="font-medium">
@@ -122,15 +116,13 @@ export default function PrivacyTab({
               onCheckedChange={() => handleToggle("showActivity")}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="allowFollowers" className="font-medium">
                 Allow Followers
               </Label>
-              <p className="text-sm text-gray-500">
-                Allow other users to follow your profile
-              </p>
+              <p className="text-sm text-gray-500">Allow other users to follow your profile</p>
             </div>
             <Switch
               id="allowFollowers"
@@ -138,15 +130,13 @@ export default function PrivacyTab({
               onCheckedChange={() => handleToggle("allowFollowers")}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="allowMessages" className="font-medium">
                 Allow Direct Messages
               </Label>
-              <p className="text-sm text-gray-500">
-                Allow other users to send you direct messages
-              </p>
+              <p className="text-sm text-gray-500">Allow other users to send you direct messages</p>
             </div>
             <Switch
               id="allowMessages"
@@ -155,8 +145,8 @@ export default function PrivacyTab({
             />
           </div>
         </div>
-        
-        <Button 
+
+        <Button
           onClick={handleSave}
           disabled={isSubmitting}
           className="mt-6 bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
@@ -169,25 +159,25 @@ export default function PrivacyTab({
           Save Settings
         </Button>
       </div>
-      
+
       <div className="border-t border-gray-100 pt-6">
         <h2 className="text-xl font-semibold mb-4">Data & Privacy</h2>
-        
+
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
             <div>
               <h3 className="font-medium text-amber-800">Data Export</h3>
               <p className="text-sm text-amber-700 mt-1">
-                This will export all your personal data, including profile information, posts, and comments.
-                The export may take a few moments to generate.
+                This will export all your personal data, including profile information, posts, and
+                comments. The export may take a few moments to generate.
               </p>
             </div>
           </div>
         </div>
-        
-        <Button 
-          variant="outline" 
+
+        <Button
+          variant="outline"
           onClick={handleExportData}
           disabled={isExporting}
           className="gap-2"

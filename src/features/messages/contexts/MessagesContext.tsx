@@ -17,7 +17,11 @@ interface MessagesContextType {
   messages: Message[];
   hasMoreMessages: boolean;
   setCurrentRecipient: (recipientId: string | null) => void;
-  sendMessage: (params: { recipientId: string, content: string, attachments?: File[] }) => Promise<Message | null>;
+  sendMessage: (params: {
+    recipientId: string;
+    content: string;
+    attachments?: File[];
+  }) => Promise<Message | null>;
   markAsRead: (senderId: string) => Promise<boolean>;
   deleteMessage: (messageId: string) => Promise<boolean>;
   loadMoreMessages: () => void;
@@ -30,11 +34,7 @@ const MessagesContext = createContext<MessagesContextType | undefined>(undefined
 export function MessagesProvider({ children }: { children: ReactNode }) {
   const messagesHook = useMessages();
 
-  return (
-    <MessagesContext.Provider value={messagesHook}>
-      {children}
-    </MessagesContext.Provider>
-  );
+  return <MessagesContext.Provider value={messagesHook}>{children}</MessagesContext.Provider>;
 }
 
 export function useMessagesContext() {

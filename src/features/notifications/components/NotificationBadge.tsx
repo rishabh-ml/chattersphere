@@ -15,7 +15,7 @@ export default function NotificationBadge({ className, count }: NotificationBadg
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { isSignedIn, isLoaded } = useUser();
-  
+
   // Try to use the notification hook
   let notificationsHook: any = null;
   try {
@@ -28,7 +28,7 @@ export default function NotificationBadge({ className, count }: NotificationBadg
   useEffect(() => {
     // Create an AbortController for this effect instance
     const controller = new AbortController();
-    
+
     const fetchUnreadCount = async () => {
       // Skip if the user is not signed in or if we have a direct count prop
       if (!isLoaded || !isSignedIn || count !== undefined) {
@@ -45,18 +45,18 @@ export default function NotificationBadge({ className, count }: NotificationBadg
 
       // Fall back to direct API call if hook is not available
       try {
-        const response = await fetch('/api/notifications/unread', {
+        const response = await fetch("/api/notifications/unread", {
           signal: controller.signal,
-          credentials: 'include'
+          credentials: "include",
         });
-        
-        if (!response.ok) throw new Error('Failed to fetch unread notifications count');
-        
+
+        if (!response.ok) throw new Error("Failed to fetch unread notifications count");
+
         const data = await response.json();
         setUnreadCount(data.count || 0);
       } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
-          console.error('Error fetching unread notifications count:', error);
+        if ((error as Error).name !== "AbortError") {
+          console.error("Error fetching unread notifications count:", error);
         }
       } finally {
         setIsLoading(false);

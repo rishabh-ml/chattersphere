@@ -90,10 +90,7 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
     return (
       <div className="bg-white rounded-lg p-6 shadow-sm text-center">
         <p className="text-red-500 mb-4">{error}</p>
-        <Button
-          onClick={() => window.location.reload()}
-          variant="outline"
-        >
+        <Button onClick={() => window.location.reload()} variant="outline">
           Try Again
         </Button>
       </div>
@@ -160,7 +157,7 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
               <div className="flex items-center gap-2 mb-2">
                 <div className="text-sm text-gray-500 flex items-center">
                   <Calendar className="h-3 w-3 mr-1" />
-                  {format(new Date(post.createdAt), 'MMM d, yyyy')}
+                  {format(new Date(post.createdAt), "MMM d, yyyy")}
                 </div>
                 {post.community && (
                   <div className="text-sm">
@@ -179,11 +176,11 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
                   {post.commentCount}
                 </div>
                 <div className="flex items-center gap-1">
-                  <ThumbsUp className={`h-4 w-4 ${post.isUpvoted ? 'text-green-500' : ''}`} />
+                  <ThumbsUp className={`h-4 w-4 ${post.isUpvoted ? "text-green-500" : ""}`} />
                   {post.upvoteCount}
                 </div>
                 <div className="flex items-center gap-1">
-                  <ThumbsDown className={`h-4 w-4 ${post.isDownvoted ? 'text-red-500' : ''}`} />
+                  <ThumbsDown className={`h-4 w-4 ${post.isDownvoted ? "text-red-500" : ""}`} />
                   {post.downvoteCount}
                 </div>
               </div>
@@ -192,11 +189,7 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
 
           {pagination.hasMore && (
             <div className="text-center mt-6">
-              <Button
-                variant="outline"
-                onClick={loadMore}
-                disabled={loading}
-              >
+              <Button variant="outline" onClick={loadMore} disabled={loading}>
                 {loading ? (
                   <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-2" />
                 ) : null}
@@ -216,7 +209,11 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
                   {community.image ? (
-                    <img src={community.image} alt={community.name} className="h-full w-full object-cover" />
+                    <img
+                      src={community.image}
+                      alt={community.name}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-indigo-100 text-indigo-600 text-lg font-semibold">
                       {community.name.charAt(0).toUpperCase()}
@@ -233,21 +230,20 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
                 </div>
               </div>
 
-              <div className="mt-3 text-sm text-gray-600 line-clamp-2">
-                {community.description}
-              </div>
+              <div className="mt-3 text-sm text-gray-600 line-clamp-2">{community.description}</div>
 
               <div className="mt-3 flex items-center gap-4 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  {community.memberCount} {community.memberCount === 1 ? 'member' : 'members'}
+                  {community.memberCount} {community.memberCount === 1 ? "member" : "members"}
                 </div>
                 <div className="flex items-center gap-1">
                   <MessageSquare className="h-4 w-4" />
-                  {community.postCount} {community.postCount === 1 ? 'post' : 'posts'}
+                  {community.postCount} {community.postCount === 1 ? "post" : "posts"}
                 </div>
                 <div className="text-xs">
-                  Joined {format(new Date(community.joinedAt || community.createdAt), 'MMM d, yyyy')}
+                  Joined{" "}
+                  {format(new Date(community.joinedAt || community.createdAt), "MMM d, yyyy")}
                 </div>
               </div>
             </div>
@@ -255,11 +251,7 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
 
           {pagination.hasMore && (
             <div className="text-center mt-6">
-              <Button
-                variant="outline"
-                onClick={loadMore}
-                disabled={loading}
-              >
+              <Button variant="outline" onClick={loadMore} disabled={loading}>
                 {loading ? (
                   <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-2" />
                 ) : null}
@@ -279,7 +271,7 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
               <div className="flex items-center gap-2 mb-2">
                 <div className="text-sm text-gray-500 flex items-center">
                   <Calendar className="h-3 w-3 mr-1" />
-                  {format(new Date(comment.createdAt), 'MMM d, yyyy')}
+                  {format(new Date(comment.createdAt), "MMM d, yyyy")}
                 </div>
                 <div className="text-sm">
                   on <span className="font-medium text-indigo-600">a post</span>
@@ -292,11 +284,11 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
-                  <ThumbsUp className={`h-4 w-4 ${comment.isUpvoted ? 'text-green-500' : ''}`} />
+                  <ThumbsUp className={`h-4 w-4 ${comment.isUpvoted ? "text-green-500" : ""}`} />
                   {comment.upvoteCount}
                 </div>
                 <div className="flex items-center gap-1">
-                  <ThumbsDown className={`h-4 w-4 ${comment.isDownvoted ? 'text-red-500' : ''}`} />
+                  <ThumbsDown className={`h-4 w-4 ${comment.isDownvoted ? "text-red-500" : ""}`} />
                   {comment.downvoteCount}
                 </div>
               </div>
@@ -305,11 +297,7 @@ export default function ActivityTab({ userId }: ActivityTabProps) {
 
           {pagination.hasMore && (
             <div className="text-center mt-6">
-              <Button
-                variant="outline"
-                onClick={loadMore}
-                disabled={loading}
-              >
+              <Button variant="outline" onClick={loadMore} disabled={loading}>
                 {loading ? (
                   <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full mr-2" />
                 ) : null}

@@ -42,7 +42,7 @@ export interface AuthMetadata {
 }
 
 export interface AuthProvider {
-  type: 'email' | 'google' | 'apple' | 'github' | 'discord';
+  type: "email" | "google" | "apple" | "github" | "discord";
   isLinked: boolean;
   email?: string;
   providerId?: string;
@@ -70,11 +70,11 @@ export interface AuthOptions {
 }
 
 export enum AuthEvent {
-  SIGNED_IN = 'signedIn',
-  SIGNED_OUT = 'signedOut',
-  USER_UPDATED = 'userUpdated',
-  SESSION_STARTED = 'sessionStarted',
-  SESSION_ENDED = 'sessionEnded',
+  SIGNED_IN = "signedIn",
+  SIGNED_OUT = "signedOut",
+  USER_UPDATED = "userUpdated",
+  SESSION_STARTED = "sessionStarted",
+  SESSION_ENDED = "sessionEnded",
 }
 
 export type AuthEventCallback = (event: AuthEvent, data?: any) => void;

@@ -60,7 +60,7 @@ export default function CommentItem({
   const navigation = useNavigation();
   const isAuthor = isSignedIn && user?.id === comment.author.id;
 
-  const handleVote = async (voteType: 'upvote' | 'downvote') => {
+  const handleVote = async (voteType: "upvote" | "downvote") => {
     if (!isSignedIn) {
       toast.error("Please sign in to vote");
       return;
@@ -134,31 +134,27 @@ export default function CommentItem({
           <Button
             variant="ghost"
             size="icon"
-            className={cn(
-              "h-6 w-6 rounded-full",
-              isUpvoted && "text-indigo-600 bg-indigo-50"
-            )}
+            className={cn("h-6 w-6 rounded-full", isUpvoted && "text-indigo-600 bg-indigo-50")}
             onClick={() => handleVote("upvote")}
           >
             <ArrowUp className="h-4 w-4" />
             <span className="sr-only">Upvote</span>
           </Button>
 
-          <span className={cn(
-            "text-xs font-medium",
-            voteCount > 0 && "text-indigo-600",
-            voteCount < 0 && "text-red-600"
-          )}>
+          <span
+            className={cn(
+              "text-xs font-medium",
+              voteCount > 0 && "text-indigo-600",
+              voteCount < 0 && "text-red-600"
+            )}
+          >
             {voteCount}
           </span>
 
           <Button
             variant="ghost"
             size="icon"
-            className={cn(
-              "h-6 w-6 rounded-full",
-              isDownvoted && "text-red-600 bg-red-50"
-            )}
+            className={cn("h-6 w-6 rounded-full", isDownvoted && "text-red-600 bg-red-50")}
             onClick={() => handleVote("downvote")}
           >
             <ArrowDown className="h-4 w-4" />
@@ -169,7 +165,10 @@ export default function CommentItem({
         {/* Comment content */}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <Link href={routes.profile(comment.author.id)} onClick={(e) => navigation.goToProfile(comment.author.id, e)}>
+            <Link
+              href={routes.profile(comment.author.id)}
+              onClick={(e) => navigation.goToProfile(comment.author.id, e)}
+            >
               <Avatar className="h-6 w-6">
                 {comment.author.image ? (
                   <img
@@ -199,9 +198,7 @@ export default function CommentItem({
             </div>
           </div>
 
-          <div className="text-sm text-gray-800 whitespace-pre-wrap">
-            {comment.content}
-          </div>
+          <div className="text-sm text-gray-800 whitespace-pre-wrap">{comment.content}</div>
 
           <div className="mt-2 flex items-center gap-4">
             <Button

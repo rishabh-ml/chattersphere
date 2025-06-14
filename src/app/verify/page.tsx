@@ -31,14 +31,18 @@ export default function VerifyPage() {
 
   useEffect(() => {
     // If user is already signed in and doesn't need verification, redirect to home
-    if (isUserLoaded && isSignedIn && !user?.emailAddresses.some(email => !email.verification.status)) {
+    if (
+      isUserLoaded &&
+      isSignedIn &&
+      !user?.emailAddresses.some((email) => !email.verification.status)
+    ) {
       router.push("/home");
     }
 
     // Determine if we're in a sign-in or sign-up flow
     const searchParams = new URLSearchParams(window.location.search);
     const type = searchParams.get("type");
-    
+
     if (type === "sign-in") {
       setVerificationType("signIn");
     } else if (type === "sign-up") {
@@ -51,7 +55,7 @@ export default function VerifyPage() {
 
   const handleVerification = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!verificationCode.trim()) {
       setError("Please enter the verification code");
       return;
@@ -70,7 +74,7 @@ export default function VerifyPage() {
         if (result.status === "complete") {
           setSuccess(true);
           toast.success("Email verified successfully");
-          
+
           // Redirect after a short delay
           setTimeout(() => {
             router.push("/home");
@@ -84,7 +88,7 @@ export default function VerifyPage() {
         if (result.status === "complete") {
           setSuccess(true);
           toast.success("Email verified successfully");
-          
+
           // Redirect after a short delay
           setTimeout(() => {
             router.push("/home");
@@ -99,19 +103,31 @@ export default function VerifyPage() {
       setIsSubmitting(false);
     }
   };
-
   const handleResendCode = async () => {
     try {
-      if (verificationType === "signIn" && isSignInLoaded) {
-        await signIn.prepareFirstFactor({
-          strategy: "email_code",
-        });
+      if (verificationType === "signIn" && isSignInLoaded && signIn) {
+        // Get the first email address for the strategy
+        const emailAddress = signIn.supportedFirstFactors?.find(
+          (factor) => factor.strategy === "email_code"
+        );
+
+        if (emailAddress && "emailAddressId" in emailAddress) {
+          await signIn.prepareFirstFactor({
+            strategy: "email_code",
+            emailAddressId: emailAddress.emailAddressId,
+          });
+        } else {
+          // Fallback - try without emailAddressId
+          await signIn.prepareFirstFactor({
+            strategy: "email_code",
+          } as any);
+        }
       } else if (verificationType === "signUp" && isSignUpLoaded) {
         await signUp.prepareEmailAddressVerification({
           strategy: "email_code",
         });
       }
-      
+
       toast.success("Verification code resent");
     } catch (error) {
       console.error("Error resending code:", error);
@@ -144,14 +160,14 @@ export default function VerifyPage() {
                 {error}
               </div>
             )}
-            
+
             {success && (
               <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm flex items-center">
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Email verified successfully! Redirecting...
               </div>
             )}
-            
+
             <form onSubmit={handleVerification} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="verificationCode">Verification Code</Label>
@@ -165,7 +181,7 @@ export default function VerifyPage() {
                   className="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-center text-lg tracking-widest"
                 />
               </div>
-              
+
               <Button
                 type="submit"
                 disabled={isSubmitting || success || !verificationCode.trim()}
@@ -180,7 +196,7 @@ export default function VerifyPage() {
                   "Verify Email"
                 )}
               </Button>
-              
+
               <div className="text-sm text-gray-500 text-center">
                 <p>Didn't receive a code?</p>
                 <button

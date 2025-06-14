@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { withRequestLogging } from '@/middleware/requestLogger';
-import { withPerformanceMonitoring } from '@/middleware/performanceMonitoring';
-import { rateLimit } from '@/middleware/rateLimit';
+import { NextRequest, NextResponse } from "next/server";
+import { withRequestLogging } from "@/middleware/requestLogger";
+import { withPerformanceMonitoring } from "@/middleware/performanceMonitoring";
+import { rateLimit } from "@/middleware/rateLimit";
 
 /**
  * Wraps an API handler with common middleware
@@ -59,8 +59,8 @@ export function withApiMiddleware(
       // Return a standardized error response
       return NextResponse.json(
         {
-          error: 'Internal Server Error',
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          error: "Internal Server Error",
+          message: error instanceof Error ? error.message : "An unexpected error occurred",
         },
         { status: 500 }
       );

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface SocialLink {
   platform: string;
@@ -65,10 +65,10 @@ const UserSchema = new Schema<IUser>(
     website: { type: String },
     socialLinks: [SocialLinkSchema],
     interests: [{ type: String }],
-    following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    communities: [{ type: Schema.Types.ObjectId, ref: 'Community' }],
-    savedPosts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    communities: [{ type: Schema.Types.ObjectId, ref: "Community" }],
+    savedPosts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     privacySettings: { type: PrivacySettingsSchema, default: () => ({}) },
     lastSeen: { type: Date },
   },
@@ -76,20 +76,20 @@ const UserSchema = new Schema<IUser>(
 );
 
 // Virtual for follower count
-UserSchema.virtual('followerCount').get(function() {
+UserSchema.virtual("followerCount").get(function () {
   return this.followers?.length || 0;
 });
 
 // Virtual for following count
-UserSchema.virtual('followingCount').get(function() {
+UserSchema.virtual("followingCount").get(function () {
   return this.following?.length || 0;
 });
 
 // Virtual for community count
-UserSchema.virtual('communityCount').get(function() {
+UserSchema.virtual("communityCount").get(function () {
   return this.communities?.length || 0;
 });
 
 // Indexes are already defined with unique: true in the schema
 
-export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export default mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

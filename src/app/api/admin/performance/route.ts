@@ -1,7 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import { getPerformanceMetrics, getAverageResponseTime, getSlowestRoutes } from '@/middleware/performanceMonitoring';
-import { withApiMiddleware } from '@/lib/apiUtils';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import {
+  getPerformanceMetrics,
+  getAverageResponseTime,
+  getSlowestRoutes,
+} from "@/middleware/performanceMonitoring";
+import { withApiMiddleware } from "@/lib/apiUtils";
 
 /**
  * GET /api/admin/performance - Get performance metrics
@@ -11,7 +15,7 @@ async function getPerformanceHandler(req: NextRequest) {
     // Check if user is authenticated and is an admin
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // In a real app, you would check if the user is an admin
@@ -19,8 +23,8 @@ async function getPerformanceHandler(req: NextRequest) {
 
     // Parse query parameters
     const url = new URL(req.url);
-    const route = url.searchParams.get('route');
-    const limit = parseInt(url.searchParams.get('limit') || '5', 10);
+    const route = url.searchParams.get("route");
+    const limit = parseInt(url.searchParams.get("limit") || "5", 10);
 
     // Get performance metrics
     const metrics = getPerformanceMetrics();
@@ -28,17 +32,20 @@ async function getPerformanceHandler(req: NextRequest) {
     const slowestRoutes = getSlowestRoutes(limit);
 
     // Return the metrics
-    return NextResponse.json({
-      metrics: metrics.slice(0, 20), // Only return the most recent 20 metrics
-      stats: {
-        avgResponseTime,
-        slowestRoutes,
-        totalRequests: metrics.length,
-      }
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        metrics: metrics.slice(0, 20), // Only return the most recent 20 metrics
+        stats: {
+          avgResponseTime,
+          slowestRoutes,
+          totalRequests: metrics.length,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('Error fetching performance metrics:', error);
-    return NextResponse.json({ error: 'Failed to fetch performance metrics' }, { status: 500 });
+    console.error("Error fetching performance metrics:", error);
+    return NextResponse.json({ error: "Failed to fetch performance metrics" }, { status: 500 });
   }
 }
 
@@ -47,5 +54,5 @@ export const GET = withApiMiddleware(getPerformanceHandler, {
   enableRateLimit: true,
   maxRequests: 20,
   windowMs: 60000, // 1 minute
-  identifier: 'admin:performance:get'
+  identifier: "admin:performance:get",
 });

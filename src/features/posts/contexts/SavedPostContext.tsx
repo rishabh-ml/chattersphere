@@ -1,8 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { Post } from './PostContext';
-import { toast } from 'sonner';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useEffect,
+} from "react";
+import { Post } from "./PostContext";
+import { toast } from "sonner";
 
 // Define the context type
 interface SavedPostContextType {
@@ -14,7 +21,7 @@ interface SavedPostContextType {
   fetchPosts: (reset?: boolean) => Promise<void>;
   fetchMorePosts: () => Promise<void>;
   savePost: (postId: string) => Promise<boolean>;
-  votePost: (postId: string, voteType: 'upvote' | 'downvote') => Promise<void>;
+  votePost: (postId: string, voteType: "upvote" | "downvote") => Promise<void>;
 }
 
 // Create the context
@@ -29,34 +36,37 @@ export const SavedPostProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [page, setPage] = useState<number>(1);
 
   // Fetch saved posts function
-  const fetchPosts = useCallback(async (reset = false) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchPosts = useCallback(
+    async (reset = false) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const newPage = reset ? 1 : page;
-      const response = await fetch(`/api/posts/saved?page=${newPage}&limit=10`);
+        const newPage = reset ? 1 : page;
+        const response = await fetch(`/api/posts/saved?page=${newPage}&limit=10`);
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch saved posts');
+        if (!response.ok) {
+          throw new Error("Failed to fetch saved posts");
+        }
+
+        const data = await response.json();
+
+        if (reset) {
+          setPosts(data.posts);
+        } else {
+          setPosts((prev) => [...prev, ...data.posts]);
+        }
+
+        setHasMore(data.pagination.hasMore);
+        setPage(reset ? 2 : page + 1);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
       }
-
-      const data = await response.json();
-
-      if (reset) {
-        setPosts(data.posts);
-      } else {
-        setPosts(prev => [...prev, ...data.posts]);
-      }
-
-      setHasMore(data.pagination.hasMore);
-      setPage(reset ? 2 : page + 1);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, setLoading, setError, setPosts, setHasMore, setPage]);
+    },
+    [page, setLoading, setError, setPosts, setHasMore, setPage]
+  );
 
   // Fetch more posts function
   const fetchMorePosts = useCallback(async () => {
@@ -66,71 +76,79 @@ export const SavedPostProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, [fetchPosts, loading, hasMore]);
 
   // Save/unsave post function
-  const savePost = useCallback(async (postId: string): Promise<boolean> => {
-    try {
-      const response = await fetch(`/api/posts/${postId}/save`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+  const savePost = useCallback(
+    async (postId: string): Promise<boolean> => {
+      try {
+        const response = await fetch(`/api/posts/${postId}/save`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to save/unsave post");
         }
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to save/unsave post');
+        const data = await response.json();
+
+        // If we're unsaving a post, remove it from the list
+        if (!data.isSaved) {
+          setPosts((prev) => prev.filter((post) => post.id !== postId));
+          toast.success("Post removed from saved items");
+        }
+
+        return data.isSaved;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+        toast.error("Failed to update saved status");
+        return false;
       }
-
-      const data = await response.json();
-      
-      // If we're unsaving a post, remove it from the list
-      if (!data.isSaved) {
-        setPosts(prev => prev.filter(post => post.id !== postId));
-        toast.success('Post removed from saved items');
-      }
-
-      return data.isSaved;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      toast.error('Failed to update saved status');
-      return false;
-    }
-  }, [setPosts, setError]);
+    },
+    [setPosts, setError]
+  );
 
   // Vote post function
-  const votePost = useCallback(async (postId: string, voteType: 'upvote' | 'downvote') => {
-    try {
-      const response = await fetch(`/api/posts/${postId}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ voteType }),
-      });
+  const votePost = useCallback(
+    async (postId: string, voteType: "upvote" | "downvote") => {
+      try {
+        const response = await fetch(`/api/posts/${postId}/vote`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ voteType }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to vote on post');
-      }
-
-      const data = await response.json();
-
-      // Update the post in the posts array
-      setPosts(prev => prev.map(post => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            upvoteCount: data.upvoteCount,
-            downvoteCount: data.downvoteCount,
-            voteCount: data.voteCount,
-            isUpvoted: data.isUpvoted,
-            isDownvoted: data.isDownvoted,
-          };
+        if (!response.ok) {
+          throw new Error("Failed to vote on post");
         }
-        return post;
-      }));
-    } catch (err) {
-      console.error('Error voting on post:', err);
-      // We don't set the error state here to avoid disrupting the UI for a non-critical action
-    }
-  }, [setPosts]);
+
+        const data = await response.json();
+
+        // Update the post in the posts array
+        setPosts((prev) =>
+          prev.map((post) => {
+            if (post.id === postId) {
+              return {
+                ...post,
+                upvoteCount: data.upvoteCount,
+                downvoteCount: data.downvoteCount,
+                voteCount: data.voteCount,
+                isUpvoted: data.isUpvoted,
+                isDownvoted: data.isDownvoted,
+              };
+            }
+            return post;
+          })
+        );
+      } catch (err) {
+        console.error("Error voting on post:", err);
+        // We don't set the error state here to avoid disrupting the UI for a non-critical action
+      }
+    },
+    [setPosts]
+  );
 
   // Effect to fetch posts on initial load
   useEffect(() => {
@@ -156,7 +174,7 @@ export const SavedPostProvider: React.FC<{ children: ReactNode }> = ({ children 
 export const useSavedPosts = () => {
   const context = useContext(SavedPostContext);
   if (context === undefined) {
-    throw new Error('useSavedPosts must be used within a SavedPostProvider');
+    throw new Error("useSavedPosts must be used within a SavedPostProvider");
   }
   return context;
 };

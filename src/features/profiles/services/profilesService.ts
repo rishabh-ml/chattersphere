@@ -9,7 +9,7 @@ import { User, ProfileQueryParams, PaginatedUsers, UserUpdateInput } from "../ty
  * Get the current user's profile
  */
 export async function getCurrentUser(): Promise<{ user: User }> {
-  return ApiClient.get<{ user: User }>('/api/users/me');
+  return ApiClient.get<{ user: User }>("/api/users/me");
 }
 
 /**
@@ -20,28 +20,26 @@ export async function getUserProfile(
   options: ProfileQueryParams = {}
 ): Promise<{ user: User }> {
   const params = new URLSearchParams();
-  
+
   if (options.includeFollowers) {
-    params.append('includeFollowers', 'true');
+    params.append("includeFollowers", "true");
   }
-  
+
   if (options.includeFollowing) {
-    params.append('includeFollowing', 'true');
+    params.append("includeFollowing", "true");
   }
-  
+
   if (options.includeSavedPosts) {
-    params.append('includeSavedPosts', 'true');
+    params.append("includeSavedPosts", "true");
   }
-  
+
   if (options.includeCommunities) {
-    params.append('includeCommunities', 'true');
+    params.append("includeCommunities", "true");
   }
-  
+
   const queryString = params.toString();
-  const url = queryString 
-    ? `/api/profile/${username}?${queryString}`
-    : `/api/profile/${username}`;
-    
+  const url = queryString ? `/api/profile/${username}?${queryString}` : `/api/profile/${username}`;
+
   return ApiClient.get<{ user: User }>(url);
 }
 
@@ -49,7 +47,7 @@ export async function getUserProfile(
  * Update the current user's profile
  */
 export async function updateProfile(data: UserUpdateInput): Promise<{ user: User }> {
-  return ApiClient.patch<{ user: User }>('/api/users/me', data);
+  return ApiClient.patch<{ user: User }>("/api/users/me", data);
 }
 
 /**
@@ -74,11 +72,11 @@ export async function getUserFollowers(
   options: { page?: number; limit?: number } = {}
 ): Promise<PaginatedUsers> {
   const { page = 1, limit = 20 } = options;
-  
+
   const params = new URLSearchParams();
-  params.append('page', page.toString());
-  params.append('limit', limit.toString());
-  
+  params.append("page", page.toString());
+  params.append("limit", limit.toString());
+
   return ApiClient.get<PaginatedUsers>(`/api/profile/${username}/followers?${params.toString()}`);
 }
 
@@ -90,10 +88,10 @@ export async function getUserFollowing(
   options: { page?: number; limit?: number } = {}
 ): Promise<PaginatedUsers> {
   const { page = 1, limit = 20 } = options;
-  
+
   const params = new URLSearchParams();
-  params.append('page', page.toString());
-  params.append('limit', limit.toString());
-  
+  params.append("page", page.toString());
+  params.append("limit", limit.toString());
+
   return ApiClient.get<PaginatedUsers>(`/api/profile/${username}/following?${params.toString()}`);
 }

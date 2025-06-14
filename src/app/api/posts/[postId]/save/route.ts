@@ -6,10 +6,7 @@ import Post from "@/models/Post";
 import mongoose from "mongoose";
 import { sanitizeInput } from "@/lib/utils";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ postId: string }> }
-) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ postId: string }> }) {
   const resolvedParams = await params;
   try {
     const { userId } = await auth();
@@ -25,9 +22,9 @@ export async function POST(
     if (!resolvedParams?.postId) {
       return NextResponse.json({ error: "Missing postId parameter" }, { status: 400 });
     }
-    
+
     const sanitizedPostId = sanitizeInput(resolvedParams.postId);
-    
+
     if (!mongoose.Types.ObjectId.isValid(sanitizedPostId)) {
       return NextResponse.json({ error: "Invalid postId format" }, { status: 400 });
     }
@@ -36,7 +33,7 @@ export async function POST(
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }    // Find the post
+    } // Find the post
     const post = await Post.findById(sanitizedPostId);
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -49,7 +46,9 @@ export async function POST(
     // Toggle saved status
     if (isSaved) {
       // Remove from saved posts
-      user.savedPosts = user.savedPosts.filter((id: mongoose.Types.ObjectId) => !id.equals(postObjectId));
+      user.savedPosts = user.savedPosts.filter(
+        (id: mongoose.Types.ObjectId) => !id.equals(postObjectId)
+      );
     } else {
       // Add to saved posts
       user.savedPosts.push(postObjectId);
@@ -59,13 +58,10 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      isSaved: !isSaved
+      isSaved: !isSaved,
     });
   } catch (error) {
     console.error("[SAVE POST] Error:", error);
-    return NextResponse.json(
-      { error: "Failed to save post" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to save post" }, { status: 500 });
   }
 }

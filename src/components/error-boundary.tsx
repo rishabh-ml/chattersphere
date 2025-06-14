@@ -9,10 +9,7 @@ interface ErrorBoundaryProps {
   fallback?: React.ReactNode;
 }
 
-export default function ErrorBoundary({
-  children,
-  fallback,
-}: ErrorBoundaryProps) {
+export default function ErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
   const [hasError, setHasError] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

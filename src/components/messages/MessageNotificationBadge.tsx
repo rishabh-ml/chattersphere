@@ -10,7 +10,10 @@ interface MessageNotificationBadgeProps {
   count?: number;
 }
 
-export default function MessageNotificationBadge({ className, count }: MessageNotificationBadgeProps) {
+export default function MessageNotificationBadge({
+  className,
+  count,
+}: MessageNotificationBadgeProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { isSignedIn, isLoaded } = useUser();
@@ -53,7 +56,7 @@ export default function MessageNotificationBadge({ className, count }: MessageNo
           setUnreadCount(directMessagesContext.getUnreadCount());
         } catch (error) {
           // Only log errors that aren't abort errors
-          if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          if (!(error instanceof DOMException && error.name === "AbortError")) {
             console.error("Error fetching conversations:", error);
           }
         } finally {
@@ -77,25 +80,25 @@ export default function MessageNotificationBadge({ className, count }: MessageNo
       const fetchUnreadCount = async () => {
         try {
           setIsLoading(true);
-          const response = await fetch('/api/messages/unread/count', {
+          const response = await fetch("/api/messages/unread/count", {
             signal: controller.signal,
             headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            }
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+            },
           });
 
           if (response.ok) {
             const data = await response.json();
             setUnreadCount(data.count || 0);
           } else {
-            console.error('Failed to fetch unread message count');
+            console.error("Failed to fetch unread message count");
             setUnreadCount(0);
           }
         } catch (error) {
           // Only log errors that aren't abort errors
-          if (!(error instanceof DOMException && error.name === 'AbortError')) {
-            console.error('Error fetching unread message count:', error);
+          if (!(error instanceof DOMException && error.name === "AbortError")) {
+            console.error("Error fetching unread message count:", error);
           }
           setUnreadCount(0);
         } finally {
@@ -119,7 +122,7 @@ export default function MessageNotificationBadge({ className, count }: MessageNo
         controller.abort();
       };
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn, isLoaded, count]); // Intentionally omitting directMessagesContext to avoid infinite loops
 
   // Update unread count when the context changes
@@ -135,7 +138,7 @@ export default function MessageNotificationBadge({ className, count }: MessageNo
         console.error("Error getting unread count from context:", error);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count]); // Intentionally omitting directMessagesContext to avoid infinite loops
 
   if (isLoading || unreadCount === 0) {
@@ -143,10 +146,12 @@ export default function MessageNotificationBadge({ className, count }: MessageNo
   }
 
   return (
-    <Badge className={cn(
-      "bg-red-500 text-white text-xs px-1.5 min-w-5 h-5 flex items-center justify-center rounded-full",
-      className
-    )}>
+    <Badge
+      className={cn(
+        "bg-red-500 text-white text-xs px-1.5 min-w-5 h-5 flex items-center justify-center rounded-full",
+        className
+      )}
+    >
       {unreadCount > 99 ? "99+" : unreadCount}
     </Badge>
   );

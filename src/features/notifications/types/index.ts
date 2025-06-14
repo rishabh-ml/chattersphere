@@ -1,16 +1,16 @@
 // Types for the Notifications feature
 
 export enum NotificationType {
-  POST_MENTION = 'POST_MENTION',
-  COMMENT_MENTION = 'COMMENT_MENTION',
-  COMMENT_REPLY = 'COMMENT_REPLY',
-  POST_UPVOTE = 'POST_UPVOTE',
-  COMMENT_UPVOTE = 'COMMENT_UPVOTE',
-  NEW_FOLLOWER = 'NEW_FOLLOWER',
-  COMMUNITY_INVITE = 'COMMUNITY_INVITE',
-  COMMUNITY_ROLE_CHANGE = 'COMMUNITY_ROLE_CHANGE',
-  DIRECT_MESSAGE = 'DIRECT_MESSAGE',
-  SYSTEM_NOTIFICATION = 'SYSTEM_NOTIFICATION'
+  POST_MENTION = "POST_MENTION",
+  COMMENT_MENTION = "COMMENT_MENTION",
+  COMMENT_REPLY = "COMMENT_REPLY",
+  POST_UPVOTE = "POST_UPVOTE",
+  COMMENT_UPVOTE = "COMMENT_UPVOTE",
+  NEW_FOLLOWER = "NEW_FOLLOWER",
+  COMMUNITY_INVITE = "COMMUNITY_INVITE",
+  COMMUNITY_ROLE_CHANGE = "COMMUNITY_ROLE_CHANGE",
+  DIRECT_MESSAGE = "DIRECT_MESSAGE",
+  SYSTEM_NOTIFICATION = "SYSTEM_NOTIFICATION",
 }
 
 export interface NotificationActor {
@@ -22,7 +22,7 @@ export interface NotificationActor {
 
 export interface NotificationTarget {
   id: string;
-  type: 'post' | 'comment' | 'user' | 'community' | 'message' | 'system';
+  type: "post" | "comment" | "user" | "community" | "message" | "system";
   title?: string;
   content?: string;
   url?: string;
@@ -46,7 +46,7 @@ export interface PaginatedNotifications {
 export interface NotificationPreferences {
   allowPushNotifications: boolean;
   allowEmailNotifications: boolean;
-  emailDigestFrequency: 'none' | 'daily' | 'weekly';
+  emailDigestFrequency: "none" | "daily" | "weekly";
   mutedTypes: NotificationType[];
   mutedUsers: string[];
   mutedCommunities: string[];

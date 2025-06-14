@@ -1,9 +1,9 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export enum MembershipStatus {
-  PENDING = 'PENDING',
-  ACTIVE = 'ACTIVE',
-  BANNED = 'BANNED',
+  PENDING = "PENDING",
+  ACTIVE = "ACTIVE",
+  BANNED = "BANNED",
 }
 
 export interface IMembership extends Document {
@@ -20,13 +20,13 @@ export interface IMembership extends Document {
 
 const MembershipSchema = new Schema<IMembership>(
   {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    community: { type: Schema.Types.ObjectId, ref: 'Community', required: true },
-    roles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    community: { type: Schema.Types.ObjectId, ref: "Community", required: true },
+    roles: [{ type: Schema.Types.ObjectId, ref: "Role" }],
     status: {
       type: String,
       enum: Object.values(MembershipStatus),
-      default: MembershipStatus.ACTIVE
+      default: MembershipStatus.ACTIVE,
     },
     displayName: { type: String },
     joinedAt: { type: Date, default: Date.now },
@@ -51,12 +51,12 @@ MembershipSchema.index({ community: 1, roles: 1, status: 1 });
 MembershipSchema.index({ community: 1, lastActive: -1 });
 
 // Method to check if user has a specific role
-MembershipSchema.methods.hasRole = function(roleId: mongoose.Types.ObjectId | string) {
+MembershipSchema.methods.hasRole = function (roleId: mongoose.Types.ObjectId | string) {
   return this.roles.some((id: mongoose.Types.ObjectId) => id.toString() === roleId.toString());
 };
 
 // Method to add a role
-MembershipSchema.methods.addRole = async function(roleId: mongoose.Types.ObjectId | string) {
+MembershipSchema.methods.addRole = async function (roleId: mongoose.Types.ObjectId | string) {
   const roleIdStr = roleId.toString();
 
   // Check if role already exists
@@ -69,9 +69,11 @@ MembershipSchema.methods.addRole = async function(roleId: mongoose.Types.ObjectI
 };
 
 // Method to remove a role
-MembershipSchema.methods.removeRole = async function(roleId: mongoose.Types.ObjectId | string) {
+MembershipSchema.methods.removeRole = async function (roleId: mongoose.Types.ObjectId | string) {
   const roleIdStr = roleId.toString();
-  const roleIndex = this.roles.findIndex((id: mongoose.Types.ObjectId) => id.toString() === roleIdStr);
+  const roleIndex = this.roles.findIndex(
+    (id: mongoose.Types.ObjectId) => id.toString() === roleIdStr
+  );
 
   if (roleIndex !== -1) {
     this.roles.splice(roleIndex, 1);
@@ -82,7 +84,7 @@ MembershipSchema.methods.removeRole = async function(roleId: mongoose.Types.Obje
 };
 
 // Static method to get a user's roles in a community
-MembershipSchema.statics.getUserRoles = async function(
+MembershipSchema.statics.getUserRoles = async function (
   userId: mongoose.Types.ObjectId | string,
   communityId: mongoose.Types.ObjectId | string
 ) {
@@ -90,9 +92,10 @@ MembershipSchema.statics.getUserRoles = async function(
     user: userId,
     community: communityId,
     status: MembershipStatus.ACTIVE,
-  }).populate('roles');
+  }).populate("roles");
 
   return membership ? membership.roles : [];
 };
 
-export default mongoose.models.Membership || mongoose.model<IMembership>('Membership', MembershipSchema);
+export default mongoose.models.Membership ||
+  mongoose.model<IMembership>("Membership", MembershipSchema);

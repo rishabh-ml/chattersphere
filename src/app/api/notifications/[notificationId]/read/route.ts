@@ -46,7 +46,10 @@ async function markNotificationReadHandler(
 
     // Check if the notification belongs to the user
     if (notification.recipient.toString() !== user._id.toString()) {
-      return NextResponse.json({ error: "Not authorized to update this notification" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Not authorized to update this notification" },
+        { status: 403 }
+      );
     }
 
     // Update the notification
@@ -68,11 +71,14 @@ async function markNotificationReadHandler(
 
 // Export the handler with middleware
 export const PUT = withApiMiddleware(
-  (req: NextRequest) => markNotificationReadHandler(req, { params: { notificationId: req.nextUrl.pathname.split('/')[3] } }),
+  async (req: NextRequest) => {
+    const notificationId = req.nextUrl.pathname.split("/")[3];
+    return markNotificationReadHandler(req, { params: Promise.resolve({ notificationId }) });
+  },
   {
     enableRateLimit: true,
     maxRequests: 50,
     windowMs: 60000, // 1 minute
-    identifier: 'notifications:read:put'
+    identifier: "notifications:read:put",
   }
 );

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IComment extends Document {
   author: mongoose.Types.ObjectId;
@@ -15,14 +15,14 @@ export interface IComment extends Document {
 
 const CommentSchema = new Schema<IComment>(
   {
-    author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    post: { type: Schema.Types.ObjectId, ref: 'Post', required: true },
+    author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    post: { type: Schema.Types.ObjectId, ref: "Post", required: true },
     content: { type: String, required: true },
-    upvotes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    downvotes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    upvotes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    downvotes: [{ type: Schema.Types.ObjectId, ref: "User" }],
     upvoteCount: { type: Number, default: 0 },
     downvoteCount: { type: Number, default: 0 },
-    parentComment: { type: Schema.Types.ObjectId, ref: 'Comment' },
+    parentComment: { type: Schema.Types.ObjectId, ref: "Comment" },
   },
   { timestamps: true }
 );
@@ -41,34 +41,34 @@ CommentSchema.index({ post: 1, upvoteCount: -1 }); // For best comments in a pos
 CommentSchema.index({ parentComment: 1, upvoteCount: -1, createdAt: -1 }); // For popular replies
 
 // Pre-save hook to update upvoteCount and downvoteCount
-CommentSchema.pre('save', function(next) {
-  if (this.isModified('upvotes')) {
+CommentSchema.pre("save", function (next) {
+  if (this.isModified("upvotes")) {
     this.upvoteCount = this.upvotes.length;
   }
-  if (this.isModified('downvotes')) {
+  if (this.isModified("downvotes")) {
     this.downvoteCount = this.downvotes.length;
   }
   next();
 });
 
 // Virtual field for vote count
-CommentSchema.virtual('voteCount').get(function() {
+CommentSchema.virtual("voteCount").get(function () {
   return this.upvoteCount - this.downvoteCount;
 });
 
 // Virtual for votes
-CommentSchema.virtual('votes', {
-  ref: 'Vote',
-  localField: '_id',
-  foreignField: 'target',
-  match: { targetType: 'Comment' }
+CommentSchema.virtual("votes", {
+  ref: "Vote",
+  localField: "_id",
+  foreignField: "target",
+  match: { targetType: "Comment" },
 });
 
 // Virtual for replies (child comments)
-CommentSchema.virtual('replies', {
-  ref: 'Comment',
-  localField: '_id',
-  foreignField: 'parentComment'
+CommentSchema.virtual("replies", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "parentComment",
 });
 
-export default mongoose.models.Comment || mongoose.model<IComment>('Comment', CommentSchema);
+export default mongoose.models.Comment || mongoose.model<IComment>("Comment", CommentSchema);

@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Plus, Users, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link"
+import Link from "next/link";
 import { useNavigation, routes } from "@/lib/navigation";
 import Image from "next/image";
 import { Community } from "@/context/CommunityContext";
@@ -15,11 +15,7 @@ interface CommunityCardProps {
   onSelect?: (community: Community) => void;
 }
 
-export default function CommunityCard({
-  community,
-  onJoinLeave,
-  onSelect
-}: CommunityCardProps) {
+export default function CommunityCard({ community, onJoinLeave, onSelect }: CommunityCardProps) {
   const navigation = useNavigation();
   const handleJoinLeave = async () => {
     if (!onJoinLeave) return;
@@ -28,9 +24,8 @@ export default function CommunityCard({
 
     try {
       await onJoinLeave(community.id, isMember);
-      toast.success(isMember
-        ? `Left ${community.name} community`
-        : `Joined ${community.name} community`
+      toast.success(
+        isMember ? `Left ${community.name} community` : `Joined ${community.name} community`
       );
     } catch (error) {
       console.error("Error joining/leaving community:", error);
@@ -50,12 +45,7 @@ export default function CommunityCard({
         <div className="flex items-center gap-3 mb-3">
           {community.image ? (
             <div className="relative h-12 w-12 rounded-full overflow-hidden">
-              <Image
-                src={community.image}
-                alt={community.name}
-                fill
-                className="object-cover"
-              />
+              <Image src={community.image} alt={community.name} fill className="object-cover" />
             </div>
           ) : (
             <div className="h-12 w-12 rounded-full bg-gradient-to-r from-[#00AEEF] to-[#EC4899] flex items-center justify-center text-white font-bold">
@@ -103,7 +93,9 @@ export default function CommunityCard({
               onClick={handleJoinLeave}
               className={community.isMember ? "" : "bg-[#00AEEF] hover:bg-[#00AEEF]/90"}
             >
-              {community.isMember ? "Leave" : (
+              {community.isMember ? (
+                "Leave"
+              ) : (
                 <>
                   <Plus className="h-4 w-4 mr-1" />
                   Join

@@ -144,11 +144,17 @@ export default function PostCard({
             </Avatar>
             <div>
               <div className="flex items-center">
-                <Link href={`/profile/${author.id}`} className="font-medium text-gray-900 hover:underline">
+                <Link
+                  href={`/profile/${author.id}`}
+                  className="font-medium text-gray-900 hover:underline"
+                >
                   {author.name}
                 </Link>
                 <span className="mx-1 text-gray-500">•</span>
-                <Link href={`/communities/${community.slug}`} className="text-[#00AEEF] hover:underline">
+                <Link
+                  href={`/communities/${community.slug}`}
+                  className="text-[#00AEEF] hover:underline"
+                >
                   {community.name}
                 </Link>
               </div>
@@ -157,7 +163,7 @@ export default function PostCard({
               </p>
             </div>
           </div>
-          
+
           {user && (
             <DeletePostButton
               postId={id}
@@ -204,7 +210,11 @@ export default function PostCard({
             <span>{localDownvoteCount}</span>
           </Button>
           <Link href={`/posts/${id}`}>
-            <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 hover:bg-gray-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            >
               <MessageSquare className="h-4 w-4 mr-1" />
               <span>{commentCount}</span>
             </Button>

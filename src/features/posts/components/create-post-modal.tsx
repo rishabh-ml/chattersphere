@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useCommunities, Community } from "@/context/CommunityContext";
@@ -33,18 +33,20 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
           setLoading(true);
           // First try to fetch from my-communities endpoint
           try {
-            const response = await fetch('/api/communities/my-communities');
+            const response = await fetch("/api/communities/my-communities");
             if (response.ok) {
               const data = await response.json();
               setCommunities(data.communities || []);
               return;
             }
           } catch (error) {
-            console.warn('Error fetching from my-communities endpoint, falling back to main communities endpoint');
+            console.warn(
+              "Error fetching from my-communities endpoint, falling back to main communities endpoint"
+            );
           }
 
           // Fallback to the main communities endpoint
-          const fallbackResponse = await fetch('/api/communities?limit=50');
+          const fallbackResponse = await fetch("/api/communities?limit=50");
           if (fallbackResponse.ok) {
             const data = await fallbackResponse.json();
             setCommunities(data.communities || []);
@@ -53,7 +55,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             setCommunities([]);
           }
         } catch (error) {
-          console.error('Error fetching communities:', error);
+          console.error("Error fetching communities:", error);
           setCommunities([]);
         } finally {
           setLoading(false);

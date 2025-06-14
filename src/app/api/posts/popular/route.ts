@@ -13,13 +13,9 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 interface CachedPost {
   _id: Types.ObjectId;
-  author:
-      | Types.ObjectId
-      | { _id: Types.ObjectId; username: string; name: string; image?: string };
+  author: Types.ObjectId | { _id: Types.ObjectId; username: string; name: string; image?: string };
   content: string;
-  community?:
-      | Types.ObjectId
-      | { _id: Types.ObjectId; name: string; image?: string };
+  community?: Types.ObjectId | { _id: Types.ObjectId; name: string; image?: string };
   upvoteCount: number;
   downvoteCount: number;
   commentCount: number;
@@ -31,11 +27,7 @@ interface CachedPost {
 const cachedPosts: { posts: CachedPost[]; cacheKey: string } | null = null;
 const lastCacheTime = 0;
 
-function calculateScore(
-    upvotes: number,
-    downvotes: number,
-    createdAt: Date
-): number {
+function calculateScore(upvotes: number, downvotes: number, createdAt: Date): number {
   const voteScore = upvotes - downvotes;
   const ageMs = Date.now() - createdAt.getTime();
   return voteScore / Math.pow(1 + ageMs / DECAY_FACTOR, 1.5);
@@ -89,55 +81,67 @@ export async function GET(req: NextRequest) {
       { $match: { createdAt: { $gte: threshold } } },
 
       // Add computed fields
-      { $addFields: {
-        upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
-        downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
-        commentCount: { $size: { $ifNull: ["$comments", []] } },
-        voteCount: { $subtract: [{ $size: { $ifNull: ["$upvotes", []] } }, { $size: { $ifNull: ["$downvotes", []] } }] },
-        ageMs: { $subtract: [now, { $toLong: "$createdAt" }] }
-      }},
+      {
+        $addFields: {
+          upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
+          downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
+          commentCount: { $size: { $ifNull: ["$comments", []] } },
+          voteCount: {
+            $subtract: [
+              { $size: { $ifNull: ["$upvotes", []] } },
+              { $size: { $ifNull: ["$downvotes", []] } },
+            ],
+          },
+          ageMs: { $subtract: [now, { $toLong: "$createdAt" }] },
+        },
+      },
 
       // Calculate popularity score
-      { $addFields: {
-        score: {
-          $divide: [
-            "$voteCount",
-            { $pow: [
-              { $add: [1, { $divide: ["$ageMs", DECAY_FACTOR] }] },
-              1.5
-            ]}
-          ]
-        }
-      }},
+      {
+        $addFields: {
+          score: {
+            $divide: [
+              "$voteCount",
+              { $pow: [{ $add: [1, { $divide: ["$ageMs", DECAY_FACTOR] }] }, 1.5] },
+            ],
+          },
+        },
+      },
 
       // Sort by score (descending)
       { $sort: { score: -1 } },
 
       // Count total before pagination
-      { $facet: {
-        totalCount: [{ $count: "count" }],
-        paginatedResults: [
-          { $skip: skip },
-          { $limit: limit },
-          // Lookup author information
-          { $lookup: {
-            from: "users",
-            localField: "author",
-            foreignField: "_id",
-            as: "authorInfo"
-          }},
-          { $unwind: "$authorInfo" },
+      {
+        $facet: {
+          totalCount: [{ $count: "count" }],
+          paginatedResults: [
+            { $skip: skip },
+            { $limit: limit },
+            // Lookup author information
+            {
+              $lookup: {
+                from: "users",
+                localField: "author",
+                foreignField: "_id",
+                as: "authorInfo",
+              },
+            },
+            { $unwind: "$authorInfo" },
 
-          // Lookup community information
-          { $lookup: {
-            from: "communities",
-            localField: "community",
-            foreignField: "_id",
-            as: "communityInfo"
-          }},
-          { $unwind: { path: "$communityInfo", preserveNullAndEmptyArrays: true } }
-        ]
-      }}
+            // Lookup community information
+            {
+              $lookup: {
+                from: "communities",
+                localField: "community",
+                foreignField: "_id",
+                as: "communityInfo",
+              },
+            },
+            { $unwind: { path: "$communityInfo", preserveNullAndEmptyArrays: true } },
+          ],
+        },
+      },
     ];
 
     // Execute the aggregation pipeline
@@ -147,21 +151,21 @@ export async function GET(req: NextRequest) {
     const posts = result.paginatedResults;
 
     // Transform the results for the API response
-    const transformed = posts.map(post => {
+    const transformed = posts.map((post) => {
       // Check if the post is upvoted by the current user
-      const isUpvoted = currentUser ?
-        post.upvotes?.some(id => id.toString() === currentUser._id.toString()) || false :
-        false;
+      const isUpvoted = currentUser
+        ? post.upvotes?.some((id) => id.toString() === currentUser._id.toString()) || false
+        : false;
 
       // Check if the post is downvoted by the current user
-      const isDownvoted = currentUser ?
-        post.downvotes?.some(id => id.toString() === currentUser._id.toString()) || false :
-        false;
+      const isDownvoted = currentUser
+        ? post.downvotes?.some((id) => id.toString() === currentUser._id.toString()) || false
+        : false;
 
       // Check if the post is saved by the current user
-      const isSaved = currentUser ?
-        currentUser.savedPosts?.some(id => id.toString() === post._id.toString()) || false :
-        false;
+      const isSaved = currentUser
+        ? currentUser.savedPosts?.some((id) => id.toString() === post._id.toString()) || false
+        : false;
 
       return {
         id: post._id.toString(),
@@ -171,11 +175,13 @@ export async function GET(req: NextRequest) {
           name: post.authorInfo.name,
           image: post.authorInfo.image,
         },
-        community: post.communityInfo ? {
-          id: post.communityInfo._id.toString(),
-          name: post.communityInfo.name,
-          image: post.communityInfo.image,
-        } : undefined,
+        community: post.communityInfo
+          ? {
+              id: post.communityInfo._id.toString(),
+              name: post.communityInfo.name,
+              image: post.communityInfo.image,
+            }
+          : undefined,
         content: post.content,
         upvoteCount: post.upvoteCount,
         downvoteCount: post.downvoteCount,
@@ -205,9 +211,6 @@ export async function GET(req: NextRequest) {
     );
   } catch (err) {
     console.error("[POPULAR] error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch popular posts" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch popular posts" }, { status: 500 });
   }
 }

@@ -7,7 +7,6 @@ import mongoose from "mongoose";
 import { withCache } from "@/lib/redis";
 import { withApiMiddleware } from "@/lib/apiUtils";
 
-
 /**
  * @api {get} /api/messages Get user conversations
  * @apiName GetConversations
@@ -65,23 +64,16 @@ async function getConversationsHandler(req: NextRequest) {
         const conversationPartners = await DirectMessage.aggregate([
           {
             $match: {
-              $or: [
-                { sender: user._id },
-                { recipient: user._id }
-              ]
-            }
+              $or: [{ sender: user._id }, { recipient: user._id }],
+            },
           },
           {
-            $sort: { createdAt: -1 }
+            $sort: { createdAt: -1 },
           },
           {
             $group: {
               _id: {
-                $cond: [
-                  { $eq: ["$sender", user._id] },
-                  "$recipient",
-                  "$sender"
-                ]
+                $cond: [{ $eq: ["$sender", user._id] }, "$recipient", "$sender"],
               },
               lastMessage: { $first: "$content" },
               lastMessageAt: { $first: "$createdAt" },
@@ -89,27 +81,24 @@ async function getConversationsHandler(req: NextRequest) {
               unreadCount: {
                 $sum: {
                   $cond: [
-                    { $and: [
-                      { $eq: ["$recipient", user._id] },
-                      { $eq: ["$isRead", false] }
-                    ]},
+                    { $and: [{ $eq: ["$recipient", user._id] }, { $eq: ["$isRead", false] }] },
                     1,
-                    0
-                  ]
-                }
-              }
-            }
+                    0,
+                  ],
+                },
+              },
+            },
           },
           {
             $lookup: {
               from: "users",
               localField: "_id",
               foreignField: "_id",
-              as: "user"
-            }
+              as: "user",
+            },
           },
           {
-            $unwind: "$user"
+            $unwind: "$user",
           },
           {
             $project: {
@@ -121,18 +110,18 @@ async function getConversationsHandler(req: NextRequest) {
               lastMessage: 1,
               lastMessageAt: 1,
               lastMessageId: 1,
-              unreadCount: 1
-            }
+              unreadCount: 1,
+            },
           },
           {
-            $sort: { lastMessageAt: -1 }
+            $sort: { lastMessageAt: -1 },
           },
           {
-            $skip: skip
+            $skip: skip,
           },
           {
-            $limit: validLimit
-          }
+            $limit: validLimit,
+          },
         ]);
 
         return conversationPartners;
@@ -152,5 +141,5 @@ export const GET = withApiMiddleware(getConversationsHandler, {
   enableRateLimit: true,
   maxRequests: 100,
   windowMs: 60000, // 1 minute
-  identifier: 'messages:get'
+  identifier: "messages:get",
 });

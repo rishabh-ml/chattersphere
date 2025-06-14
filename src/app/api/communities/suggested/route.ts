@@ -11,16 +11,16 @@ export async function GET() {
 
     // Find communities the user is not a member of
     let query = {};
-    
+
     if (userId) {
       // Get communities the user is already a member of
-      const userMemberships = await Membership.find({ userId }).select('communityId');
-      const userCommunityIds = userMemberships.map(m => m.communityId);
-      
+      const userMemberships = await Membership.find({ userId }).select("communityId");
+      const userCommunityIds = userMemberships.map((m) => m.communityId);
+
       // Exclude communities the user is already a member of
-      query = { 
+      query = {
         _id: { $nin: userCommunityIds },
-        isPrivate: false // Only suggest public communities
+        isPrivate: false, // Only suggest public communities
       };
     } else {
       // For non-authenticated users, just show public communities
@@ -38,9 +38,9 @@ export async function GET() {
           name: 1,
           slug: 1,
           memberCount: 1,
-          _id: 0
-        }
-      }
+          _id: 0,
+        },
+      },
     ]);
 
     // Add formatted member count and random color for each community
@@ -51,20 +51,17 @@ export async function GET() {
       if (community.memberCount >= 1000) {
         members = (community.memberCount / 1000).toFixed(1) + "k";
       }
-      
+
       return {
         ...community,
         members,
-        color: colors[index % colors.length]
+        color: colors[index % colors.length],
       };
     });
 
     return NextResponse.json({ communities: formattedCommunities });
   } catch (error) {
     console.error("Error fetching suggested communities:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch suggested communities" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch suggested communities" }, { status: 500 });
   }
 }

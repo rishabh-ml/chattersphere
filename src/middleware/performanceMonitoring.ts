@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 // Interface for performance metrics
 interface PerformanceMetrics {
@@ -29,15 +29,15 @@ export async function performanceMonitoring(
   const method = req.method;
   const url = req.url;
   const path = new URL(url).pathname;
-  
+
   try {
     // Process the request
     const response = await handler(req);
-    
+
     // Calculate request duration
     const duration = Date.now() - startTime;
     const status = response.status;
-    
+
     // Store metrics
     storeMetrics({
       route: path,
@@ -46,22 +46,22 @@ export async function performanceMonitoring(
       timestamp: new Date(),
       status,
     });
-    
+
     // Log slow requests
     if (duration > VERY_SLOW_THRESHOLD) {
       console.warn(`[VERY SLOW REQUEST] ${method} ${path} took ${duration}ms - Status: ${status}`);
     } else if (duration > SLOW_THRESHOLD) {
       console.warn(`[SLOW REQUEST] ${method} ${path} took ${duration}ms - Status: ${status}`);
     }
-    
+
     // Add timing headers to the response
-    response.headers.set('X-Response-Time', `${duration}ms`);
-    
+    response.headers.set("X-Response-Time", `${duration}ms`);
+
     return response;
   } catch (error) {
     // Calculate request duration even for errors
     const duration = Date.now() - startTime;
-    
+
     // Store metrics for failed requests
     storeMetrics({
       route: path,
@@ -70,10 +70,10 @@ export async function performanceMonitoring(
       timestamp: new Date(),
       status: 500, // Assume 500 for errors
     });
-    
+
     // Log error with timing information
     console.error(`[ERROR] ${method} ${path} failed after ${duration}ms`, error);
-    
+
     // Re-throw the error to be handled by the error handler
     throw error;
   }
@@ -85,7 +85,7 @@ export async function performanceMonitoring(
 function storeMetrics(metrics: PerformanceMetrics): void {
   // Add to the beginning of the array
   performanceMetrics.unshift(metrics);
-  
+
   // Trim the array if it exceeds the maximum size
   if (performanceMetrics.length > MAX_METRICS) {
     performanceMetrics.length = MAX_METRICS;
@@ -107,13 +107,13 @@ export function getPerformanceMetrics(): PerformanceMetrics[] {
  */
 export function getAverageResponseTime(route?: string): number {
   const filteredMetrics = route
-    ? performanceMetrics.filter(m => m.route === route)
+    ? performanceMetrics.filter((m) => m.route === route)
     : performanceMetrics;
-  
+
   if (filteredMetrics.length === 0) {
     return 0;
   }
-  
+
   const sum = filteredMetrics.reduce((acc, m) => acc + m.duration, 0);
   return Math.round(sum / filteredMetrics.length);
 }
@@ -126,21 +126,21 @@ export function getAverageResponseTime(route?: string): number {
 export function getSlowestRoutes(limit: number = 5): { route: string; avgDuration: number }[] {
   // Group metrics by route
   const routeMap = new Map<string, number[]>();
-  
-  performanceMetrics.forEach(m => {
+
+  performanceMetrics.forEach((m) => {
     if (!routeMap.has(m.route)) {
       routeMap.set(m.route, []);
     }
     routeMap.get(m.route)!.push(m.duration);
   });
-  
+
   // Calculate average duration for each route
   const routeAvgs = Array.from(routeMap.entries()).map(([route, durations]) => {
     const sum = durations.reduce((acc, d) => acc + d, 0);
     const avg = Math.round(sum / durations.length);
     return { route, avgDuration: avg };
   });
-  
+
   // Sort by average duration (descending) and take the top N
   return routeAvgs.sort((a, b) => b.avgDuration - a.avgDuration).slice(0, limit);
 }

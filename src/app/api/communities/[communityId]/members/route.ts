@@ -16,21 +16,21 @@ export async function GET(
   const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
-    
+
     // Sanitize and validate communityId
     if (!resolvedParams?.communityId) {
       return ApiError.badRequest("Missing communityId parameter");
     }
-    
+
     const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
-    
+
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
       return ApiError.badRequest("Invalid communityId format");
     }
 
-    await connectToDatabase();    // Find the community
-    const community = await Community.findById(sanitizedCommunityId).lean().exec() as any;
-    
+    await connectToDatabase(); // Find the community
+    const community = (await Community.findById(sanitizedCommunityId).lean().exec()) as any;
+
     if (!community) {
       return ApiError.notFound("Community not found");
     }
@@ -38,18 +38,19 @@ export async function GET(
     // Check if the community is private and the user is not a member
     if (community.isPrivate) {
       if (!clerkUserId) {
-        return ApiError.unauthorized("You must be signed in to view members in a private community");
-      }      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
-      
+        return ApiError.unauthorized(
+          "You must be signed in to view members in a private community"
+        );
+      }
+      const currentUser = (await User.findOne({ clerkId: clerkUserId }).lean().exec()) as any;
+
       if (!currentUser) {
         return ApiError.unauthorized("User not found");
       }
 
       const currentUserId = currentUser._id.toString();
-      const isMember = community.members.some(
-        (id: any) => id.toString() === currentUserId
-      );
-      
+      const isMember = community.members.some((id: any) => id.toString() === currentUserId);
+
       if (!isMember) {
         return ApiError.forbidden("You must be a member to view members in this community");
       }
@@ -61,7 +62,7 @@ export async function GET(
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "50");
     const search = url.searchParams.get("search") || "";
-    
+
     // Validate pagination parameters
     const validPage = Math.max(1, page);
     const validLimit = Math.min(100, Math.max(1, limit));
@@ -100,7 +101,7 @@ export async function GET(
 
     const countQuery = Membership.countDocuments(query).exec();
 
-    const [memberships, totalCount] = await Promise.all([membershipsQuery, countQuery]);    // Format the response
+    const [memberships, totalCount] = await Promise.all([membershipsQuery, countQuery]); // Format the response
     const formattedMembers = memberships.map((membership: any) => ({
       id: membership._id.toString(),
       user: {
@@ -122,16 +123,19 @@ export async function GET(
       lastActive: membership.lastActive.toISOString(),
     }));
 
-    return NextResponse.json({
-      members: formattedMembers,
-      pagination: {
-        page: validPage,
-        limit: validLimit,
-        totalItems: totalCount,
-        totalPages: Math.ceil(totalCount / validLimit),
-        hasMore: skip + memberships.length < totalCount,
+    return NextResponse.json(
+      {
+        members: formattedMembers,
+        pagination: {
+          page: validPage,
+          limit: validLimit,
+          totalItems: totalCount,
+          totalPages: Math.ceil(totalCount / validLimit),
+          hasMore: skip + memberships.length < totalCount,
+        },
       },
-    }, { status: 200 });
+      { status: 200 }
+    );
   } catch (err) {
     console.error("[GET /api/communities/[communityId]/members] Error:", err);
     return ApiError.internalServerError("Failed to fetch community members");

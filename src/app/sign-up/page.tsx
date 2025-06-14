@@ -22,12 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Define form validation schema
 const signUpSchema = z.object({
@@ -333,9 +328,7 @@ export default function SignUpPage() {
                   className="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 />
                 {form.formState.errors.email && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {form.formState.errors.email.message}
-                  </p>
+                  <p className="text-red-500 text-xs mt-1">{form.formState.errors.email.message}</p>
                 )}
               </div>
 
@@ -396,9 +389,7 @@ export default function SignUpPage() {
                         passwordStrength.length ? "bg-green-100" : "bg-gray-100"
                       }`}
                     >
-                      {passwordStrength.length && (
-                        <Check className="h-3 w-3 text-green-600" />
-                      )}
+                      {passwordStrength.length && <Check className="h-3 w-3 text-green-600" />}
                     </div>
                     <span className="text-xs text-gray-600">8+ characters</span>
                   </div>
@@ -408,9 +399,7 @@ export default function SignUpPage() {
                         passwordStrength.uppercase ? "bg-green-100" : "bg-gray-100"
                       }`}
                     >
-                      {passwordStrength.uppercase && (
-                        <Check className="h-3 w-3 text-green-600" />
-                      )}
+                      {passwordStrength.uppercase && <Check className="h-3 w-3 text-green-600" />}
                     </div>
                     <span className="text-xs text-gray-600">Uppercase letter</span>
                   </div>
@@ -420,9 +409,7 @@ export default function SignUpPage() {
                         passwordStrength.lowercase ? "bg-green-100" : "bg-gray-100"
                       }`}
                     >
-                      {passwordStrength.lowercase && (
-                        <Check className="h-3 w-3 text-green-600" />
-                      )}
+                      {passwordStrength.lowercase && <Check className="h-3 w-3 text-green-600" />}
                     </div>
                     <span className="text-xs text-gray-600">Lowercase letter</span>
                   </div>
@@ -432,9 +419,7 @@ export default function SignUpPage() {
                         passwordStrength.number ? "bg-green-100" : "bg-gray-100"
                       }`}
                     >
-                      {passwordStrength.number && (
-                        <Check className="h-3 w-3 text-green-600" />
-                      )}
+                      {passwordStrength.number && <Check className="h-3 w-3 text-green-600" />}
                     </div>
                     <span className="text-xs text-gray-600">Number</span>
                   </div>
@@ -444,9 +429,7 @@ export default function SignUpPage() {
                         passwordStrength.special ? "bg-green-100" : "bg-gray-100"
                       }`}
                     >
-                      {passwordStrength.special && (
-                        <Check className="h-3 w-3 text-green-600" />
-                      )}
+                      {passwordStrength.special && <Check className="h-3 w-3 text-green-600" />}
                     </div>
                     <span className="text-xs text-gray-600">Special character</span>
                   </div>
@@ -455,22 +438,13 @@ export default function SignUpPage() {
 
               <div className="flex items-center space-x-2">
                 <Checkbox id="termsAccepted" {...form.register("termsAccepted")} />
-                <Label
-                  htmlFor="termsAccepted"
-                  className="text-sm text-gray-600 font-normal"
-                >
+                <Label htmlFor="termsAccepted" className="text-sm text-gray-600 font-normal">
                   I agree to the{" "}
-                  <Link
-                    href="/terms-of-service"
-                    className="text-indigo-600 hover:text-indigo-800"
-                  >
+                  <Link href="/terms-of-service" className="text-indigo-600 hover:text-indigo-800">
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link
-                    href="/privacy-policy"
-                    className="text-indigo-600 hover:text-indigo-800"
-                  >
+                  <Link href="/privacy-policy" className="text-indigo-600 hover:text-indigo-800">
                     Privacy Policy
                   </Link>
                 </Label>
@@ -510,11 +484,13 @@ export default function SignUpPage() {
                   type="button"
                   variant="outline"
                   disabled={isLoading}
-                  onClick={() => signUp.authenticateWithRedirect({
-                    strategy: "oauth_google",
-                    redirectUrl: "/sso-callback",
-                    redirectUrlComplete: "/home"
-                  })}
+                  onClick={() =>
+                    signUp.authenticateWithRedirect({
+                      strategy: "oauth_google",
+                      redirectUrl: "/sso-callback",
+                      redirectUrlComplete: "/home",
+                    })
+                  }
                   className="w-full border-gray-300 hover:bg-gray-50"
                 >
                   <img src="/google-icon.svg" alt="Google" className="h-5 w-5 mr-2" />
@@ -526,10 +502,7 @@ export default function SignUpPage() {
           <CardFooter className="flex justify-center border-t border-gray-100 p-6">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link
-                href="/sign-in"
-                className="font-medium text-indigo-600 hover:text-indigo-800"
-              >
+              <Link href="/sign-in" className="font-medium text-indigo-600 hover:text-indigo-800">
                 Sign in
               </Link>
             </p>

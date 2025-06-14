@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 interface MediaUploaderProps {
   onUploadComplete: (url: string) => void;
-  type: 'post' | 'comment' | 'message';
+  type: "post" | "comment" | "message";
   maxSize?: number; // in MB
   className?: string;
 }
@@ -27,7 +27,7 @@ export default function MediaUploader({
     if (!file) return;
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!validTypes.includes(file.type)) {
       toast.error("Invalid file type. Supported formats: JPEG, PNG, WEBP, GIF");
       return;
@@ -50,21 +50,21 @@ export default function MediaUploader({
     // Upload file
     try {
       setIsUploading(true);
-      
+
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', type);
-      
-      const response = await fetch('/api/media/upload', {
-        method: 'POST',
+      formData.append("file", file);
+      formData.append("type", type);
+
+      const response = await fetch("/api/media/upload", {
+        method: "POST",
         body: formData,
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to upload media");
       }
-      
+
       const data = await response.json();
       onUploadComplete(data.url);
       toast.success("Media uploaded successfully");
@@ -75,7 +75,7 @@ export default function MediaUploader({
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     }
   };
@@ -83,7 +83,7 @@ export default function MediaUploader({
   const handleRemovePreview = () => {
     setPreview(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -91,9 +91,9 @@ export default function MediaUploader({
     <div className={`relative ${className}`}>
       {preview ? (
         <div className="relative rounded-md overflow-hidden">
-          <img 
-            src={preview} 
-            alt="Upload preview" 
+          <img
+            src={preview}
+            alt="Upload preview"
             className="w-full h-auto max-h-64 object-contain bg-gray-100"
           />
           <button

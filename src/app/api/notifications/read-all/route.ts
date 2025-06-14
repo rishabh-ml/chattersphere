@@ -84,5 +84,5 @@ export const PUT = withApiMiddleware(markAllNotificationsReadHandler, {
   enableRateLimit: true,
   maxRequests: 10,
   windowMs: 60000, // 1 minute
-  identifier: 'notifications:read-all:put'
+  identifier: "notifications:read-all:put",
 });

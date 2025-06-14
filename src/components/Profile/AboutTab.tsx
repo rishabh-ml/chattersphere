@@ -74,17 +74,18 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
       toast.error("You can add up to 5 social links");
       return;
     }
-    
+
     try {
       // Basic URL validation
       new URL(newSocialUrl);
-      
+
       setFormData((prev) => ({
         ...prev,
         socialLinks: [
           ...prev.socialLinks,
           { platform: newSocialPlatform.trim(), url: newSocialUrl.trim() },
-        ],      }));
+        ],
+      }));
       setNewSocialPlatform("");
       setNewSocialUrl("");
     } catch {
@@ -98,13 +99,11 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
       socialLinks: prev.socialLinks.filter((_, i) => i !== index),
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       // Validate form data
-      const validatedData = profileUpdateSchema.parse(formData);
       const validatedData = profileUpdateSchema.parse(formData);
 
       setIsSubmitting(true);
@@ -114,15 +113,18 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
         location: validatedData.location || "",
         website: validatedData.website || "",
         interests: validatedData.interests || [],
-        socialLinks: validatedData.socialLinks || []
+        socialLinks: validatedData.socialLinks || [],
       });
       setIsEditing(false);
-      toast.success("Profile updated successfully");    } catch (error: unknown) {
-      if (error &&
-          typeof error === 'object' &&
-          'errors' in error &&
-          Array.isArray((error as { errors: { message: string }[] }).errors) &&
-          (error as { errors: { message: string }[] }).errors.length > 0) {
+      toast.success("Profile updated successfully");
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "errors" in error &&
+        Array.isArray((error as { errors: { message: string }[] }).errors) &&
+        (error as { errors: { message: string }[] }).errors.length > 0
+      ) {
         // Zod validation error
         toast.error((error as { errors: { message: string }[] }).errors[0].message);
       } else {
@@ -152,18 +154,18 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Edit Profile</h2>
           <div className="flex gap-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={cancelEdit}
               disabled={isSubmitting}
             >
               <X className="h-4 w-4 mr-1" /> Cancel
             </Button>
-            <Button 
-              type="submit" 
-              size="sm" 
+            <Button
+              type="submit"
+              size="sm"
               disabled={isSubmitting}
               className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
             >
@@ -192,9 +194,7 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
               rows={4}
               maxLength={500}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              {formData.bio.length}/500 characters
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{formData.bio.length}/500 characters</p>
           </div>
 
           <div>
@@ -241,9 +241,7 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Interests
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Interests</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {formData.interests.map((interest, index) => (
                 <Badge key={index} variant="secondary" className="px-3 py-1 gap-1">
@@ -275,15 +273,11 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {formData.interests.length}/10 interests
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{formData.interests.length}/10 interests</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Social Links
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Social Links</label>
             <div className="space-y-2 mb-2">
               {formData.socialLinks.map((link, index) => (
                 <div key={index} className="flex items-center gap-2">
@@ -327,7 +321,11 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
                 type="button"
                 variant="outline"
                 onClick={addSocialLink}
-                disabled={!newSocialPlatform.trim() || !newSocialUrl.trim() || formData.socialLinks.length >= 5}
+                disabled={
+                  !newSocialPlatform.trim() ||
+                  !newSocialUrl.trim() ||
+                  formData.socialLinks.length >= 5
+                }
                 className="col-span-1"
               >
                 <Plus className="h-4 w-4" />
@@ -347,12 +345,7 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Profile Info</h2>
         {isOwner && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setIsEditing(true)}
-            className="gap-1"
-          >
+          <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="gap-1">
             <Edit2 className="h-4 w-4" /> Edit
           </Button>
         )}
@@ -365,13 +358,9 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
             <p className="mt-1">{user.bio}</p>
           </div>
         ) : isOwner ? (
-          <div className="text-gray-500 italic">
-            Add a bio to tell people about yourself
-          </div>
+          <div className="text-gray-500 italic">Add a bio to tell people about yourself</div>
         ) : (
-          <div className="text-gray-500 italic">
-            This user hasn&apos;t added a bio yet
-          </div>
+          <div className="text-gray-500 italic">This user hasn&apos;t added a bio yet</div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -384,7 +373,7 @@ export default function AboutTab({ user, isOwner, onProfileUpdate }: AboutTabPro
 
           <div>
             <h3 className="text-sm font-medium text-gray-500">Joined</h3>
-            <p className="mt-1">{format(new Date(user.createdAt), 'MMMM d, yyyy')}</p>
+            <p className="mt-1">{format(new Date(user.createdAt), "MMMM d, yyyy")}</p>
           </div>
 
           {user.location && (

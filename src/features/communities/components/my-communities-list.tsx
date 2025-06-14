@@ -31,7 +31,7 @@ export default function MyCommunities() {
       "bg-pink-500",
       "bg-indigo-500",
       "bg-red-500",
-      "bg-teal-500"
+      "bg-teal-500",
     ];
 
     // Use the sum of character codes to determine the color
@@ -61,9 +61,9 @@ export default function MyCommunities() {
         const formattedCommunities = data.communities.map((community: any) => ({
           id: community.id,
           name: community.name,
-          slug: community.slug || community.name.toLowerCase().replace(/\s+/g, '-'),
+          slug: community.slug || community.name.toLowerCase().replace(/\s+/g, "-"),
           image: community.image,
-          color: getColorForCommunity(community.name)
+          color: getColorForCommunity(community.name),
         }));
 
         setCommunities(formattedCommunities);
@@ -71,9 +71,9 @@ export default function MyCommunities() {
         console.error("Error fetching communities:", error);
         // Fallback to mock data if API fails
         setCommunities([
-          { id: '1', name: 'WebDev', slug: 'webdev', color: 'bg-blue-500' },
-          { id: '2', name: 'TechTalk', slug: 'techtalk', color: 'bg-purple-500' },
-          { id: '3', name: 'RemoteWork', slug: 'remotework', color: 'bg-green-500' }
+          { id: "1", name: "WebDev", slug: "webdev", color: "bg-blue-500" },
+          { id: "2", name: "TechTalk", slug: "techtalk", color: "bg-purple-500" },
+          { id: "3", name: "RemoteWork", slug: "remotework", color: "bg-green-500" },
         ]);
       } finally {
         setLoading(false);
@@ -124,7 +124,9 @@ export default function MyCommunities() {
             className="hover:bg-blue-50 hover:text-[#00AEEF] transition-colors"
             onClick={() => handleCommunityClick(community.slug)}
           >
-            <div className={`h-5 w-5 rounded-full ${community.color} flex items-center justify-center mr-3`}>
+            <div
+              className={`h-5 w-5 rounded-full ${community.color} flex items-center justify-center mr-3`}
+            >
               <span className="text-white text-xs font-bold">{community.name.charAt(0)}</span>
             </div>
             <span className="truncate">{community.name}</span>

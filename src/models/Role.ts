@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface Permission {
   // General permissions
@@ -93,12 +93,12 @@ const PermissionSchema = new Schema<Permission>(
 const RoleSchema = new Schema<IRole>(
   {
     name: { type: String, required: true },
-    color: { type: String, default: '#99AAB5' },
-    community: { type: Schema.Types.ObjectId, ref: 'Community', required: true },
+    color: { type: String, default: "#99AAB5" },
+    community: { type: Schema.Types.ObjectId, ref: "Community", required: true },
     position: { type: Number, default: 0 },
     permissions: {
       type: PermissionSchema,
-      default: () => defaultPermissions
+      default: () => defaultPermissions,
     },
     isDefault: { type: Boolean, default: false },
   },
@@ -115,12 +115,12 @@ RoleSchema.index({ community: 1, position: 1 });
 RoleSchema.index({ community: 1, isDefault: 1 });
 
 // Create index for finding roles with specific permissions
-RoleSchema.index({ community: 1, 'permissions.MANAGE_COMMUNITY': 1 });
-RoleSchema.index({ community: 1, 'permissions.MANAGE_CHANNELS': 1 });
-RoleSchema.index({ community: 1, 'permissions.MANAGE_ROLES': 1 });
+RoleSchema.index({ community: 1, "permissions.MANAGE_COMMUNITY": 1 });
+RoleSchema.index({ community: 1, "permissions.MANAGE_CHANNELS": 1 });
+RoleSchema.index({ community: 1, "permissions.MANAGE_ROLES": 1 });
 
 // Static method to create default roles for a new community
-RoleSchema.statics.createDefaultRoles = async function(communityId: mongoose.Types.ObjectId) {
+RoleSchema.statics.createDefaultRoles = async function (communityId: mongoose.Types.ObjectId) {
   const adminPermissions: Permission = {
     ...defaultPermissions,
     MANAGE_CHANNELS: true,
@@ -145,24 +145,24 @@ RoleSchema.statics.createDefaultRoles = async function(communityId: mongoose.Typ
 
   await this.create([
     {
-      name: 'Admin',
-      color: '#FF0000', // Red
+      name: "Admin",
+      color: "#FF0000", // Red
       community: communityId,
       position: 100,
       permissions: adminPermissions,
       isDefault: false,
     },
     {
-      name: 'Moderator',
-      color: '#00FF00', // Green
+      name: "Moderator",
+      color: "#00FF00", // Green
       community: communityId,
       position: 50,
       permissions: moderatorPermissions,
       isDefault: false,
     },
     {
-      name: 'Member',
-      color: '#99AAB5', // Discord default color
+      name: "Member",
+      color: "#99AAB5", // Discord default color
       community: communityId,
       position: 0,
       permissions: defaultPermissions,
@@ -171,4 +171,4 @@ RoleSchema.statics.createDefaultRoles = async function(communityId: mongoose.Typ
   ]);
 };
 
-export default mongoose.models.Role || mongoose.model<IRole>('Role', RoleSchema);
+export default mongoose.models.Role || mongoose.model<IRole>("Role", RoleSchema);

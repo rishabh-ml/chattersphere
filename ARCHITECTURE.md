@@ -113,6 +113,7 @@ Code is organized primarily by domain feature rather than technical role, making
 ### API Client Pattern
 
 A centralized API client handling common concerns:
+
 - Request/response formatting
 - Error handling
 - Authentication
@@ -129,6 +130,7 @@ Pages are thin wrappers around feature components, keeping routing logic separat
 ### React Query Integration
 
 Services and hooks are tightly integrated with React Query for consistent:
+
 - Data fetching
 - Caching
 - Loading states
@@ -138,6 +140,7 @@ Services and hooks are tightly integrated with React Query for consistent:
 ## Implementation Status
 
 ### Completed
+
 - ✅ Created feature-based directory structure
 - ✅ Moved post feature components, contexts, and services
 - ✅ Moved communities feature components, contexts, and services
@@ -148,6 +151,7 @@ Services and hooks are tightly integrated with React Query for consistent:
 - ✅ Created auth feature components, types, and services
 
 ### Pending
+
 - ⬜ Move all legacy components to respective feature directories
 - ⬜ Update import paths throughout the codebase
 - ⬜ Create unit tests for new services

@@ -25,37 +25,36 @@ export async function GET(
   const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
-    
+
     // Sanitize and validate communityId
     if (!resolvedParams?.communityId) {
       return ApiError.badRequest("Missing communityId parameter");
     }
-    
+
     const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
-    
+
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
       return ApiError.badRequest("Invalid communityId format");
     }
 
-    await connectToDatabase();    // Find the community
-    const community = await Community.findById(sanitizedCommunityId).lean().exec() as any;
-    
+    await connectToDatabase(); // Find the community
+    const community = (await Community.findById(sanitizedCommunityId).lean().exec()) as any;
+
     if (!community) {
       return ApiError.notFound("Community not found");
     }
 
     // Check if the user has permission to view roles
-    let hasPermission = false;    if (clerkUserId) {
-      const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
-      
+    let hasPermission = false;
+    if (clerkUserId) {
+      const currentUser = (await User.findOne({ clerkId: clerkUserId }).lean().exec()) as any;
+
       if (currentUser) {
         const currentUserId = currentUser._id.toString();
-        
+
         // Check if the user is a member, moderator, or creator
-        const isMember = community.members.some(
-          (id: any) => id.toString() === currentUserId
-        );
-        
+        const isMember = community.members.some((id: any) => id.toString() === currentUserId);
+
         hasPermission = isMember;
       }
     }
@@ -73,7 +72,7 @@ export async function GET(
     const roles = await Role.find({ community: sanitizedCommunityId })
       .sort({ position: -1 })
       .lean()
-      .exec();    // Format the response
+      .exec(); // Format the response
     const formattedRoles = roles.map((role: any) => ({
       id: role._id.toString(),
       name: role.name,
@@ -100,7 +99,7 @@ export async function POST(
   const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
-    
+
     if (!clerkUserId) {
       return ApiError.unauthorized("You must be signed in to create a role");
     }
@@ -109,9 +108,9 @@ export async function POST(
     if (!resolvedParams?.communityId) {
       return ApiError.badRequest("Missing communityId parameter");
     }
-    
+
     const sanitizedCommunityId = sanitizeInput(resolvedParams.communityId);
-    
+
     if (!mongoose.Types.ObjectId.isValid(sanitizedCommunityId)) {
       return ApiError.badRequest("Invalid communityId format");
     }
@@ -120,12 +119,12 @@ export async function POST(
 
     // Find the community
     const community = await Community.findById(sanitizedCommunityId);
-    
+
     if (!community) {
       return ApiError.notFound("Community not found");
-    }    // Find the current user
-    const currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
-    
+    } // Find the current user
+    const currentUser = (await User.findOne({ clerkId: clerkUserId }).lean().exec()) as any;
+
     if (!currentUser) {
       return ApiError.unauthorized("User not found");
     }
@@ -134,9 +133,7 @@ export async function POST(
 
     // Check if the user has permission to create a role (creator or moderator)
     const isCreator = community.creator.toString() === currentUserId;
-    const isModerator = community.moderators.some(
-      (id: any) => id.toString() === currentUserId
-    );
+    const isModerator = community.moderators.some((id: any) => id.toString() === currentUserId);
 
     if (!isCreator && !isModerator) {
       return ApiError.forbidden("You don't have permission to create roles in this community");
@@ -147,9 +144,9 @@ export async function POST(
     const validationResult = createRoleSchema.safeParse(body);
 
     if (!validationResult.success) {
-      const errorMessage = validationResult.error.errors.map(err =>
-        `${err.path.join('.')}: ${err.message}`
-      ).join(', ');
+      const errorMessage = validationResult.error.errors
+        .map((err) => `${err.path.join(".")}: ${err.message}`)
+        .join(", ");
 
       return ApiError.badRequest("Validation error", { details: errorMessage });
     }
@@ -160,7 +157,9 @@ export async function POST(
     const existingRole = await Role.findOne({
       community: sanitizedCommunityId,
       name,
-    }).lean().exec();
+    })
+      .lean()
+      .exec();
 
     if (existingRole) {
       return ApiError.conflict("A role with this name already exists in this community");

@@ -1,9 +1,9 @@
 // Learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
+import "@testing-library/jest-dom";
+import { TextEncoder, TextDecoder } from "util";
 
 // Mock Next.js router
-jest.mock('next/navigation', () => ({
+jest.mock("next/navigation", () => ({
   useRouter: () => ({
     push: jest.fn(),
     replace: jest.fn(),
@@ -11,55 +11,57 @@ jest.mock('next/navigation', () => ({
     back: jest.fn(),
     forward: jest.fn(),
     refresh: jest.fn(),
-    pathname: '/',
+    pathname: "/",
     query: {},
   }),
-  usePathname: () => '/',
+  usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock Next.js server
-jest.mock('next/server', () => ({
+jest.mock("next/server", () => ({
   NextRequest: jest.fn().mockImplementation((url, init) => ({
     url,
-    method: init?.method || 'GET',
+    method: init?.method || "GET",
     headers: new Map(Object.entries(init?.headers || {})),
-    json: jest.fn().mockImplementation(() => Promise.resolve(init?.body ? JSON.parse(init.body) : {})),
-    nextUrl: { searchParams: new URLSearchParams() }
+    json: jest
+      .fn()
+      .mockImplementation(() => Promise.resolve(init?.body ? JSON.parse(init.body) : {})),
+    nextUrl: { searchParams: new URLSearchParams() },
   })),
   NextResponse: {
     json: jest.fn().mockImplementation((data, init) => ({
       status: init?.status || 200,
       json: () => Promise.resolve(data),
-      headers: new Map()
+      headers: new Map(),
     })),
   },
 }));
 
 // Mock Clerk authentication
-jest.mock('@clerk/nextjs', () => ({
-  auth: jest.fn(() => ({ userId: 'test-user-id' })),
+jest.mock("@clerk/nextjs", () => ({
+  auth: jest.fn(() => ({ userId: "test-user-id" })),
   currentUser: jest.fn(() => ({
-    id: 'test-user-id',
-    username: 'testuser',
-    firstName: 'Test',
-    lastName: 'User',
-    imageUrl: 'https://example.com/avatar.jpg',
+    id: "test-user-id",
+    username: "testuser",
+    firstName: "Test",
+    lastName: "User",
+    imageUrl: "https://example.com/avatar.jpg",
   })),
   useAuth: jest.fn(() => ({
     isLoaded: true,
     isSignedIn: true,
-    userId: 'test-user-id',
+    userId: "test-user-id",
   })),
   useUser: jest.fn(() => ({
     isLoaded: true,
     isSignedIn: true,
     user: {
-      id: 'test-user-id',
-      username: 'testuser',
-      firstName: 'Test',
-      lastName: 'User',
-      imageUrl: 'https://example.com/avatar.jpg',
+      id: "test-user-id",
+      username: "testuser",
+      firstName: "Test",
+      lastName: "User",
+      imageUrl: "https://example.com/avatar.jpg",
     },
   })),
   ClerkProvider: ({ children }) => children,
@@ -68,30 +70,30 @@ jest.mock('@clerk/nextjs', () => ({
 }));
 
 // Mock Clerk server
-jest.mock('@clerk/nextjs/server', () => ({
-  auth: jest.fn().mockResolvedValue({ userId: 'test-user-id' }),
+jest.mock("@clerk/nextjs/server", () => ({
+  auth: jest.fn().mockResolvedValue({ userId: "test-user-id" }),
   clerkClient: {
     users: {
       getUser: jest.fn().mockResolvedValue({
-        id: 'test-user-id',
-        firstName: 'Test',
-        lastName: 'User',
-        imageUrl: 'https://example.com/avatar.jpg',
-        emailAddresses: [{ emailAddress: 'test@example.com' }],
+        id: "test-user-id",
+        firstName: "Test",
+        lastName: "User",
+        imageUrl: "https://example.com/avatar.jpg",
+        emailAddresses: [{ emailAddress: "test@example.com" }],
       }),
     },
   },
 }));
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
+jest.mock("framer-motion", () => ({
   motion: {
     div: ({ children, ...props }) => <div {...props}>{children}</div>,
   },
 }));
 
 // Mock SWR
-jest.mock('swr', () => ({
+jest.mock("swr", () => ({
   __esModule: true,
   default: jest.fn(() => ({
     data: undefined,
@@ -104,17 +106,17 @@ jest.mock('swr', () => ({
 }));
 
 // Mock database connection
-jest.mock('@/lib/dbConnect', () => jest.fn().mockResolvedValue(undefined));
+jest.mock("@/lib/dbConnect", () => jest.fn().mockResolvedValue(undefined));
 
 // Mock Mongoose models
-jest.mock('@/models/User', () => ({
+jest.mock("@/models/User", () => ({
   findOne: jest.fn(),
   findById: jest.fn(),
   create: jest.fn(),
   findByIdAndUpdate: jest.fn(),
 }));
 
-jest.mock('@/models/Community', () => ({
+jest.mock("@/models/Community", () => ({
   findOne: jest.fn(),
   findById: jest.fn(),
   find: jest.fn(),
@@ -122,7 +124,7 @@ jest.mock('@/models/Community', () => ({
   countDocuments: jest.fn(),
 }));
 
-jest.mock('@/models/Membership', () => ({
+jest.mock("@/models/Membership", () => ({
   findOne: jest.fn(),
   find: jest.fn(),
   create: jest.fn(),
@@ -130,7 +132,7 @@ jest.mock('@/models/Membership', () => ({
   countDocuments: jest.fn(),
 }));
 
-jest.mock('@/models/Post', () => ({
+jest.mock("@/models/Post", () => ({
   findOne: jest.fn(),
   findById: jest.fn(),
   find: jest.fn(),
@@ -138,7 +140,7 @@ jest.mock('@/models/Post', () => ({
   countDocuments: jest.fn(),
 }));
 
-jest.mock('@/models/Comment', () => ({
+jest.mock("@/models/Comment", () => ({
   findOne: jest.fn(),
   findById: jest.fn(),
   find: jest.fn(),
@@ -146,7 +148,7 @@ jest.mock('@/models/Comment', () => ({
   countDocuments: jest.fn(),
 }));
 
-jest.mock('@/models/Notification', () => ({
+jest.mock("@/models/Notification", () => ({
   findOne: jest.fn(),
   findById: jest.fn(),
   find: jest.fn(),
@@ -156,7 +158,7 @@ jest.mock('@/models/Notification', () => ({
 }));
 
 // Mock mongoose
-jest.mock('mongoose', () => ({
+jest.mock("mongoose", () => ({
   connect: jest.fn(),
   connection: {
     on: jest.fn(),
@@ -174,7 +176,7 @@ jest.mock('mongoose', () => ({
 }));
 
 // Mock Redis
-jest.mock('@/lib/redis', () => ({
+jest.mock("@/lib/redis", () => ({
   getRedis: jest.fn(() => ({
     get: jest.fn(),
     set: jest.fn(),
@@ -185,8 +187,8 @@ jest.mock('@/lib/redis', () => ({
 }));
 
 // Mock environment variables
-process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000';
-process.env.NODE_ENV = 'test';
+process.env.NEXT_PUBLIC_APP_URL = "http://localhost:3000";
+process.env.NODE_ENV = "test";
 
 // Add TextEncoder/TextDecoder for Node.js environment
 global.TextEncoder = TextEncoder;
@@ -197,9 +199,9 @@ global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),
-    text: () => Promise.resolve(''),
+    text: () => Promise.resolve(""),
     status: 200,
-    statusText: 'OK',
+    statusText: "OK",
     headers: new Headers(),
   })
 );
@@ -224,10 +226,10 @@ global.IntersectionObserver = class IntersectionObserver {
 const originalConsoleError = console.error;
 console.error = (...args) => {
   if (
-    typeof args[0] === 'string' &&
-    (args[0].includes('Warning: ReactDOM.render') ||
-      args[0].includes('Warning: React.createElement') ||
-      args[0].includes('Error: Not implemented'))
+    typeof args[0] === "string" &&
+    (args[0].includes("Warning: ReactDOM.render") ||
+      args[0].includes("Warning: React.createElement") ||
+      args[0].includes("Error: Not implemented"))
   ) {
     return;
   }

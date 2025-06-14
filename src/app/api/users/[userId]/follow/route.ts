@@ -51,8 +51,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
     }
 
     // Check if already following
-    const alreadyFollowing = currentUser.following.some(
-      (id: mongoose.Types.ObjectId) => id.equals(targetUser._id)
+    const alreadyFollowing = currentUser.following.some((id: mongoose.Types.ObjectId) =>
+      id.equals(targetUser._id)
     );
 
     // If already following, return success without making changes
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
         success: true,
         isFollowing: true,
         followerCount: targetUser.followers.length,
-        message: "Already following this user"
+        message: "Already following this user",
       });
     }
 
@@ -73,13 +73,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
 
     // Create notification for new follow
     try {
-      const Notification = mongoose.model('Notification');
+      const Notification = mongoose.model("Notification");
       await Notification.create({
         recipient: targetUser._id,
         sender: currentUser._id,
-        type: 'follow',
+        type: "follow",
         message: `${currentUser.name} started following you`,
-        read: false
+        read: false,
       });
     } catch (notifError) {
       console.error("Error creating notification:", notifError);
@@ -101,8 +101,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
         id: targetUser._id.toString(),
         username: targetUser.username,
         name: targetUser.name,
-        followerCount: targetUser.followers.length
-      }
+        followerCount: targetUser.followers.length,
+      },
     });
   } catch (err) {
     console.error("[FOLLOW] Error:", err);

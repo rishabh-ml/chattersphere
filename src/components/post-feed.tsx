@@ -16,23 +16,26 @@ export default function PostFeed({ emptyMessage = "No posts to show" }: PostFeed
   const observer = useRef<IntersectionObserver | null>(null);
 
   // Set up the intersection observer for infinite scrolling
-  const lastPostRef = useCallback((node: HTMLDivElement | null) => {
-    if (loading) return;
+  const lastPostRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (loading) return;
 
-    if (observer.current) {
-      observer.current.disconnect();
-    }
-
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        fetchMorePosts();
+      if (observer.current) {
+        observer.current.disconnect();
       }
-    });
 
-    if (node) {
-      observer.current.observe(node);
-    }
-  }, [loading, hasMore, fetchMorePosts]);
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchMorePosts();
+        }
+      });
+
+      if (node) {
+        observer.current.observe(node);
+      }
+    },
+    [loading, hasMore, fetchMorePosts]
+  );
 
   // Clean up observer on unmount
   useEffect(() => {

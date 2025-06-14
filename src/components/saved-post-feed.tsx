@@ -13,29 +13,34 @@ interface SavedPostFeedProps {
   emptyMessage?: string;
 }
 
-export default function SavedPostFeed({ emptyMessage = "No saved posts to show" }: SavedPostFeedProps) {
+export default function SavedPostFeed({
+  emptyMessage = "No saved posts to show",
+}: SavedPostFeedProps) {
   const { posts, loading, error, hasMore, fetchMorePosts, votePost, savePost } = useSavedPosts();
   const { isSignedIn } = useUser();
   const observer = useRef<IntersectionObserver | null>(null);
 
   // Set up the intersection observer for infinite scrolling
-  const lastPostRef = useCallback((node: HTMLDivElement | null) => {
-    if (loading) return;
+  const lastPostRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (loading) return;
 
-    if (observer.current) {
-      observer.current.disconnect();
-    }
-
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        fetchMorePosts();
+      if (observer.current) {
+        observer.current.disconnect();
       }
-    });
 
-    if (node) {
-      observer.current.observe(node);
-    }
-  }, [loading, hasMore, fetchMorePosts]);
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchMorePosts();
+        }
+      });
+
+      if (node) {
+        observer.current.observe(node);
+      }
+    },
+    [loading, hasMore, fetchMorePosts]
+  );
 
   // Clean up observer on unmount
   useEffect(() => {
@@ -47,7 +52,7 @@ export default function SavedPostFeed({ emptyMessage = "No saved posts to show" 
   }, []);
 
   // Handle post voting
-  const handleVote = async (postId: string, voteType: 'upvote' | 'downvote') => {
+  const handleVote = async (postId: string, voteType: "upvote" | "downvote") => {
     await votePost(postId, voteType);
   };
 
@@ -61,7 +66,9 @@ export default function SavedPostFeed({ emptyMessage = "No saved posts to show" 
       <div className="bg-white rounded-lg border border-gray-100 p-8 text-center">
         <Bookmark className="h-12 w-12 text-gray-300 mx-auto mb-3" />
         <h3 className="text-lg font-medium text-gray-800 mb-1">Sign in to see your saved posts</h3>
-        <p className="text-sm text-gray-500 mb-4">You need to be signed in to save and view posts</p>
+        <p className="text-sm text-gray-500 mb-4">
+          You need to be signed in to save and view posts
+        </p>
         <Button className="bg-[#00AEEF] hover:bg-[#00AEEF]/90 text-white">Sign In</Button>
       </div>
     );

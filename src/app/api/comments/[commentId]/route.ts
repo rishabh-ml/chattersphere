@@ -47,7 +47,7 @@ export async function DELETE(
     }
 
     // Find the post to check community membership
-    const post = await Post.findById(comment.post).populate('community');
+    const post = await Post.findById(comment.post).populate("community");
     if (!post) {
       return NextResponse.json({ error: "Associated post not found" }, { status: 404 });
     }
@@ -61,8 +61,8 @@ export async function DELETE(
       const membership = await Membership.findOne({
         user: user._id,
         community: post.community._id,
-        status: 'ACTIVE',
-        role: { $in: ['ADMIN', 'MODERATOR'] }
+        status: "ACTIVE",
+        role: { $in: ["ADMIN", "MODERATOR"] },
       });
 
       isAdminOrModerator = !!membership;

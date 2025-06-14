@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useCallback } from 'react';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { X, Upload, Image, Video, File } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState, useCallback } from "react";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { X, Upload, Image, Video, File } from "lucide-react";
+import { toast } from "sonner";
 
 interface MediaFile {
   id: string;
   file: File;
   url: string;
-  type: 'image' | 'video' | 'document';
+  type: "image" | "video" | "document";
 }
 
 interface MediaUploaderProps {
@@ -23,22 +23,22 @@ interface MediaUploaderProps {
 const MediaUploader: React.FC<MediaUploaderProps> = ({
   onMediaChange,
   maxFiles = 5,
-  acceptedTypes = ['image/*', 'video/*', '.pdf', '.doc', '.docx'],
-  className = '',
+  acceptedTypes = ["image/*", "video/*", ".pdf", ".doc", ".docx"],
+  className = "",
 }) => {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [uploading, setUploading] = useState(false);
 
-  const getFileType = (file: File): 'image' | 'video' | 'document' => {
-    if (file.type.startsWith('image/')) return 'image';
-    if (file.type.startsWith('video/')) return 'video';
-    return 'document';
+  const getFileType = (file: File): "image" | "video" | "document" => {
+    if (file.type.startsWith("image/")) return "image";
+    if (file.type.startsWith("video/")) return "video";
+    return "document";
   };
 
   const handleFileSelect = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
-      
+
       if (files.length === 0) return;
 
       if (mediaFiles.length + files.length > maxFiles) {
@@ -72,14 +72,14 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         setMediaFiles(updatedFiles);
         onMediaChange(updatedFiles);
       } catch (error) {
-        console.error('Error processing files:', error);
-        toast.error('Error processing files');
+        console.error("Error processing files:", error);
+        toast.error("Error processing files");
       } finally {
         setUploading(false);
       }
 
       // Reset input
-      event.target.value = '';
+      event.target.value = "";
     },
     [mediaFiles, maxFiles, onMediaChange]
   );
@@ -99,11 +99,11 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     [mediaFiles, onMediaChange]
   );
 
-  const getFileIcon = (type: 'image' | 'video' | 'document') => {
+  const getFileIcon = (type: "image" | "video" | "document") => {
     switch (type) {
-      case 'image':
+      case "image":
         return <Image className="h-4 w-4" />;
-      case 'video':
+      case "video":
         return <Video className="h-4 w-4" />;
       default:
         return <File className="h-4 w-4" />;
@@ -119,10 +119,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           variant="outline"
           size="sm"
           disabled={uploading || mediaFiles.length >= maxFiles}
-          onClick={() => document.getElementById('media-upload')?.click()}
+          onClick={() => document.getElementById("media-upload")?.click()}
         >
           <Upload className="h-4 w-4 mr-2" />
-          {uploading ? 'Uploading...' : 'Add Media'}
+          {uploading ? "Uploading..." : "Add Media"}
         </Button>
         <span className="text-sm text-muted-foreground">
           {mediaFiles.length}/{maxFiles} files
@@ -134,7 +134,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         id="media-upload"
         type="file"
         multiple
-        accept={acceptedTypes.join(',')}
+        accept={acceptedTypes.join(",")}
         onChange={handleFileSelect}
         className="hidden"
       />
@@ -149,7 +149,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             >
               {/* File Icon/Preview */}
               <div className="flex-shrink-0">
-                {mediaFile.type === 'image' ? (
+                {mediaFile.type === "image" ? (
                   <img
                     src={mediaFile.url}
                     alt={mediaFile.file.name}
@@ -164,9 +164,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 
               {/* File Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {mediaFile.file.name}
-                </p>
+                <p className="text-sm font-medium truncate">{mediaFile.file.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {(mediaFile.file.size / 1024 / 1024).toFixed(2)} MB
                 </p>

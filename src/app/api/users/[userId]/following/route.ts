@@ -16,64 +16,63 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
   try {
     // Get the target user ID from the URL params
     const targetUserId = sanitizeInput(resolvedParams.userId);
-    
+
     // Get the current user's Clerk ID
     const { userId: clerkUserId } = await auth();
-    
+
     // Connect to the database
     await connectToDatabase();
-    
+
     // Create a cache key
     const cacheKey = `${CacheKeys.USER}${targetUserId}:following`;
-    
+
     // Use cache wrapper with a TTL of 5 minutes
     const result = await withCache(
       cacheKey,
-      async () => {        // Find the target user
-        const targetUser = await User.findById(targetUserId)
+      async () => {
+        // Find the target user
+        const targetUser = (await User.findById(targetUserId)
           .select("username name following")
-          .lean() as any;
-        
+          .lean()) as any;
+
         if (!targetUser) {
           throw new Error("User not found");
         }
-        
+
         // Find all users that the target user is following
         const following = await User.find({
-          _id: { $in: targetUser.following }
+          _id: { $in: targetUser.following },
         })
-        .select("username name image")
-        .lean();
-        
+          .select("username name image")
+          .lean();
         // Find the current user if authenticated
-        let currentUser = null;
+        let currentUser: { following: mongoose.Types.ObjectId[] } | null = null;
         if (clerkUserId) {
-          currentUser = await User.findOne({ clerkId: clerkUserId })
+          currentUser = (await User.findOne({ clerkId: clerkUserId })
             .select("following")
-            .lean();
+            .lean()) as { following: mongoose.Types.ObjectId[] } | null;
         }
-        
         // Format the following users for the response
-        const formattedFollowing = following.map(followedUser => ({
+        const formattedFollowing = following.map((followedUser: any) => ({
           id: followedUser._id.toString(),
           username: followedUser.username,
           name: followedUser.name,
           image: followedUser.image,
-          isFollowing: currentUser 
-            ? currentUser.following.some((id: mongoose.Types.ObjectId) => 
-                id.toString() === followedUser._id.toString()
+          isFollowing: currentUser
+            ? currentUser.following.some(
+                (id: mongoose.Types.ObjectId) => id.toString() === followedUser._id.toString()
               )
-            : false
+            : false,
         }));
-        
+
         return {
           username: targetUser.username,
-          following: formattedFollowing
+          following: formattedFollowing,
         };
       },
       CacheTTL.USER // 5 minutes TTL
     );
-    
+
     // Return the result
     return NextResponse.json(result);
   } catch (err) {

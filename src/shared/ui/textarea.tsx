@@ -1,21 +1,24 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   /**
    * Accessible label for the textarea
    */
-  'aria-label'?: string;
+  "aria-label"?: string;
 
   /**
    * Whether the textarea is required
    */
-  'aria-required'?: boolean;
+  "aria-required"?: boolean;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, 'aria-label': ariaLabel, 'aria-required': ariaRequired, required, ...props }, ref) => {
+  (
+    { className, "aria-label": ariaLabel, "aria-required": ariaRequired, required, ...props },
+    ref
+  ) => {
     return (
       <textarea
         className={cn(
@@ -28,9 +31,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         required={required}
         {...props}
       />
-    )
+    );
   }
-)
-Textarea.displayName = "Textarea"
+);
+Textarea.displayName = "Textarea";
 
-export { Textarea }
+export { Textarea };

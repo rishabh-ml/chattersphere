@@ -96,12 +96,7 @@ export default function NewMessage() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex items-center">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="mr-2"
-          onClick={handleBack}
-        >
+        <Button variant="ghost" size="icon" className="mr-2" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h2 className="font-semibold">
@@ -115,7 +110,10 @@ export default function NewMessage() {
           <div className="p-4 border-b border-gray-200 flex items-center">
             <Avatar className="h-10 w-10 mr-3">
               <img
-                src={selectedUser.image || `https://placehold.co/200x200?text=${selectedUser.name.charAt(0)}`}
+                src={
+                  selectedUser.image ||
+                  `https://placehold.co/200x200?text=${selectedUser.name.charAt(0)}`
+                }
                 alt={selectedUser.name}
               />
             </Avatar>
@@ -127,9 +125,7 @@ export default function NewMessage() {
 
           <div className="flex-1 p-4">
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Message
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
               <textarea
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00AEEF] focus:border-transparent min-h-[150px]"
                 placeholder="Type your message here..."
@@ -180,9 +176,7 @@ export default function NewMessage() {
                 Enter at least 2 characters to search
               </div>
             ) : users.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                No users found
-              </div>
+              <div className="p-4 text-center text-gray-500">No users found</div>
             ) : (
               <div className="p-2">
                 {users.map((user) => (
@@ -193,7 +187,9 @@ export default function NewMessage() {
                   >
                     <Avatar className="h-10 w-10 mr-3">
                       <img
-                        src={user.image || `https://placehold.co/200x200?text=${user.name.charAt(0)}`}
+                        src={
+                          user.image || `https://placehold.co/200x200?text=${user.name.charAt(0)}`
+                        }
                         alt={user.name}
                       />
                     </Avatar>

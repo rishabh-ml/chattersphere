@@ -125,7 +125,9 @@ const mockStats = [
 ];
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"overview" | "users" | "reports" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "users" | "reports" | "settings">(
+    "overview"
+  );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const toggleSortDirection = () => {
@@ -159,7 +161,13 @@ export default function AdminDashboard() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "overview" | "users" | "reports" | "settings")} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) =>
+          setActiveTab(value as "overview" | "users" | "reports" | "settings")
+        }
+        className="w-full"
+      >
         <TabsList className="grid grid-cols-4 md:w-fit">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
@@ -239,7 +247,10 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-3">
                 <div className="relative w-full md:w-64">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <Input placeholder="Search users..." className="pl-10 bg-gray-50 border-gray-200" />
+                  <Input
+                    placeholder="Search users..."
+                    className="pl-10 bg-gray-50 border-gray-200"
+                  />
                 </div>
 
                 <DropdownMenu>
@@ -266,51 +277,51 @@ export default function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <div className="flex items-center gap-1">
-                    Name
-                    <button
-                      onClick={toggleSortDirection}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      {sortDirection === "asc" ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Join Date
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center gap-1">
+                      Name
+                      <button
+                        onClick={toggleSortDirection}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        {sortDirection === "asc" ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Join Date
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-              {mockUsers.map((user) => (
-                <motion.tr
-                  key={user.id}
-                  className="hover:bg-gray-50 transition-colors"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: user.id * 0.05 }}
-                >
-                  <td className="px-4 py-3 text-sm text-gray-800">{user.name}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{user.email}</td>
-                  <td className="px-4 py-3 text-sm">
+                {mockUsers.map((user) => (
+                  <motion.tr
+                    key={user.id}
+                    className="hover:bg-gray-50 transition-colors"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: user.id * 0.05 }}
+                  >
+                    <td className="px-4 py-3 text-sm text-gray-800">{user.name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{user.email}</td>
+                    <td className="px-4 py-3 text-sm">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           user.role === "Admin"
@@ -322,24 +333,26 @@ export default function AdminDashboard() {
                       >
                         {user.role}
                       </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
+                    </td>
+                    <td className="px-4 py-3 text-sm">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.status === "Active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                          user.status === "Active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
                         }`}
                       >
                         {user.status}
                       </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{user.joinDate}</td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <Button variant="ghost" size="sm" className="text-[#00AEEF]">
-                      Edit
-                    </Button>
-                  </td>
-                </motion.tr>
-              ))}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{user.joinDate}</td>
+                    <td className="px-4 py-3 text-sm text-right">
+                      <Button variant="ghost" size="sm" className="text-[#00AEEF]">
+                        Edit
+                      </Button>
+                    </td>
+                  </motion.tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -364,7 +377,6 @@ export default function AdminDashboard() {
           <div className="p-4 border-b border-gray-100">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <h2 className="text-lg font-medium text-gray-800">Content Reports</h2>
-
               ```tsx
               {/* Filter Button */}
               <div className="flex items-center gap-3">
@@ -391,56 +403,58 @@ export default function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Reported By
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Reason
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reported By
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reason
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-              {mockReports.map((report) => (
-                <motion.tr
-                  key={report.id}
-                  className="hover:bg-gray-50 transition-colors"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: report.id * 0.1 }}
-                >
-                  <td className="px-4 py-3 text-sm text-gray-800">{report.type}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{report.reportedBy}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{report.reason}</td>
-                  <td className="px-4 py-3 text-sm">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      report.status === "Pending" ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
-                    }`}
+                {mockReports.map((report) => (
+                  <motion.tr
+                    key={report.id}
+                    className="hover:bg-gray-50 transition-colors"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: report.id * 0.1 }}
                   >
-                    {report.status}
-                  </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{report.date}</td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <Button variant="ghost" size="sm" className="text-[#00AEEF]">
-                      Review
-                    </Button>
-                  </td>
-                </motion.tr>
-              ))}
+                    <td className="px-4 py-3 text-sm text-gray-800">{report.type}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{report.reportedBy}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{report.reason}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          report.status === "Pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
+                        {report.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{report.date}</td>
+                    <td className="px-4 py-3 text-sm text-right">
+                      <Button variant="ghost" size="sm" className="text-[#00AEEF]">
+                        Review
+                      </Button>
+                    </td>
+                  </motion.tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -457,7 +471,9 @@ export default function AdminDashboard() {
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-gray-700">Site Configuration</h3>
               <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <p className="text-sm text-gray-600 mb-4">Configure global site settings and features</p>
+                <p className="text-sm text-gray-600 mb-4">
+                  Configure global site settings and features
+                </p>
                 <Button variant="outline" size="sm">
                   Edit Configuration
                 </Button>
@@ -494,7 +510,9 @@ export default function AdminDashboard() {
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-gray-700">API Access</h3>
               <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-                <p className="text-sm text-gray-600 mb-4">Manage API keys and external integrations</p>
+                <p className="text-sm text-gray-600 mb-4">
+                  Manage API keys and external integrations
+                </p>
                 <Button variant="outline" size="sm">
                   Manage API Keys
                 </Button>

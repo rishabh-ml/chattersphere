@@ -4,11 +4,7 @@ import { DirectMessageProvider } from "@/context/DirectMessageContext";
 import { useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
-export default function MessagesLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MessagesLayout({ children }: { children: React.ReactNode }) {
   const { isSignedIn, isLoaded } = useUser();
 
   // Show loading state while checking authentication
@@ -28,9 +24,7 @@ export default function MessagesLayout({
   return (
     <DirectMessageProvider>
       <div className="flex-1 flex flex-col">
-        <div className="flex-1 flex">
-          {children}
-        </div>
+        <div className="flex-1 flex">{children}</div>
       </div>
     </DirectMessageProvider>
   );

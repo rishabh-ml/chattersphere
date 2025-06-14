@@ -54,10 +54,10 @@ export default function DeleteAccountButton({
       }
 
       toast.success("Account deleted successfully");
-      
+
       // Sign out the user
       await signOut();
-      
+
       // Redirect to the home page
       router.push("/");
     } catch (error) {

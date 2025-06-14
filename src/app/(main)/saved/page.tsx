@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { SavedPostProvider } from "@/context/SavedPostContext"
-import { Bookmark } from "lucide-react"
-import { useUser } from "@clerk/nextjs"
-import SavedPostFeed from "@/components/saved-post-feed"
+import { motion } from "framer-motion";
+import { SavedPostProvider } from "@/context/SavedPostContext";
+import { Bookmark } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import SavedPostFeed from "@/components/saved-post-feed";
 
 export default function SavedPage() {
-  const { isSignedIn } = useUser()
+  const { isSignedIn } = useUser();
 
   return (
     <div className="space-y-6">
@@ -23,11 +23,13 @@ export default function SavedPage() {
 
       <SavedPostProvider>
         <SavedPostFeed
-          emptyMessage={isSignedIn ?
-            "You haven't saved any posts yet. Save posts to view them here!" :
-            "Sign in to see your saved posts!"}
+          emptyMessage={
+            isSignedIn
+              ? "You haven't saved any posts yet. Save posts to view them here!"
+              : "Sign in to see your saved posts!"
+          }
         />
       </SavedPostProvider>
     </div>
-  )
+  );
 }

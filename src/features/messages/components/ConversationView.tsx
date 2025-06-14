@@ -27,27 +27,27 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
     loadMoreMessages,
     isLoadingMessages,
   } = useMessagesContext();
-  
+
   const [messageContent, setMessageContent] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [recipient, setRecipient] = useState<MessageSender | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  
+
   // Set current recipient and fetch recipient data
   useEffect(() => {
     setCurrentRecipient(recipientId);
-    
+
     // Fetch recipient data
     const fetchRecipient = async () => {
       try {
         const response = await fetch(`/api/users/${recipientId}`);
-        
+
         if (!response.ok) {
           throw new Error("Failed to fetch recipient data");
         }
-        
+
         const data = await response.json();
         setRecipient(data.user);
       } catch (error) {
@@ -55,30 +55,30 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
         toast.error("Could not load recipient information");
       }
     };
-    
+
     fetchRecipient();
-    
+
     // Mark messages as read
-    markAsRead(recipientId).catch(error => {
+    markAsRead(recipientId).catch((error) => {
       console.error("Error marking messages as read:", error);
     });
-    
+
     return () => {
       setCurrentRecipient(null);
     };
   }, [recipientId, setCurrentRecipient, markAsRead]);
-  
+
   // Scroll to bottom when new messages come in
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-  
+
   // Handle sending a message
   const handleSendMessage = async () => {
     if (!messageContent.trim()) return;
-    
+
     setIsSending(true);
     try {
       await sendMessage({
@@ -93,13 +93,13 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
       setIsSending(false);
     }
   };
-  
+
   // Handle uploading attachments
   const handleAttachmentUpload = () => {
     // Placeholder for attachment handling
     toast.info("Attachment feature coming soon");
   };
-  
+
   return (
     <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
       {/* Header */}
@@ -114,7 +114,7 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back</span>
           </Button>
-          
+
           {recipient ? (
             <div className="flex items-center">
               <Avatar className="h-8 w-8 mr-2">
@@ -136,7 +136,7 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
           )}
         </div>
       </div>
-      
+
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         {hasMoreMessages && (
@@ -155,7 +155,7 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
             </Button>
           </div>
         )}
-        
+
         {messages.length === 0 && !isLoadingMessages ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-gray-500">
@@ -181,15 +181,10 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
                     )}
                   >
                     <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                    <p
-                      className={cn(
-                        "text-xs mt-1",
-                        isSender ? "text-blue-100" : "text-gray-500"
-                      )}
-                    >
+                    <p className={cn("text-xs mt-1", isSender ? "text-blue-100" : "text-gray-500")}>
                       {format(new Date(message.createdAt), "h:mm a")}
                     </p>
-                    
+
                     {message.attachments && message.attachments.length > 0 && (
                       <div className="mt-2 space-y-2">
                         {message.attachments.map((attachment, index) => (
@@ -221,20 +216,15 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
           </div>
         )}
       </ScrollArea>
-      
+
       {/* Message Input */}
       <div className="border-t border-gray-100 p-4">
         <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleAttachmentUpload}
-            className="mr-2"
-          >
+          <Button variant="ghost" size="icon" onClick={handleAttachmentUpload} className="mr-2">
             <Paperclip className="h-5 w-5 text-gray-500" />
             <span className="sr-only">Attach files</span>
           </Button>
-            <Input
+          <Input
             placeholder="Type a message..."
             value={messageContent}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessageContent(e.target.value)}
@@ -246,7 +236,7 @@ export default function ConversationView({ recipientId }: ConversationViewProps)
               }
             }}
           />
-          
+
           <Button
             className="ml-2"
             onClick={handleSendMessage}

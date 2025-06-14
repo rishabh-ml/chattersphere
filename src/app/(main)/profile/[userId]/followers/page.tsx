@@ -34,11 +34,11 @@ export default function FollowersPage() {
       try {
         setLoading(true);
         const res = await fetch(`/api/users/${userId}/followers`);
-        
+
         if (!res.ok) {
           throw new Error("Failed to fetch followers");
         }
-        
+
         const data = await res.json();
         setFollowers(data.followers);
         setUsername(data.username);
@@ -50,7 +50,7 @@ export default function FollowersPage() {
         setLoading(false);
       }
     };
-    
+
     fetchFollowers();
   }, [userId]);
 
@@ -59,59 +59,50 @@ export default function FollowersPage() {
       toast.error("You must be signed in to follow users");
       return;
     }
-    
+
     try {
-      setFollowLoading(prev => ({ ...prev, [followerId]: true }));
-      
-      const follower = followers.find(f => f.id === followerId);
+      setFollowLoading((prev) => ({ ...prev, [followerId]: true }));
+
+      const follower = followers.find((f) => f.id === followerId);
       const isCurrentlyFollowing = follower?.isFollowing;
-      
-      const endpoint = isCurrentlyFollowing 
+
+      const endpoint = isCurrentlyFollowing
         ? `/api/users/${followerId}/unfollow`
         : `/api/users/${followerId}/follow`;
-      
+
       const method = isCurrentlyFollowing ? "DELETE" : "POST";
-      
+
       const res = await fetch(endpoint, { method });
-      
+
       if (!res.ok) {
         throw new Error("Failed to update follow status");
       }
-      
+
       // Update the local state
-      setFollowers(prev => 
-        prev.map(f => 
-          f.id === followerId 
-            ? { ...f, isFollowing: !isCurrentlyFollowing } 
-            : f
-        )
+      setFollowers((prev) =>
+        prev.map((f) => (f.id === followerId ? { ...f, isFollowing: !isCurrentlyFollowing } : f))
       );
-      
+
       toast.success(isCurrentlyFollowing ? "Unfollowed successfully" : "Followed successfully");
     } catch (err) {
       console.error("Follow toggle error:", err);
       toast.error("Failed to update follow status");
     } finally {
-      setFollowLoading(prev => ({ ...prev, [followerId]: false }));
+      setFollowLoading((prev) => ({ ...prev, [followerId]: false }));
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto pb-12">
       <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="mr-2"
-          onClick={() => router.back()}
-        >
+        <Button variant="ghost" size="icon" className="mr-2" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-semibold">
           {username ? `${username}'s Followers` : "Followers"}
         </h1>
       </div>
-      
+
       {loading ? (
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
@@ -134,7 +125,7 @@ export default function FollowersPage() {
           <p className="text-gray-500">No followers yet</p>
         </div>
       ) : (
-        <motion.div 
+        <motion.div
           className="space-y-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -150,9 +141,12 @@ export default function FollowersPage() {
             >
               <Link href={`/profile/${follower.id}`} className="flex items-center flex-1">
                 <Avatar className="h-12 w-12">
-                  <img 
-                    src={follower.image || `https://placehold.co/200x200?text=${follower.name.charAt(0)}`} 
-                    alt={follower.name} 
+                  <img
+                    src={
+                      follower.image ||
+                      `https://placehold.co/200x200?text=${follower.name.charAt(0)}`
+                    }
+                    alt={follower.name}
                   />
                 </Avatar>
                 <div className="ml-4">
@@ -160,16 +154,15 @@ export default function FollowersPage() {
                   <p className="text-sm text-gray-500">@{follower.username}</p>
                 </div>
               </Link>
-              
+
               {isSignedIn && (
                 <Button
                   variant={follower.isFollowing ? "outline" : "default"}
                   size="sm"
                   disabled={followLoading[follower.id]}
                   onClick={() => handleFollowToggle(follower.id)}
-                  className={follower.isFollowing 
-                    ? "text-gray-600" 
-                    : "bg-indigo-600 hover:bg-indigo-700"
+                  className={
+                    follower.isFollowing ? "text-gray-600" : "bg-indigo-600 hover:bg-indigo-700"
                   }
                 >
                   {followLoading[follower.id] ? (

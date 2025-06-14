@@ -16,16 +16,16 @@ This module provides a set of utilities for consistent navigation throughout the
 The `routes` object provides functions for generating URLs for various parts of the application:
 
 ```tsx
-import { routes } from '@/lib/navigation';
+import { routes } from "@/lib/navigation";
 
 // Generate a URL for a user profile
-const profileUrl = routes.profile('user-123'); // '/profile/user-123'
+const profileUrl = routes.profile("user-123"); // '/profile/user-123'
 
 // Generate a URL for a community
-const communityUrl = routes.community('test-community'); // '/communities/test-community'
+const communityUrl = routes.community("test-community"); // '/communities/test-community'
 
 // Generate a URL for a post
-const postUrl = routes.post('post-123'); // '/posts/post-123'
+const postUrl = routes.post("post-123"); // '/posts/post-123'
 ```
 
 ### Navigation Hook
@@ -33,19 +33,19 @@ const postUrl = routes.post('post-123'); // '/posts/post-123'
 The `useNavigation` hook provides functions for navigating to different parts of the application:
 
 ```tsx
-import { useNavigation } from '@/lib/navigation';
+import { useNavigation } from "@/lib/navigation";
 
 function MyComponent() {
   const navigation = useNavigation();
-  
+
   const handleProfileClick = () => {
-    navigation.goToProfile('user-123');
+    navigation.goToProfile("user-123");
   };
-  
+
   const handleCommunityClick = () => {
-    navigation.goToCommunity('test-community');
+    navigation.goToCommunity("test-community");
   };
-  
+
   return (
     <div>
       <button onClick={handleProfileClick}>Go to Profile</button>
@@ -60,7 +60,7 @@ function MyComponent() {
 The `NavigationProvider` component provides the navigation utilities to all child components:
 
 ```tsx
-import { NavigationProvider } from '@/lib/navigation';
+import { NavigationProvider } from "@/lib/navigation";
 
 function App() {
   return (
@@ -76,15 +76,15 @@ function App() {
 The `useNavigationContext` hook provides access to the navigation utilities from the context:
 
 ```tsx
-import { useNavigationContext } from '@/lib/navigation';
+import { useNavigationContext } from "@/lib/navigation";
 
 function MyComponent() {
   const navigation = useNavigationContext();
-  
+
   const handleProfileClick = () => {
-    navigation.goToProfile('user-123');
+    navigation.goToProfile("user-123");
   };
-  
+
   return (
     <div>
       <button onClick={handleProfileClick}>Go to Profile</button>
@@ -98,17 +98,14 @@ function MyComponent() {
 The navigation utilities can be used with the Next.js Link component for better SEO and accessibility:
 
 ```tsx
-import Link from 'next/link';
-import { useNavigation, routes } from '@/lib/navigation';
+import Link from "next/link";
+import { useNavigation, routes } from "@/lib/navigation";
 
 function MyComponent() {
   const navigation = useNavigation();
-  
+
   return (
-    <Link 
-      href={routes.profile('user-123')} 
-      onClick={(e) => navigation.goToProfile('user-123', e)}
-    >
+    <Link href={routes.profile("user-123")} onClick={(e) => navigation.goToProfile("user-123", e)}>
       Go to Profile
     </Link>
   );

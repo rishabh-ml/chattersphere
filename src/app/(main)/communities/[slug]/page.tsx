@@ -6,19 +6,22 @@ import { useNavigation, routes } from "@/lib/navigation";
 import { useSingleCommunity } from "@/context/SingleCommunityContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Hash, Volume2, Megaphone, ArrowRight, Plus, Folder, AlertTriangle, RefreshCw } from "lucide-react";
+import {
+  Hash,
+  Volume2,
+  Megaphone,
+  ArrowRight,
+  Plus,
+  Folder,
+  AlertTriangle,
+  RefreshCw,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 
 export default function CommunityPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigation = useNavigation();
-  const {
-    community,
-    channels,
-    loading,
-    error,
-    selectChannel,
-  } = useSingleCommunity();
+  const { community, channels, loading, error, selectChannel } = useSingleCommunity();
 
   // Track if we've already redirected to prevent multiple redirects
   const [hasRedirected, setHasRedirected] = useState(false);
@@ -37,13 +40,16 @@ export default function CommunityPage() {
   }, [loading, channels, navigation, slug, hasRedirected]);
 
   // Group channels by type
-  const groupedChannels = channels.reduce((acc, channel) => {
-    if (!acc[channel.type]) {
-      acc[channel.type] = [];
-    }
-    acc[channel.type].push(channel);
-    return acc;
-  }, {} as Record<string, typeof channels>);
+  const groupedChannels = channels.reduce(
+    (acc, channel) => {
+      if (!acc[channel.type]) {
+        acc[channel.type] = [];
+      }
+      acc[channel.type].push(channel);
+      return acc;
+    },
+    {} as Record<string, typeof channels>
+  );
 
   // Get channel icon based on type
   const getChannelIcon = (type: string) => {
@@ -74,14 +80,17 @@ export default function CommunityPage() {
   };
 
   // Memoize the loading state to prevent unnecessary re-renders
-  const renderLoadingState = useCallback(() => (
-    <div className="flex flex-col items-center justify-center h-full p-8">
-      <Skeleton className="h-16 w-16 rounded-full mb-4" />
-      <Skeleton className="h-8 w-64 mb-2" />
-      <Skeleton className="h-4 w-48 mb-8" />
-      <Skeleton className="h-10 w-40" />
-    </div>
-  ), []);
+  const renderLoadingState = useCallback(
+    () => (
+      <div className="flex flex-col items-center justify-center h-full p-8">
+        <Skeleton className="h-16 w-16 rounded-full mb-4" />
+        <Skeleton className="h-8 w-64 mb-2" />
+        <Skeleton className="h-4 w-48 mb-8" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+    ),
+    []
+  );
 
   if (loading) {
     return renderLoadingState();
@@ -95,7 +104,9 @@ export default function CommunityPage() {
             <AlertTriangle className="h-8 w-8" />
           </div>
           <h2 className="text-xl font-semibold mb-2 text-red-700">Community not found</h2>
-          <p className="text-gray-600 mb-6">The community you're looking for doesn't exist or you don't have access to it.</p>
+          <p className="text-gray-600 mb-6">
+            The community you're looking for doesn't exist or you don't have access to it.
+          </p>
           <Button
             variant="outline"
             className="mr-2 border-red-200 text-red-700 hover:bg-red-50"
@@ -154,12 +165,9 @@ export default function CommunityPage() {
     <div className="flex flex-col items-center justify-center h-full p-4 md:p-8">
       <div className="text-center max-w-2xl w-full">
         <h1 className="text-3xl font-bold mb-3">{community.name}</h1>
-        <div className="prose prose-sm max-w-none mb-8 text-gray-600">
-          {community.description}
-        </div>
+        <div className="prose prose-sm max-w-none mb-8 text-gray-600">{community.description}</div>
 
         <div className="bg-white rounded-lg shadow-sm p-6 text-left w-full">
-
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Available Channels</h2>
             {(community.isCreator || community.isModerator) && (

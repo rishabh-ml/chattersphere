@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface Attachment {
   url: string;
@@ -27,8 +27,8 @@ const AttachmentSchema = new Schema({
 const DirectMessageSchema = new Schema<IDirectMessage>(
   {
     content: { type: String, required: true },
-    sender: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    recipient: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    sender: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    recipient: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     attachments: [AttachmentSchema],
     isRead: { type: Boolean, default: false },
   },
@@ -40,6 +40,8 @@ DirectMessageSchema.index({ sender: 1, recipient: 1, createdAt: -1 });
 DirectMessageSchema.index({ recipient: 1, isRead: 1 });
 
 // Create model only if it doesn't exist already
-const DirectMessage = mongoose.models.DirectMessage || mongoose.model<IDirectMessage>('DirectMessage', DirectMessageSchema);
+const DirectMessage =
+  mongoose.models.DirectMessage ||
+  mongoose.model<IDirectMessage>("DirectMessage", DirectMessageSchema);
 
 export default DirectMessage;

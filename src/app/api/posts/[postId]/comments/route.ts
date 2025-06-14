@@ -10,12 +10,21 @@ import { z } from "zod";
 import { rateLimit } from "@/middleware/rateLimit";
 import { sanitizeInput } from "@/lib/security";
 import { withCache, invalidateCache } from "@/lib/redis";
-import { readOptions, getPaginationOptions, formatPaginationMetadata, buildPaginatedAggregation } from "@/lib/mongooseUtils";
+import {
+  readOptions,
+  getPaginationOptions,
+  formatPaginationMetadata,
+  buildPaginatedAggregation,
+} from "@/lib/mongooseUtils";
 import { withApiMiddleware } from "@/lib/apiUtils";
 
 // Define validation schema for comment creation
 const commentCreateSchema = z.object({
-  content: z.string().trim().min(1, "Comment content is required").max(5000, "Comment too long; max 5000 chars"),
+  content: z
+    .string()
+    .trim()
+    .min(1, "Comment content is required")
+    .max(5000, "Comment too long; max 5000 chars"),
   parentCommentId: z.string().optional(),
 });
 
@@ -42,7 +51,8 @@ async function getCommentsHandler(
   req: NextRequest,
   { params }: { params: Promise<{ postId: string }> }
 ) {
-  const resolvedParams = await params;  try {
+  const resolvedParams = await params;
+  try {
     const { userId } = await auth();
 
     // Sanitize and validate postId
@@ -59,7 +69,7 @@ async function getCommentsHandler(
     await connectToDatabase();
 
     // Check if post exists
-    const post = await Post.findById(sanitizedPostId).populate('community');
+    const post = await Post.findById(sanitizedPostId).populate("community");
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
@@ -67,16 +77,21 @@ async function getCommentsHandler(
     // Check if the post belongs to a private community
     if (post.community) {
       // Fetch the community to check if it's private
-      const Community = mongoose.model('Community');
+      const Community = mongoose.model("Community");
       const community = await Community.findById(post.community);
 
       if (community && community.isPrivate) {
         // If private, user must be authenticated
         if (!userId) {
-          console.log(`[COMMENTS GET] Unauthorized access attempt to comments for post ${sanitizedPostId} in private community: ${post.community}`);
-          return NextResponse.json({
-            error: "You must be signed in to view comments in this private community"
-          }, { status: 401 });
+          console.log(
+            `[COMMENTS GET] Unauthorized access attempt to comments for post ${sanitizedPostId} in private community: ${post.community}`
+          );
+          return NextResponse.json(
+            {
+              error: "You must be signed in to view comments in this private community",
+            },
+            { status: 401 }
+          );
         }
 
         // Get the user's MongoDB ID
@@ -90,20 +105,29 @@ async function getCommentsHandler(
         const membership = await Membership.findOne({
           user: user._id,
           community: post.community,
-          status: 'ACTIVE'
-        });        // Fallback to the deprecated array if Membership model check fails
-        const isMember = membership || community.members.some((memberId: mongoose.Types.ObjectId) =>
-          memberId.toString() === user._id.toString()
-        );
+          status: "ACTIVE",
+        }); // Fallback to the deprecated array if Membership model check fails
+        const isMember =
+          membership ||
+          community.members.some(
+            (memberId: mongoose.Types.ObjectId) => memberId.toString() === user._id.toString()
+          );
 
         if (!isMember) {
-          console.log(`[COMMENTS GET] Forbidden access attempt by user ${user._id} to comments for post ${sanitizedPostId} in private community: ${post.community}`);
-          return NextResponse.json({
-            error: "You are not authorized to view comments in this private community"
-          }, { status: 403 });
+          console.log(
+            `[COMMENTS GET] Forbidden access attempt by user ${user._id} to comments for post ${sanitizedPostId} in private community: ${post.community}`
+          );
+          return NextResponse.json(
+            {
+              error: "You are not authorized to view comments in this private community",
+            },
+            { status: 403 }
+          );
         }
 
-        console.log(`[COMMENTS GET] Authorized access to comments for post ${sanitizedPostId} in private community ${post.community} by member ${user._id}`);
+        console.log(
+          `[COMMENTS GET] Authorized access to comments for post ${sanitizedPostId} in private community ${post.community} by member ${user._id}`
+        );
       }
     }
 
@@ -117,7 +141,7 @@ async function getCommentsHandler(
     const { skip, limit: validLimit } = getPaginationOptions(page, limit);
 
     // Create a cache key based on the request parameters
-    const cacheKey = `post:${sanitizedPostId}:comments:${parentCommentId || 'top'}:page:${page}:limit:${validLimit}${userId ? `:user:${userId}` : ''}`;
+    const cacheKey = `post:${sanitizedPostId}:comments:${parentCommentId || "top"}:page:${page}:limit:${validLimit}${userId ? `:user:${userId}` : ""}`;
 
     // Use cache wrapper with a TTL of 2 minutes
     const result = await withCache(
@@ -140,19 +164,23 @@ async function getCommentsHandler(
         // Define lookup stages for populating references
         const lookupStages = [
           // Add computed fields for counts
-          { $addFields: {
-            upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
-            downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
-          }},
+          {
+            $addFields: {
+              upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
+              downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
+            },
+          },
           // Lookup author information
-          { $lookup: {
-            from: "users",
-            localField: "author",
-            foreignField: "_id",
-            as: "authorInfo"
-          }},
-          { $unwind: "$authorInfo" }
-        ];        // Build and execute the aggregation pipeline
+          {
+            $lookup: {
+              from: "users",
+              localField: "author",
+              foreignField: "_id",
+              as: "authorInfo",
+            },
+          },
+          { $unwind: "$authorInfo" },
+        ]; // Build and execute the aggregation pipeline
         const pipeline = buildPaginatedAggregation(
           matchStage,
           { createdAt: -1 },
@@ -177,12 +205,18 @@ async function getCommentsHandler(
       120 // 2 minutes TTL
     );
 
-    const { comments, total, currentUser } = result;    // Format comments for response
+    const { comments, total, currentUser } = result; // Format comments for response
     const formattedComments = comments.map((comment: any) => {
-      const isUpvoted = currentUser ? comment.upvotes.some((id: mongoose.Types.ObjectId) =>
-        id.toString() === (currentUser as any)?._id?.toString()) : false;
-      const isDownvoted = currentUser ? comment.downvotes.some((id: mongoose.Types.ObjectId) =>
-        id.toString() === (currentUser as any)?._id?.toString()) : false;
+      const isUpvoted = currentUser
+        ? comment.upvotes.some(
+            (id: mongoose.Types.ObjectId) => id.toString() === (currentUser as any)?._id?.toString()
+          )
+        : false;
+      const isDownvoted = currentUser
+        ? comment.downvotes.some(
+            (id: mongoose.Types.ObjectId) => id.toString() === (currentUser as any)?._id?.toString()
+          )
+        : false;
 
       return {
         id: comment._id.toString(),
@@ -229,7 +263,6 @@ async function createCommentHandler(
 ) {
   const resolvedParams = await params;
   try {
-
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -325,8 +358,8 @@ async function createCommentHandler(
 
     // Create notification for post author or parent comment author
     try {
-      const mongoose = require('mongoose');
-      const Notification = mongoose.model('Notification');
+      const mongoose = require("mongoose");
+      const Notification = mongoose.model("Notification");
 
       if (parentCommentId) {
         // This is a reply to another comment
@@ -336,11 +369,11 @@ async function createCommentHandler(
           await Notification.create({
             recipient: parentComment.author._id,
             sender: user._id,
-            type: 'reply',
+            type: "reply",
             message: `${user.name} replied to your comment`,
             read: false,
             relatedPost: sanitizedPostId,
-            relatedComment: newComment._id
+            relatedComment: newComment._id,
           });
         }
       } else {
@@ -351,11 +384,11 @@ async function createCommentHandler(
           await Notification.create({
             recipient: postData.author._id,
             sender: user._id,
-            type: 'comment',
+            type: "comment",
             message: `${user.name} commented on your post`,
             read: false,
             relatedPost: sanitizedPostId,
-            relatedComment: newComment._id
+            relatedComment: newComment._id,
           });
         }
       }
@@ -396,26 +429,26 @@ async function createCommentHandler(
 // Export the handler functions with middleware
 export const GET = withApiMiddleware(
   async (req: NextRequest) => {
-    const postId = req.nextUrl.pathname.split('/')[3];
+    const postId = req.nextUrl.pathname.split("/")[3];
     return getCommentsHandler(req, { params: Promise.resolve({ postId }) });
   },
   {
     enableRateLimit: true,
     maxRequests: 100,
     windowMs: 60000, // 1 minute
-    identifier: 'comments:get'
+    identifier: "comments:get",
   }
 );
 
 export const POST = withApiMiddleware(
   async (req: NextRequest) => {
-    const postId = req.nextUrl.pathname.split('/')[3];
+    const postId = req.nextUrl.pathname.split("/")[3];
     return createCommentHandler(req, { params: Promise.resolve({ postId }) });
   },
   {
     enableRateLimit: true,
     maxRequests: 10,
     windowMs: 60000, // 1 minute
-    identifier: 'comments:post'
+    identifier: "comments:post",
   }
 );

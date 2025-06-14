@@ -1,5 +1,5 @@
-import { Redis } from 'ioredis';
-import { env } from '@/lib/env';
+import { Redis } from "ioredis";
+import { env } from "@/lib/env";
 
 // Cache statistics for monitoring
 export interface CacheStats {
@@ -21,18 +21,18 @@ export const cacheStats: CacheStats = {
 
 // Cache key prefixes for different data types
 export const CacheKeys = {
-  POST: 'post:',
-  POSTS: 'posts:',
-  POPULAR_POSTS: 'popular:posts:',
-  COMMUNITY: 'community:',
-  COMMUNITIES: 'communities:',
-  USER: 'user:',
-  USERS: 'users:',
-  COMMENT: 'comment:',
-  COMMENTS: 'comments:',
-  FEED: 'feed:',
-  SEARCH: 'search:',
-  STATS: 'stats:',
+  POST: "post:",
+  POSTS: "posts:",
+  POPULAR_POSTS: "popular:posts:",
+  COMMUNITY: "community:",
+  COMMUNITIES: "communities:",
+  USER: "user:",
+  USERS: "users:",
+  COMMENT: "comment:",
+  COMMENTS: "comments:",
+  FEED: "feed:",
+  SEARCH: "search:",
+  STATS: "stats:",
 };
 
 // Cache TTL (Time To Live) in seconds for different data types
@@ -90,12 +90,12 @@ const getRedisInstance = () => {
   }
 
   // Use in-memory cache for development
-  if (process.env.NODE_ENV === 'development') {
-    console.warn('⚠️ Using in-memory cache instead of Redis');
+  if (process.env.NODE_ENV === "development") {
+    console.warn("⚠️ Using in-memory cache instead of Redis");
     return new MemoryCache() as unknown as Redis;
   }
 
-  throw new Error('Redis URL is required in production');
+  throw new Error("Redis URL is required in production");
 };
 
 // Create a singleton instance
@@ -135,7 +135,7 @@ export async function withCache<T>(
           cacheStats.hits++;
           return JSON.parse(cached) as T;
         } catch (parseError) {
-          console.error('Redis cache parse error:', parseError);
+          console.error("Redis cache parse error:", parseError);
           // If parsing fails, invalidate the cache entry
           await redis.del(key);
           cacheStats.errors++;
@@ -151,22 +151,17 @@ export async function withCache<T>(
 
     // Store in cache
     try {
-      await redis.set(
-        key,
-        JSON.stringify(result),
-        'EX',
-        ttl
-      );
+      await redis.set(key, JSON.stringify(result), "EX", ttl);
       cacheStats.sets++;
     } catch (setError) {
-      console.error('Redis set error:', setError);
+      console.error("Redis set error:", setError);
       cacheStats.errors++;
       // Continue without caching
     }
 
     return result;
   } catch (error) {
-    console.error('Redis cache error:', error);
+    console.error("Redis cache error:", error);
     cacheStats.errors++;
     // If cache fails, just execute the function
     return fn();
@@ -189,17 +184,11 @@ export async function invalidateCache(pattern: string): Promise<void> {
     }
 
     // For Redis, we can use scan to find keys matching the pattern
-    let cursor = '0';
+    let cursor = "0";
     let deletedKeys = 0;
 
     do {
-      const [nextCursor, keys] = await redis.scan(
-        cursor,
-        'MATCH',
-        pattern,
-        'COUNT',
-        100
-      );
+      const [nextCursor, keys] = await redis.scan(cursor, "MATCH", pattern, "COUNT", 100);
 
       cursor = nextCursor;
 
@@ -208,11 +197,11 @@ export async function invalidateCache(pattern: string): Promise<void> {
         deletedKeys += keys.length;
         cacheStats.deletes += keys.length;
       }
-    } while (cursor !== '0');
+    } while (cursor !== "0");
 
     console.log(`Invalidated ${deletedKeys} cache keys matching pattern: ${pattern}`);
   } catch (error) {
-    console.error('Redis invalidation error:', error);
+    console.error("Redis invalidation error:", error);
     cacheStats.errors++;
   }
 }
@@ -252,21 +241,12 @@ export function getCacheHitRate(): number {
  * @param fn Function to execute to get the data
  * @param ttl Time to live in seconds
  */
-export async function prefetchCache<T>(
-  key: string,
-  fn: () => Promise<T>,
-  ttl = 60
-): Promise<void> {
+export async function prefetchCache<T>(key: string, fn: () => Promise<T>, ttl = 60): Promise<void> {
   try {
     const result = await fn();
     const redis = getRedis();
 
-    await redis.set(
-      key,
-      JSON.stringify(result),
-      'EX',
-      ttl
-    );
+    await redis.set(key, JSON.stringify(result), "EX", ttl);
 
     cacheStats.sets++;
     console.log(`Prefetched cache for key: ${key}`);

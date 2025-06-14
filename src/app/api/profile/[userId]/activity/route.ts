@@ -23,7 +23,7 @@ async function validateUserAccess(params: { userId: string }, clerkUserId: strin
 
   await connectToDatabase();
   // Find the user
-  const user = await User.findById(sanitizedUserId).lean().exec() as any;
+  const user = (await User.findById(sanitizedUserId).lean().exec()) as any;
 
   if (!user) {
     return { error: { message: "User not found", status: 404 } };
@@ -55,10 +55,7 @@ function getPaginationParams(req: NextRequest) {
 }
 
 // GET /api/profile/[userId]/activity - Get user activity (posts, comments, and communities)
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ userId: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   const resolvedParams = await params;
   try {
     const { userId: clerkUserId } = await auth();
@@ -66,7 +63,10 @@ export async function GET(
     // Validate user access
     const validation = await validateUserAccess(resolvedParams, clerkUserId);
     if (validation.error) {
-      return NextResponse.json({ error: validation.error.message }, { status: validation.error.status });
+      return NextResponse.json(
+        { error: validation.error.message },
+        { status: validation.error.status }
+      );
     }
 
     const { user } = validation;
@@ -79,7 +79,7 @@ export async function GET(
     const type = url.searchParams.get("type") || "all"; // "all", "posts", "comments", "communities"    // Get the current user for determining upvote/downvote status
     let currentUser = null;
     if (clerkUserId) {
-      currentUser = await User.findOne({ clerkId: clerkUserId }).lean().exec() as any;
+      currentUser = (await User.findOne({ clerkId: clerkUserId }).lean().exec()) as any;
     }
 
     // Prepare response object
@@ -107,7 +107,8 @@ export async function GET(
 
     // Fetch posts if requested
     if (type === "all" || type === "posts") {
-      promises.push(        (async () => {
+      promises.push(
+        (async () => {
           // Use aggregation pipeline for more efficient querying
           const postsAggregation: any[] = [
             { $match: { author: user._id } },
@@ -115,26 +116,32 @@ export async function GET(
             { $skip: skip },
             { $limit: limit },
             // Add computed fields for counts
-            { $addFields: {
+            {
+              $addFields: {
                 upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
                 downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
                 commentCount: { $size: { $ifNull: ["$comments", []] } },
-            }},
+              },
+            },
             // Lookup author information
-            { $lookup: {
+            {
+              $lookup: {
                 from: "users",
                 localField: "author",
                 foreignField: "_id",
-                as: "authorInfo"
-            }},
+                as: "authorInfo",
+              },
+            },
             { $unwind: "$authorInfo" },
             // Lookup community information if present
-            { $lookup: {
+            {
+              $lookup: {
                 from: "communities",
                 localField: "community",
                 foreignField: "_id",
-                as: "communityInfo"
-            }},
+                as: "communityInfo",
+              },
+            },
             { $unwind: { path: "$communityInfo", preserveNullAndEmptyArrays: true } },
           ];
 
@@ -142,12 +149,12 @@ export async function GET(
 
           const [posts, countResult] = await Promise.all([
             Post.aggregate(postsAggregation),
-            Post.aggregate(countPipeline)
+            Post.aggregate(countPipeline),
           ]);
 
           const postsCount = countResult.length > 0 ? countResult[0].total : 0;
 
-          response.posts = posts.map(post => ({
+          response.posts = posts.map((post) => ({
             id: post._id.toString(),
             content: post.content,
             author: {
@@ -156,16 +163,25 @@ export async function GET(
               name: post.authorInfo.name,
               image: post.authorInfo.image,
             },
-            community: post.communityInfo ? {
-              _id: post.communityInfo._id.toString(),
-              name: post.communityInfo.name,
-              image: post.communityInfo.image,
-            } : undefined,
+            community: post.communityInfo
+              ? {
+                  _id: post.communityInfo._id.toString(),
+                  name: post.communityInfo.name,
+                  image: post.communityInfo.image,
+                }
+              : undefined,
             upvoteCount: post.upvoteCount,
             downvoteCount: post.downvoteCount,
             voteCount: post.upvoteCount - post.downvoteCount,
-            commentCount: post.commentCount,            isUpvoted: currentUser ? post.upvotes?.some((id: any) => id.toString() === currentUser._id.toString()) || false : false,
-            isDownvoted: currentUser ? post.downvotes?.some((id: any) => id.toString() === currentUser._id.toString()) || false : false,
+            commentCount: post.commentCount,
+            isUpvoted: currentUser
+              ? post.upvotes?.some((id: any) => id.toString() === currentUser._id.toString()) ||
+                false
+              : false,
+            isDownvoted: currentUser
+              ? post.downvotes?.some((id: any) => id.toString() === currentUser._id.toString()) ||
+                false
+              : false,
             createdAt: post.createdAt.toISOString(),
             updatedAt: post.updatedAt.toISOString(),
           }));
@@ -182,7 +198,8 @@ export async function GET(
 
     // Fetch comments if requested
     if (type === "all" || type === "comments") {
-      promises.push(        (async () => {
+      promises.push(
+        (async () => {
           // Use aggregation pipeline for more efficient querying
           const commentsAggregation: any[] = [
             { $match: { author: user._id } },
@@ -190,25 +207,31 @@ export async function GET(
             { $skip: skip },
             { $limit: limit },
             // Add computed fields for counts
-            { $addFields: {
+            {
+              $addFields: {
                 upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
                 downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
-            }},
+              },
+            },
             // Lookup author information
-            { $lookup: {
+            {
+              $lookup: {
                 from: "users",
                 localField: "author",
                 foreignField: "_id",
-                as: "authorInfo"
-            }},
+                as: "authorInfo",
+              },
+            },
             { $unwind: "$authorInfo" },
             // Lookup post information
-            { $lookup: {
+            {
+              $lookup: {
                 from: "posts",
                 localField: "post",
                 foreignField: "_id",
-                as: "postInfo"
-            }},
+                as: "postInfo",
+              },
+            },
             { $unwind: "$postInfo" },
           ];
 
@@ -216,12 +239,12 @@ export async function GET(
 
           const [comments, countResult] = await Promise.all([
             Comment.aggregate(commentsAggregation),
-            Comment.aggregate(countPipeline)
+            Comment.aggregate(countPipeline),
           ]);
 
           const commentsCount = countResult.length > 0 ? countResult[0].total : 0;
 
-          response.comments = comments.map(comment => ({
+          response.comments = comments.map((comment) => ({
             id: comment._id.toString(),
             content: comment.content,
             author: {
@@ -232,12 +255,22 @@ export async function GET(
             },
             post: {
               _id: comment.postInfo._id.toString(),
-              content: comment.postInfo.content.substring(0, 100) + (comment.postInfo.content.length > 100 ? '...' : ''),
+              content:
+                comment.postInfo.content.substring(0, 100) +
+                (comment.postInfo.content.length > 100 ? "..." : ""),
             },
             upvoteCount: comment.upvoteCount,
             downvoteCount: comment.downvoteCount,
-            voteCount: comment.upvoteCount - comment.downvoteCount,            isUpvoted: currentUser ? comment.upvotes?.some((id: any) => id.toString() === currentUser._id.toString()) || false : false,
-            isDownvoted: currentUser ? comment.downvotes?.some((id: any) => id.toString() === currentUser._id.toString()) || false : false,
+            voteCount: comment.upvoteCount - comment.downvoteCount,
+            isUpvoted: currentUser
+              ? comment.upvotes?.some((id: any) => id.toString() === currentUser._id.toString()) ||
+                false
+              : false,
+            isDownvoted: currentUser
+              ? comment.downvotes?.some(
+                  (id: any) => id.toString() === currentUser._id.toString()
+                ) || false
+              : false,
             createdAt: comment.createdAt.toISOString(),
             updatedAt: comment.updatedAt.toISOString(),
           }));
@@ -254,7 +287,8 @@ export async function GET(
 
     // Fetch communities if requested
     if (type === "all" || type === "communities") {
-      promises.push(        (async () => {
+      promises.push(
+        (async () => {
           // Use aggregation pipeline for more efficient querying
           const communitiesAggregation: any[] = [
             { $match: { members: user._id } },
@@ -262,21 +296,24 @@ export async function GET(
             { $skip: skip },
             { $limit: limit },
             // Add computed fields for counts
-            { $addFields: {
+            {
+              $addFields: {
                 memberCount: { $size: { $ifNull: ["$members", []] } },
                 postCount: { $size: { $ifNull: ["$posts", []] } },
                 channelCount: { $size: { $ifNull: ["$channels", []] } },
-            }},
+              },
+            },
           ];
 
           const countPipeline: any[] = [{ $match: { members: user._id } }, { $count: "total" }];
 
           const [communities, countResult] = await Promise.all([
             Community.aggregate(communitiesAggregation),
-            Community.aggregate(countPipeline)
+            Community.aggregate(countPipeline),
           ]);
 
-          const communitiesCount = countResult.length > 0 ? countResult[0].total : 0;          response.communities = communities.map(community => {
+          const communitiesCount = countResult.length > 0 ? countResult[0].total : 0;
+          response.communities = communities.map((community) => {
             // Find when the user joined this community (if available)
             const membership = community.membershipDates?.find(
               (m: any) => m.user.toString() === user._id.toString()
@@ -315,9 +352,6 @@ export async function GET(
     return NextResponse.json(response, { status: 200 });
   } catch (err) {
     console.error("[GET /api/profile/[userId]/activity] Error:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch user activity" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch user activity" }, { status: 500 });
   }
 }

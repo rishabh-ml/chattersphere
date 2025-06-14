@@ -12,28 +12,34 @@ interface PopularPostFeedProps {
   emptyMessage?: string;
 }
 
-export default function PopularPostFeed({ emptyMessage = "No popular posts to show" }: PopularPostFeedProps) {
-  const { posts, loading, error, hasMore, fetchMorePosts, votePost, timeRange, setTimeRange } = usePopularPosts();
+export default function PopularPostFeed({
+  emptyMessage = "No popular posts to show",
+}: PopularPostFeedProps) {
+  const { posts, loading, error, hasMore, fetchMorePosts, votePost, timeRange, setTimeRange } =
+    usePopularPosts();
   const observer = useRef<IntersectionObserver | null>(null);
 
   // Set up the intersection observer for infinite scrolling
-  const lastPostRef = useCallback((node: HTMLDivElement | null) => {
-    if (loading) return;
+  const lastPostRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (loading) return;
 
-    if (observer.current) {
-      observer.current.disconnect();
-    }
-
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        fetchMorePosts();
+      if (observer.current) {
+        observer.current.disconnect();
       }
-    });
 
-    if (node) {
-      observer.current.observe(node);
-    }
-  }, [loading, hasMore, fetchMorePosts]);
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchMorePosts();
+        }
+      });
+
+      if (node) {
+        observer.current.observe(node);
+      }
+    },
+    [loading, hasMore, fetchMorePosts]
+  );
 
   // Clean up observer on unmount
   useEffect(() => {
@@ -57,37 +63,37 @@ export default function PopularPostFeed({ emptyMessage = "No popular posts to sh
       <div className="bg-white rounded-lg border border-gray-100 p-4 mb-6">
         <div className="flex flex-wrap gap-2">
           <Button
-            variant={timeRange === 'day' ? 'default' : 'outline'}
+            variant={timeRange === "day" ? "default" : "outline"}
             size="sm"
-            onClick={() => setTimeRange('day')}
-            className={timeRange === 'day' ? 'bg-[#00AEEF] hover:bg-[#00AEEF]/90' : ''}
+            onClick={() => setTimeRange("day")}
+            className={timeRange === "day" ? "bg-[#00AEEF] hover:bg-[#00AEEF]/90" : ""}
           >
             <TrendingUp className="h-4 w-4 mr-2" />
             Today
           </Button>
           <Button
-            variant={timeRange === 'week' ? 'default' : 'outline'}
+            variant={timeRange === "week" ? "default" : "outline"}
             size="sm"
-            onClick={() => setTimeRange('week')}
-            className={timeRange === 'week' ? 'bg-[#00AEEF] hover:bg-[#00AEEF]/90' : ''}
+            onClick={() => setTimeRange("week")}
+            className={timeRange === "week" ? "bg-[#00AEEF] hover:bg-[#00AEEF]/90" : ""}
           >
             <Clock className="h-4 w-4 mr-2" />
             This Week
           </Button>
           <Button
-            variant={timeRange === 'month' ? 'default' : 'outline'}
+            variant={timeRange === "month" ? "default" : "outline"}
             size="sm"
-            onClick={() => setTimeRange('month')}
-            className={timeRange === 'month' ? 'bg-[#00AEEF] hover:bg-[#00AEEF]/90' : ''}
+            onClick={() => setTimeRange("month")}
+            className={timeRange === "month" ? "bg-[#00AEEF] hover:bg-[#00AEEF]/90" : ""}
           >
             <Calendar className="h-4 w-4 mr-2" />
             This Month
           </Button>
           <Button
-            variant={timeRange === 'all' ? 'default' : 'outline'}
+            variant={timeRange === "all" ? "default" : "outline"}
             size="sm"
-            onClick={() => setTimeRange('all')}
-            className={timeRange === 'all' ? 'bg-[#00AEEF] hover:bg-[#00AEEF]/90' : ''}
+            onClick={() => setTimeRange("all")}
+            className={timeRange === "all" ? "bg-[#00AEEF] hover:bg-[#00AEEF]/90" : ""}
           >
             <History className="h-4 w-4 mr-2" />
             All Time
