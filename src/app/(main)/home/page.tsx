@@ -8,10 +8,10 @@ import { PostProvider } from "@/context/PostContext";
 import { PopularPostProvider } from "@/context/PopularPostContext";
 import { CommunityProvider } from "@/context/CommunityContext";
 import { HomeFeedProvider } from "@/context/HomeFeedContext";
-import HomeFeed from "@/components/home-feed";
-import PopularPostFeed from "@/components/popular-post-feed";
-import CommunityList from "@/components/community-list";
-import CreatePostForm from "@/components/create-post-form";
+import HomeFeed from "@/features/posts/components/home-feed";
+import PopularPostFeed from "@/features/posts/components/popular-post-feed";
+import CommunityList from "@/features/communities/components/community-list";
+import CreatePostForm from "@/features/posts/components/create-post-form";
 import { StandardPageWrapper } from "@/components/layouts/StandardPageWrapper";
 
 export default function Home() {

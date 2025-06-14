@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import CreatePostModal from "@/components/create-post-modal";
+import CreatePostModal from "@/features/posts/components/create-post-modal";
 
 interface CreatePostModalContextType {
   isOpen: boolean;

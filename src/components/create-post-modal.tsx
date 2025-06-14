@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCommunities, Community } from "@/context/CommunityContext";
 import { PostProvider } from "@/context/PostContext";
-import CreatePostForm from "@/components/create-post-form";
+import CreatePostForm from "@/features/posts/components/create-post-form";
 import { useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 

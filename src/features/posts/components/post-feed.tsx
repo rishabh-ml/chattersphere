@@ -3,7 +3,7 @@
 import { useInfiniteScroll } from "@/lib/swr";
 import { useEffect, useRef } from "react";
 import { Post } from "@/types/post";
-import PostCard from "@/components/posts/PostCard";
+import PostCard from "./PostCard";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";

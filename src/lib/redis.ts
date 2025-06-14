@@ -89,13 +89,14 @@ const getRedisInstance = () => {
     return new Redis(env.REDIS_URL);
   }
 
-  // Use in-memory cache for development
+  // Use in-memory cache for development and as fallback in production
   if (process.env.NODE_ENV === "development") {
-    console.warn("⚠️ Using in-memory cache instead of Redis");
-    return new MemoryCache() as unknown as Redis;
+    console.warn("⚠️ Using in-memory cache instead of Redis in development");
+  } else {
+    console.warn("⚠️ REDIS_URL not set - using in-memory cache. Rate limiting and caching will not persist across restarts.");
   }
-
-  throw new Error("Redis URL is required in production");
+  
+  return new MemoryCache() as unknown as Redis;
 };
 
 // Create a singleton instance

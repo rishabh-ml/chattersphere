@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import NotificationBell from "./notifications/NotificationBell";
+import NotificationBell from "@/features/notifications/components/NotificationBell";
 import { useCreatePostModal } from "@/context/CreatePostModalContext";
 
 export function Topbar() {

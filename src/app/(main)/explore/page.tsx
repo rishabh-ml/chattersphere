@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { CommunityProvider } from "@/context/CommunityContext";
-import CommunityList from "@/components/community-list";
-import CreateCommunityForm from "@/components/create-community-form";
+import CommunityList from "@/features/communities/components/community-list";
+import CreateCommunityForm from "@/features/communities/components/create-community-form";
 
 export default function ExplorePage() {
   const [showCreateForm, setShowCreateForm] = useState(false);

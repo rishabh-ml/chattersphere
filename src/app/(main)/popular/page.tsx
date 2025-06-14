@@ -3,8 +3,8 @@
 import { motion } from "framer-motion";
 import { PopularPostProvider } from "@/context/PopularPostContext";
 import { PostProvider } from "@/context/PostContext";
-import PopularPostFeed from "@/components/popular-post-feed";
-import CreatePostForm from "@/components/create-post-form";
+import PopularPostFeed from "@/features/posts/components/popular-post-feed";
+import CreatePostForm from "@/features/posts/components/create-post-form";
 import { useUser } from "@clerk/nextjs";
 import { StandardPageWrapper } from "@/components/layouts/StandardPageWrapper";
 

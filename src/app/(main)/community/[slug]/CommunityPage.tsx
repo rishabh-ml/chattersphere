@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import PostCard from "@/components/post-card";
+import PostCard from "@/features/posts/components/PostCard";
 import { toast } from "react-hot-toast";
 
 interface Community {

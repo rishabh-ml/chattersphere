@@ -142,4 +142,4 @@ export const GET = withApiMiddleware(getNotificationsHandler, {
   maxRequests: 20,
   windowMs: 60_000,
   identifier: "notifications:get",
-  nbmf});
+});

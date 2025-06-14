@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { SingleCommunityProvider } from "@/context/SingleCommunityContext";
-import CommunityHeader from "@/components/Community/CommunityHeader";
-import CommunityChannelSidebar from "@/components/Community/CommunityChannelSidebar";
-import CommunityMembersSidebar from "@/components/Community/CommunityMembersSidebar";
+import CommunityHeader from "@/features/communities/components/CommunityHeader";
+import CommunityChannelSidebar from "@/features/communities/components/CommunityChannelSidebar";
+import CommunityMembersSidebar from "@/features/communities/components/CommunityMembersSidebar";
 import ErrorBoundary from "@/components/error-boundary";
 import { Button } from "@/components/ui/button";
 import { Menu, Users } from "lucide-react";

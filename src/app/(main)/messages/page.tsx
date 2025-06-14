@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import ConversationsList from "@/components/messages/ConversationsList";
+import ConversationsList from "@/features/messages/components/ConversationsList";
 import { MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";

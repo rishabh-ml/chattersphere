@@ -6,7 +6,7 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useNavigation, routes } from "@/lib/navigation";
-import PostCard from "@/components/post-card";
+import PostCard from "@/features/posts/components/PostCard";
 import CommentList from "@/components/comments/CommentList";
 import { toast } from "sonner";
 import { Post } from "@/context/PostContext";

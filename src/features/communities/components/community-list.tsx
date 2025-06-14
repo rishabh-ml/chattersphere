@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Loader2, Users, TrendingUp, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CommunitySkeleton from "@/components/skeletons/community-skeleton";
-import CommunityCard from "@/components/community-card";
+import CommunityCard from "./community-card";
 import { toast } from "sonner";
 
 interface CommunityListProps {

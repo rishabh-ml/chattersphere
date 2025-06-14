@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageSquare, X, Users, TrendingUp, Calendar } from "lucide-react";
-import MessageNotificationBadge from "@/components/messages/MessageNotificationBadge";
+import MessageNotificationBadge from "@/features/messages/components/MessageNotificationBadge";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";

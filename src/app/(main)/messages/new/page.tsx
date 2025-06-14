@@ -1,7 +1,7 @@
 "use client";
 
-import ConversationsList from "@/components/messages/ConversationsList";
-import NewMessage from "@/components/messages/NewMessage";
+import ConversationsList from "@/features/messages/components/ConversationsList";
+import NewMessage from "@/features/messages/components/NewMessage";
 
 export default function NewMessagePage() {
   return (

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import createDOMPurify from "dompurify";
-import MediaUploader from "@/components/media-uploader";
+import MediaUploader from "./media-uploader";
 
 interface PostEditorProps {
   value: string;

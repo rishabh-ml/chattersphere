@@ -12,8 +12,8 @@ import {
   User,
   MessageSquare,
 } from "lucide-react";
-import MyCommunities from "@/components/my-communities-list";
-import MessageNotificationBadge from "@/components/messages/MessageNotificationBadge";
+import MyCommunities from "@/features/communities/components/my-communities-list";
+import MessageNotificationBadge from "@/features/messages/components/MessageNotificationBadge";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import {

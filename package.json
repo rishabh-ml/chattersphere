@@ -1,8 +1,7 @@
 {
   "name": "chattersphere",
   "version": "0.1.0",
-  "private": true,
-  "scripts": {
+  "private": true,  "scripts": {
     "dev": "next dev",
     "build": "next build --no-lint",
     "start": "next start",
@@ -16,6 +15,8 @@
     "test:performance": "ts-node -r tsconfig-paths/register src/scripts/performance-test.ts",
     "archive-data": "ts-node -r tsconfig-paths/register src/scripts/archive-data.ts",
     "analyze": "ANALYZE=true next build",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "typecheck": "tsc --noEmit",
     "typecheck:build": "tsc -p tsconfig.build.json --noEmit",
     "cypress": "cypress open",
@@ -24,7 +25,11 @@
     "setup-supabase": "node scripts/setup-supabase.js",
     "test-supabase": "node scripts/test-supabase.js",
     "db:indexes": "ts-node -r tsconfig-paths/register src/scripts/create-indexes.ts",
-    "db:seed": "ts-node -r tsconfig-paths/register src/scripts/seed-data.ts"
+    "db:seed": "ts-node -r tsconfig-paths/register src/scripts/seed-data.ts",
+    "env:check": "node scripts/setup-production-env.js",
+    "env:template": "node scripts/setup-production-env.js --generate-template",
+    "predev": "npm run env:check",
+    "prebuild": "npm run env:check && npm run typecheck"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.16.0",

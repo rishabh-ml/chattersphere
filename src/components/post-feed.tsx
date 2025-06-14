@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import PostCard from "@/components/post-card";
+import PostCard from "@/features/posts/components/PostCard";
 import { usePosts } from "@/context/PostContext";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";

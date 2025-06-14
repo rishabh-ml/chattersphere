@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ConversationsList from "@/components/messages/ConversationsList";
-import ConversationView from "@/components/messages/ConversationView";
+import ConversationsList from "@/features/messages/components/ConversationsList";
+import ConversationView from "@/features/messages/components/ConversationView";
 import { useDirectMessages } from "@/context/DirectMessageContext";
 
 interface ConversationPageProps {

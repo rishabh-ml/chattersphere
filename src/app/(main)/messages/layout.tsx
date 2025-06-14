@@ -1,6 +1,5 @@
 "use client";
 
-import { DirectMessageProvider } from "@/context/DirectMessageContext";
 import { useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
@@ -22,10 +21,8 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
   }
 
   return (
-    <DirectMessageProvider>
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 flex">{children}</div>
-      </div>
-    </DirectMessageProvider>
+    <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex">{children}</div>
+    </div>
   );
 }

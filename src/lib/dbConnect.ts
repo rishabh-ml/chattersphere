@@ -12,13 +12,14 @@ declare global {
   };
 }
 
-const MONGODB_URI = process.env.MONGODB_URI as string;
-
-if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
-}
-
 async function dbConnect(): Promise<typeof mongoose> {
+  // Check for MongoDB URI at connection time, not at import time
+  const MONGODB_URI = process.env.MONGODB_URI;
+  
+  if (!MONGODB_URI) {
+    throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
+  }
+
   if (global.mongooseConnection?.isConnected) {
     return mongoose;
   }
@@ -44,9 +45,7 @@ async function dbConnect(): Promise<typeof mongoose> {
 
     console.log(
       `Connecting to MongoDB with ${isShardedCluster ? "sharded cluster" : isReplicaSet ? "replica set" : "standalone"} configuration`
-    );
-
-    global.mongooseConnection = {
+    );    global.mongooseConnection = {
       promise: mongoose.connect(MONGODB_URI, connectionOptions).then((mongooseInstance) => {
         if (global.mongooseConnection) {
           global.mongooseConnection.isConnected = true;

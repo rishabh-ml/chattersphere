@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import PostEditor from "@/components/post-editor";
+import PostEditor from "@/features/posts/components/post-editor";
 import { useSingleCommunity } from "@/context/SingleCommunityContext";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";

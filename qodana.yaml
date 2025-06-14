@@ -1,6 +1,45 @@
 version: "1.0"
 linter: jetbrains/qodana-js:2024.3
+
 profile:
   name: qodana.recommended
+
 include:
   - name: CheckDependencyLicenses
+  - name: ES6
+  - name: TypeScript
+  - name: ReactJS
+
+exclude:
+  - name: TodoComment
+  - name: JSUnusedGlobalSymbols
+  - name: JSUnusedLocalSymbols
+  - name: JSUnresolvedVariable
+
+projectJDK: "Node.js"
+
+php:
+  version: 8.2
+
+bootstrap: |
+  npm ci
+
+failThreshold: 0
+
+report:
+  console:
+    enabled: true
+  sarif:
+    enabled: true
+  html:
+    enabled: true
+
+inspections:
+  Eslint:
+    enabled: true
+  TypeScript:
+    enabled: true
+  JSHint:
+    enabled: false
+
+runPromo: "true"

@@ -127,7 +127,6 @@ const parseEnv = () => {
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6dmlpeXJ1a254dGx1emNtY2lrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTEyMTc0NCwiZXhwIjoyMDYwNjk3NzQ0fQ.example_service_role_key",
     });
   }
-
   try {
     return envSchema.parse(process.env);
   } catch (error) {
@@ -135,8 +134,24 @@ const parseEnv = () => {
       const missingVars = error.errors.map((err) => err.path.join("."));
       console.error(`❌ Missing or invalid environment variables: ${missingVars.join(", ")}`);
 
-      // For production, we still throw an error
-      throw new Error(`❌ Missing or invalid environment variables: ${missingVars.join(", ")}`);
+      // In production, log error but try to continue with available variables
+      // Only throw for truly critical variables (database and auth)
+      const criticalVars = missingVars.filter(varName => 
+        varName.includes('MONGODB_URI') || 
+        varName.includes('CLERK_SECRET_KEY') || 
+        varName.includes('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY')
+      );
+
+      if (criticalVars.length > 0) {
+        throw new Error(`❌ Critical environment variables missing: ${criticalVars.join(", ")}`);
+      }
+
+      // For non-critical variables, continue with warnings
+      console.warn(`⚠️ Non-critical environment variables missing: ${missingVars.join(", ")}`);
+      console.warn("App will continue with limited functionality");
+      
+      // Return a partial parse with available variables
+      return envSchema.partial().parse(process.env);
     }
     throw error;
   }

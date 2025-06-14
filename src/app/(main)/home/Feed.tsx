@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import PostCard from "@/components/post-card";
+import PostCard from "@/features/posts/components/PostCard";
 import { type Post } from "@/context/PostContext";
 import { motion } from "framer-motion";
 
